@@ -22,8 +22,6 @@ public class Main {
 //			fis.write(pdfBytes, 0, pdfBytes.length);
 //			fis.close();
 			View mainFrame = new View();
-			mainFrame.pack();
-			mainFrame.setVisible(true);
 		}
 		catch (IOException e) {
 			e.printStackTrace();
