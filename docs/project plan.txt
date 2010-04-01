@@ -1,0 +1,76 @@
+########### Requirements ###########
+
+functional
+* Visualization of DICOM ECG files
+** General ECG Waveform SOP Class (support 3, 6, 12, 15 leads, independent from display format)
+** 12-Lead ECG Waveforms SOP Class (12 leads, supports different display formats e.g. 4x2,5s, 2x5s)
+** Ability to zoom in on a certain area of the ECG waveform
+** Ability to show the exact value of a certain point of the waveforms
+
+* Visualization of DICOM files with encapsulated PDFs
+** Ability to zoom in on a certain area of the encapsulated PDF
+** The PDF has to be displayed in the DICOM viewer without using an external application.
+** support of other document formats?
+
+* Visualization of important patient specific data
+** Ability to configure the visibility of certain patient specific values
+
+* Possibility to open more than one file at the same time by using tabs
+** Ability to load a whole DICOM directory with one single command
+
+* Possibility to view all attributes of an opened DICOM file
+
+non-functional
+* Full screen visualization of the ecg without any disturbing GUI elements
+* Customization of the language setting by editing a text file.
+* Platform independent implementation
+* The user interface has to use the current look and feel of the operating system.
+
+
+########### Schedule ###########
+
+Sprints
+* one sprint is seven days long (monday to sunday)
+* July/2nd is the last date for the acceptance test 
+* there are 13 weeks remaining
+* Daily Scrum Meetings won't be used
+* Sprint Review Meetings will be held on every monday at 9:45am
+* Sprint Planning Meetings will be held on every monday after the Review Meeting
+
+Working packages
+* Definition of all compoments used by the DICOM viewer
+** MVC design
+** class diagram
+** compoment diagram
+** use-case diagram
+* Design of the user interface
+* Implementation of the user interface
+** language is customizable
+** more than one file can be opened
+* Visualization of the attributes of a DICOM file
+* Visualization of the patient specific data
+* Visualization of an encapsulated document
+** Ability to zoom in on a certain area of the PDF
+*Visualization of a waveform ECG
+** General ECG Waveform SOP Class (support 3, 6, 12, 15 leads, independent from display format)
+* Visualization of a waveform ECG
+** 12-Lead ECG Waveforms SOP Class (12 leads, supports different display formats e.g. 4x2,5s, 2x5s)
+* Visualization of a waveform ECG
+** Ability to zoom in on a certain area of the ECG waveform
+* Visualization of a waveform ECG
+** Ability to show the exact value of a certain point of the waveforms
+
+########### Sprint #0 ###########
+
+Working packages
+* Definition of all compoments used by the DICOM viewer
+** MVC design
+** class diagram
+** compoment diagram
+** use-case diagram
+* Design of the user interface
+
+Schedule
+* Begin: April/5th
+* End: April/11th 
+
