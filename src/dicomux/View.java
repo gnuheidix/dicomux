@@ -9,7 +9,7 @@ public class View extends JFrame {
 	private static final long serialVersionUID = -3586989981842552511L;
 
 	public View() {
-		setTitle("DICOMUX");
+		setTitle("dicomux");
 		JTabbedPane tabbedPane = new JTabbedPane();
 		JComponent panel1 = makeTextPanel("Panel #1");
 		tabbedPane.addTab("Tab 1", panel1);
