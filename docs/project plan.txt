@@ -26,6 +26,24 @@ non-functional
 * Platform independent implementation
 * The user interface has to use the current look and feel of the operating system.
 
+GUI specific requirements
+* the size of the application window has to be variable
+** the minimal size has to be approx. 800 x 600 Pixels
+** the application has to work in maximized window mode
+** the size of the application window should not change its size if the patient data panel gets expanded or shrinked
+* the application has to avoid bringing up popup messages
+* the main menu contains all available functions for the currently selected workspace
+
+* the tabbed workspace has to be used as a multipurpose area
+** all information and dialogs should be located in the tabbed workspace
+** there should be at least one tab
+** after the application has started, the workspace should bring up a welcome message with all possible next steps (open file, open dir,...)
+** each tab has to have its own close button
+** if the last tab gets closed, a tab with the welcome message will be displayed
+** each tab gets a proper name (Welcome, Patient data configuration, File xyz)
+
+* it should be possible to configure which values should be displayed in the patient data panel
+** the configuration dialog will be displayed in an own tab of the workspace
 
 ########### Schedule ###########
 
