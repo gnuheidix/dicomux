@@ -1,0 +1,21 @@
+#################### Plug-in concept of Dicomux ####################
+
+* The main application only provides the following functionalities.
+** Workspace management
+*** Each workspace is represented by a unique tab.
+*** Each workspace is bound to at most one DICOM file
+** DICOM file management
+** plug-in management
+*** display all available plug-ins for the selected workspace
+*** enable the user to change the used plug-in for the current workspace
+*** it asks the user after opening a DICOM file, which plug-in shall be used for the file
+
+* Each plug-in has to provide the following functionalities.
+** It has to provide information about its own purpose
+*** Name
+*** Description
+*** supported DICOM formats
+*** needed data for processing
+** It has to be able to receive contents of DICOM files from the main application
+** It has to use the received data and return a JPanel with all necessary contents
+** It may provides a 
