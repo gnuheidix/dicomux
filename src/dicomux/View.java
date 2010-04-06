@@ -12,7 +12,7 @@ public class View extends JFrame {
 	private static final long serialVersionUID = -3586989981842552511L;
 	
 	/**
-	 * contains the workspace tabbed pane
+	 * contains the tabbed pane which holds all workspaces
 	 */
 	private JTabbedPane m_tabbedPane;
 	
@@ -21,15 +21,17 @@ public class View extends JFrame {
 	 */
 	private JMenuBar m_menuBar;
 	
-	//TODO outsource component initialization
 	/**
 	 * creates a new view
 	 */
 	public View() {
 		initialize();
-
 	}
 	
+	//TODO localization needed
+	/**
+	 * initializes all components of the view
+	 */
 	private void initialize() {
 		setTitle("Dicomux");
 		setPreferredSize(new Dimension(800, 600));
@@ -66,13 +68,20 @@ public class View extends JFrame {
 		Point screenCenterPoint = GraphicsEnvironment.getLocalGraphicsEnvironment().getCenterPoint();
 		setLocation(new Point (screenCenterPoint.x - getSize().width / 2,
 								screenCenterPoint.y - getSize().height / 2));
-
 	}
 	
+	/**
+	 * removes all tabs from the view / handle with care
+	 */
 	public void clearTabs() {
 		m_tabbedPane.removeAll();
 	}
 	
+	//TODO needs to be extended
+	/**
+	 * adds a new TabObject to the View / this creates a new workspace
+	 * @param tab
+	 */
 	public void addTab(TabObject tab) {
 		if (tab.getTabState() == TabState.WELCOME) {
 			m_tabbedPane.add("Welcome", makeWelcomeTab());
@@ -81,7 +90,7 @@ public class View extends JFrame {
 
 	//TODO localization needed / cleanup
 	/**
-	 * convenience method for testing purpose
+	 * convenience method for adding the welcome tab
 	 * @return a JPanel
 	 */
 	protected JComponent makeWelcomeTab() {

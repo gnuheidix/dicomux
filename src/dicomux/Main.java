@@ -8,6 +8,12 @@ package dicomux;
 //import org.dcm4che2.data.Tag;
 //import org.dcm4che2.io.DicomInputStream;
 
+//TODO cleanup
+/**
+ * Launches Dicomux
+ * @author heidi
+ *
+ */
 public class Main {
 
 	public static void main(String[] args) {
