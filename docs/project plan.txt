@@ -17,14 +17,26 @@ functional
 
 * Possibility to open more than one file at the same time by using tabs
 ** Ability to load a whole DICOM directory with one single command
+*** this opens one tab for each file
+** One file is bound to a single tab
+*** it should not be possible to open a certain file multiple times
 
 * Possibility to view all attributes of an opened DICOM file
 
+* There has to be a function in the main menu which opens a new tab and shows information about the application, its creators and its license
+
+* The application has to provide a plug-in management tool.
+
 non-functional
-* Full screen visualization of the ecg without any disturbing GUI elements
+* Full screen visualization of the data without any disturbing GUI elements
 * Customization of the language setting by editing a text file.
 * Platform independent implementation
 * The user interface has to use the current look and feel of the operating system.
+
+* each functionality has be encapsulated in a certain plug-in
+** each plug-in has to provide all necessary functionalities for its own usage
+** this includes language information, menu actions, ...
+** each plug-in gets DICOM information from the main application and provides special functionalities for that data including functions for displaying the information
 
 GUI specific requirements
 * the size of the application window has to be variable
@@ -32,7 +44,9 @@ GUI specific requirements
 ** the application has to work in maximized window mode
 ** the size of the application window should not change its size if the patient data panel gets expanded or shrinked
 * the application has to avoid bringing up popup messages
+
 * the main menu contains all available functions for the currently selected workspace
+** there has to be a shortcut for each function of the main menu
 
 * the tabbed workspace has to be used as a multipurpose area
 ** all information and dialogs should be located in the tabbed workspace
@@ -44,6 +58,8 @@ GUI specific requirements
 
 * it should be possible to configure which values should be displayed in the patient data panel
 ** the configuration dialog will be displayed in an own tab of the workspace
+
+
 
 ########### Schedule ###########
 
