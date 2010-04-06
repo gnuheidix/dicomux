@@ -18,4 +18,4 @@
 *** needed data for processing
 ** It has to be able to receive contents of DICOM files from the main application
 ** It has to use the received data and return a JPanel with all necessary contents
-** It may provides a 
+** It may provides a toolbar for enabling the user to use all functionalities of the plugin
