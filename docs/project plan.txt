@@ -59,7 +59,9 @@ GUI specific requirements
 * it should be possible to configure which values should be displayed in the patient data panel
 ** the configuration dialog will be displayed in an own tab of the workspace
 
-
+* at the first start of the application, the language setting of the operating system will be used as the initial language setting of the application
+* the user can change the language setting by selecting the proper menu entry
+** the change will take effect after restarting the application
 
 ########### Schedule ###########
 

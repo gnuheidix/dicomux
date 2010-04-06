@@ -1,8 +1,6 @@
 package dicomux;
 
 import java.awt.*;
-import java.awt.event.*;
-
 import javax.swing.*;
 
 /**
@@ -28,7 +26,13 @@ public class View extends JFrame {
 	 * creates a new view
 	 */
 	public View() {
+		initialize();
+
+	}
+	
+	private void initialize() {
 		setTitle("Dicomux");
+		setPreferredSize(new Dimension(800, 600));
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
 		// extract own contentPane and set its layout manager
@@ -57,26 +61,30 @@ public class View extends JFrame {
 		m_tabbedPane.setTabPlacement(JTabbedPane.TOP);
 		contentPane.add(m_tabbedPane, BorderLayout.CENTER);
 		
-		// ########### add a dummy tab #####################
-		//TODO remove
-		m_tabbedPane.addTab("Welcome", makeWelcomePanel());
-		m_tabbedPane.setMnemonicAt(0, KeyEvent.VK_W);
-		// #################################################
-		
 		// display the frame in the middle of the screen
 		pack();
 		Point screenCenterPoint = GraphicsEnvironment.getLocalGraphicsEnvironment().getCenterPoint();
 		setLocation(new Point (screenCenterPoint.x - getSize().width / 2,
 								screenCenterPoint.y - getSize().height / 2));
-		setVisible(true);
+
 	}
 	
+	public void clearTabs() {
+		m_tabbedPane.removeAll();
+	}
+	
+	public void addTab(TabObject tab) {
+		if (tab.getTabState() == TabState.WELCOME) {
+			m_tabbedPane.add("Welcome", makeWelcomeTab());
+		}
+	}
+
 	//TODO localization needed / cleanup
 	/**
 	 * convenience method for testing purpose
 	 * @return a JPanel
 	 */
-	protected JComponent makeWelcomePanel() {
+	protected JComponent makeWelcomeTab() {
 		JPanel content = new JPanel(new BorderLayout(5 , 5), false);
 		JPanel contentHead = new JPanel(new BorderLayout(5, 0), false);
 		content.add(contentHead, BorderLayout.NORTH);
