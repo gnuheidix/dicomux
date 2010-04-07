@@ -10,15 +10,17 @@ package dicomux;
 
 //TODO cleanup
 /**
- * Launches Dicomux
+ * Launches Dicomux<br/>
+ * We determin here, which model and which view shall be used.
  * @author heidi
  *
  */
 public class Main {
 
 	public static void main(String[] args) {
-		Model model = new Model();
-		View view = new View();
+		IModel model = new Model();
+		IView view = new View();
+		
 		@SuppressWarnings("unused")
 		Controller ctrl = new Controller(model, view);
 

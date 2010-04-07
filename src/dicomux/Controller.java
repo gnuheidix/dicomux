@@ -5,38 +5,66 @@ package dicomux;
  * @author heidi
  *
  */
-public class Controller {
+public class Controller implements IController {
 	/**
 	 * holds the model of the application
 	 */
-	private Model m_model;
+	private IModel m_model;
 	
 	/**
 	 * holds the view of the application
 	 */
-	private View m_view;
-	
+	private IView m_view;
 	//TODO error handling (check for crap)
 	/**
-	 * default constructor
+	 * default constructor<br/>
+	 * registers the view in the model and vice versa<br>
+	 * calls initialize() of the model
 	 * @param model
 	 * @param view
+	 * @see IModel
+	 * @see IView
 	 */
-	public Controller(Model model, View view) {
+	public Controller(IModel model, IView view) {
 		m_model = model;
 		m_view = view;
+		
 		m_model.registerView(m_view);
 		m_view.registerModel(m_model);
-		initialize();
-	}
-	
-	//TODO error handling (check wheather there is crap in m_*)
-	/**
-	 * initialization of all parts of the application
-	 */
-	private void initialize() {
+		m_view.registerController(this);
 		m_model.initialize();
-		m_view.setVisible(true);
 	}
 	
+	@Override
+	public void closeAllWorkspaces() {
+		m_model.initialize();
+	}
+	
+	@Override
+	public void closeWorkspace() {
+		m_model.removeWorkspace(m_view.getActiveWorkspaceId());
+	}
+	
+	@Override
+	public void openAboutInformation() {
+		// TODO Auto-generated method stub
+		
+	}
+	
+	@Override
+	public void openDicomDirectoryDialog() {
+		// TODO Auto-generated method stub
+		
+	}
+	
+	@Override
+	public void openDicomFileDialog() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void closeApplication() {
+		System.exit(0);
+	}
 }

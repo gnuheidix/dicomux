@@ -7,7 +7,7 @@ import javax.swing.JComponent;
  * @author heidi
  *
  */
-public interface Plugin {
+public interface IPlugin {
 
 	public JComponent getContent();
 }

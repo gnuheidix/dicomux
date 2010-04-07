@@ -1,6 +1,10 @@
 package dicomux;
 
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.Locale;
+
 import javax.swing.*;
 
 /**
@@ -27,20 +31,51 @@ public class View extends JFrame implements IView {
 	private IModel m_model = null;
 	
 	/**
+	 * the model which serves as event listener
+	 */
+	private IController m_controller = null;
+	
+	@Override
+	public void registerModel(IModel model) {
+		m_model = model;
+	}
+	
+	@Override
+	public void notifyView() {
+		refreshAllTabs();
+	}
+	
+	@Override
+	public void registerController(IController controller) {
+		m_controller = controller;
+	}
+	
+	@Override
+	public int getActiveWorkspaceId() {
+		return m_tabbedPane.getSelectedIndex();
+	}
+	
+	//TODO implement
+	@Override
+	public Locale getLanguage() {
+		return null;
+	}
+	
+	/**
 	 * creates a new view
 	 */
 	public View() {
 		initialize();
 	}
 	
-	//TODO localization needed
+	//TODO needs localization
 	/**
 	 * initializes all components of the view
 	 */
 	private void initialize() {
 		setTitle("Dicomux");
 		setPreferredSize(new Dimension(800, 600));
-		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		setDefaultCloseOperation(EXIT_ON_CLOSE);
 		
 		// extract own contentPane and set its layout manager
 		Container contentPane = getContentPane();
@@ -50,18 +85,11 @@ public class View extends JFrame implements IView {
 		m_menuBar = new JMenuBar();
 		setJMenuBar(m_menuBar);
 		
-		// ####### add dummy entries ######
-		//TODO remove
-		JMenu menu = new JMenu("File");
-		menu.add(new JMenuItem("Open"));
-		menu.addSeparator();
-		menu.add(new JMenuItem("Exit"));
-		m_menuBar.add(menu);
-		
-		menu = new JMenu("Help");
-		menu.add(new JMenuItem("About"));
-		m_menuBar.add(menu);
-		// ################################
+		// add menu entries to the main menu
+		addFileMenu();
+		addPluginMenu();
+		addLanguageMenu();
+		addHelpMenu();
 		
 		// create a tabbed pane and add it to the content pane
 		m_tabbedPane = new JTabbedPane();
@@ -73,21 +101,137 @@ public class View extends JFrame implements IView {
 		Point screenCenterPoint = GraphicsEnvironment.getLocalGraphicsEnvironment().getCenterPoint();
 		setLocation(new Point (screenCenterPoint.x - getSize().width / 2,
 								screenCenterPoint.y - getSize().height / 2));
+		setVisible(true);
+	}
+	
+	//TODO needs localization
+	/**
+	 * a convenience method for adding a file menu to the main menu
+	 */
+	private void addFileMenu() {
+		JMenu menu = new JMenu("File");
+		JMenuItem tmp = new JMenuItem("Open DICOM File");
+		tmp.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				m_controller.openDicomFileDialog();
+			}
+		});
+		menu.add(tmp);
+		tmp = new JMenuItem("Open DICOM Directory");
+		tmp.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				m_controller.openDicomDirectoryDialog();
+			}
+		});
+		menu.add(tmp);
+		menu.addSeparator();
+		tmp = new JMenuItem("Close");
+		tmp.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				m_controller.closeWorkspace();
+			}
+		});
+		menu.add(tmp);
+		tmp = new JMenuItem("Close All");
+		tmp.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				m_controller.closeAllWorkspaces();
+			}
+		});
+		menu.add(tmp);
+		menu.addSeparator();
+		tmp = new JMenuItem("Exit");
+		tmp.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				m_controller.closeApplication();
+			}
+		});
+		menu.add(tmp);
+		m_menuBar.add(menu);
+	}
+	
+	//TODO implement
+	//TODO needs localization
+	/**
+	 * a convenience method for adding a menu for plugin selection to the main menu
+	 */
+	private void addPluginMenu() {
+		JMenu menu = new JMenu("Plugins");
+		JMenuItem tmp = new JMenuItem("implement me!");
+		tmp.setEnabled(false);
+		menu.add(tmp);
+		m_menuBar.add(menu);
+	}
+	
+	//TODO needs localization
+	/**
+	 * a convenience method for adding a menu for language selection to the main menu
+	 */
+	private void addLanguageMenu() {
+		final ButtonGroup bg = new ButtonGroup(); // is needed to make sure that only one radiobutton is set
+		ActionListener langAL = new ActionListener() { // the action listener for all language change actions
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				setLanguage();
+			}
+		};
+		
+		JMenu menu = new JMenu("Language");
+		JMenuItem tmp = new JRadioButtonMenuItem("English", true);
+		tmp.addActionListener(langAL);
+		bg.add(tmp);
+		menu.add(tmp);
+		//TODO add more languages here
+		
+		menu.addSeparator();
+		tmp = new JMenuItem("All changes will take effect after a restart of Dicomux.");
+		tmp.setEnabled(false);
+		menu.add(tmp);
+		
+		m_menuBar.add(menu);
+	}
+	
+	//TODO implement
+	/**
+	 * checks which language is selected in the language menu and writes the configuration
+	 * to the language configuration file which will be loaded at the start of the application
+	 */
+	private void setLanguage() {
+		
+	}
+	
+	//TODO needs localization
+	/**
+	 * a convenience method for adding a help menu to the main menu
+	 */
+	private void addHelpMenu() {
+		JMenu menu = new JMenu("Help");
+		JMenuItem tmp = new JMenuItem("About");
+		menu.add(tmp);
+		m_menuBar.add(menu);
 	}
 	
 	/**
-	 * removes all tabs from the view / handle with care
+	 * a convenience method for checking whether a model is registered
+	 * @return true or false
 	 */
-	public void clearTabs() {
-		m_tabbedPane.removeAll();
+	private boolean isModelRegistered() {
+		return m_model != null;
 	}
 	
 	//TODO needs to be extended
+	//TODO needs localization
 	/**
-	 * adds a new TabObject to the View / this creates a new workspace
-	 * @param tab
+	 * convenience method for fetching new information from the model
+	 * this might be a bit expensive if there are many open tabs
 	 */
-	public void refreshAllTabs() {
+	private void refreshAllTabs() {
+		m_tabbedPane.removeAll();
 		if (isModelRegistered()) {
 			for (int i = 0; i < m_model.getWorkspaceCount(); ++i) {
 				switch (m_model.getWorkspace(i).getTabState()) {
@@ -97,12 +241,8 @@ public class View extends JFrame implements IView {
 		}
 	}
 	
-	@Override
-	public void notifyView() {
-		refreshAllTabs();
-	}
-
-	//TODO localization needed / cleanup
+	//TODO localization needed
+	//TODO cleanup
 	/**
 	 * convenience method for adding the welcome tab
 	 * @return a JPanel
@@ -140,13 +280,5 @@ public class View extends JFrame implements IView {
 			System.err.println("Couldn't find file: " + path);
 			return null;
 		}
-	}
-
-	public void registerModel(Model model) {
-		m_model = model;
-	}
-	
-	private boolean isModelRegistered() {
-		return m_model != null;
 	}
 }

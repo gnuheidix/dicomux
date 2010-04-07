@@ -5,9 +5,15 @@ import javax.swing.JLabel;
 
 import org.dcm4che2.data.DicomObject;
 
+//TODO redesign
+/**
+ * data transfer object between IModel and IView
+ * @author heidi
+ *
+ */
 public class TabObject {
 	public DicomObject m_dicomObj;
-	public Plugin m_plugin;
+	public IPlugin m_plugin;
 	public String m_name;
 	public TabState m_tabState;
 
@@ -34,6 +40,10 @@ public class TabObject {
 		m_tabState = tabState;
 	}
 	
+	/**
+	 * 
+	 * @return content from the plugin
+	 */
 	public JComponent getContent() {
 		if (m_plugin != null)
 			return m_plugin.getContent();
@@ -58,14 +68,14 @@ public class TabObject {
 	/**
 	 * @return the m_plugin
 	 */
-	public Plugin getPlugin() {
+	public IPlugin getPlugin() {
 		return m_plugin;
 	}
 	
 	/**
 	 * @param mPlugin the m_plugin to set
 	 */
-	public void setPlugin(Plugin plugin) {
+	public void setPlugin(IPlugin plugin) {
 		m_plugin = plugin;
 	}
 	

@@ -26,7 +26,7 @@ public class Model implements IModel {
 	}
 	
 	/**
-	 * clears the vector and adds a welcome message to index 0
+	 * clears the vector, adds a welcome message and notifies the view
 	 * @return 
 	 */
 	public void initialize() {
@@ -35,12 +35,9 @@ public class Model implements IModel {
 		m_view.notifyView();
 	}
 	
-	/**
-	 * adds a new TabObject to the Model
-	 * @param tab
-	 */
-	public void addWorkspace(TabObject tab) {
-		m_tabObjects.add(tab);
+	@Override
+	public void setWorkspace(int wsId, TabObject tab) {
+		m_tabObjects.setElementAt(tab, wsId);
 		m_view.notifyView();
 	}
 	
@@ -48,14 +45,26 @@ public class Model implements IModel {
 	public void registerView(IView view) {
 		m_view = view;
 	}
-
+	
 	@Override
-	public TabObject getWorkspace(int i) {
-		return m_tabObjects.get(i);
+	public TabObject getWorkspace(int n) {
+		return m_tabObjects.get(n);
 	}
-
+	
 	@Override
 	public int getWorkspaceCount() {
 		return m_tabObjects.size();
+	}
+
+	@Override
+	public void removeWorkspace(int wsId) {
+		if (m_tabObjects.size() > wsId) {
+			m_tabObjects.remove(wsId);
+			
+			if (m_tabObjects.size() == 0)
+				m_tabObjects.add(new TabObject(TabState.WELCOME));
+			
+			m_view.notifyView();
+		}
 	}
 }
