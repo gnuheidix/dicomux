@@ -8,7 +8,7 @@ import javax.swing.*;
  * @author heidi
  *
  */
-public class View extends JFrame {
+public class View extends JFrame implements IView {
 	private static final long serialVersionUID = -3586989981842552511L;
 	
 	/**
@@ -20,6 +20,11 @@ public class View extends JFrame {
 	 * contains the menu bar of the application
 	 */
 	private JMenuBar m_menuBar;
+	
+	/**
+	 * the model which serves as data source
+	 */
+	private IModel m_model = null;
 	
 	/**
 	 * creates a new view
@@ -82,10 +87,19 @@ public class View extends JFrame {
 	 * adds a new TabObject to the View / this creates a new workspace
 	 * @param tab
 	 */
-	public void addTab(TabObject tab) {
-		if (tab.getTabState() == TabState.WELCOME) {
-			m_tabbedPane.add("Welcome", makeWelcomeTab());
+	public void refreshAllTabs() {
+		if (isModelRegistered()) {
+			for (int i = 0; i < m_model.getWorkspaceCount(); ++i) {
+				switch (m_model.getWorkspace(i).getTabState()) {
+				case WELCOME: m_tabbedPane.add("Welcome", makeWelcomeTab());
+				}
+			}
 		}
+	}
+	
+	@Override
+	public void notifyView() {
+		refreshAllTabs();
 	}
 
 	//TODO localization needed / cleanup
@@ -126,5 +140,13 @@ public class View extends JFrame {
 			System.err.println("Couldn't find file: " + path);
 			return null;
 		}
+	}
+
+	public void registerModel(Model model) {
+		m_model = model;
+	}
+	
+	private boolean isModelRegistered() {
+		return m_model != null;
 	}
 }

@@ -25,7 +25,8 @@ public class Controller {
 	public Controller(Model model, View view) {
 		m_model = model;
 		m_view = view;
-		
+		m_model.registerView(m_view);
+		m_view.registerModel(m_model);
 		initialize();
 	}
 	
@@ -35,7 +36,6 @@ public class Controller {
 	 */
 	private void initialize() {
 		m_model.initialize();
-		m_view.addTab(m_model.getTabObject(0));
 		m_view.setVisible(true);
 	}
 	
