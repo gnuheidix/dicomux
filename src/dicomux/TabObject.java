@@ -12,10 +12,10 @@ import org.dcm4che2.data.DicomObject;
  *
  */
 public class TabObject {
-	public DicomObject m_dicomObj;
-	public IPlugin m_plugin;
-	public String m_name;
-	public TabState m_tabState;
+	private DicomObject m_dicomObj;
+	private IPlugin m_plugin;
+	private String m_name;
+	private TabState m_tabState;
 
 	/**
 	 * default constructor
