@@ -28,4 +28,17 @@ public interface IPlugin {
 	 * @param map a map of Tags and DicomElements
 	 */
 	public void setData(Map<Tag, DicomElement> map);
+	
+	/**
+	 * Returns the name of the plug-in. This value is used by the controller in order to create the menu of available plug-ins.<br/>
+	 * It's important to use void setLanguage(Locale) before you call this method.
+	 * @return the name of the plugin
+	 */
+	public String getName();
+	
+	/**
+	 * Sets the used language of the plug-in. This method shall be used before calling String getName().
+	 * @param locale
+	 */
+	public void setLanguage(Locale locale);
 }
