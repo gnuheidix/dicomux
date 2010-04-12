@@ -132,8 +132,8 @@ public class View extends JFrame implements IView {
 	 * a convenience method for adding a file menu to the main menu
 	 */
 	private void addFileMenu() {
-		JMenu menu = new JMenu("File");
-		JMenuItem tmp = new JMenuItem("Open DICOM File");
+		JMenu menu = new JMenu(m_languageBundle.getString("key_file"));
+		JMenuItem tmp = new JMenuItem(m_languageBundle.getString("key_openFile"));
 		tmp.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -141,7 +141,7 @@ public class View extends JFrame implements IView {
 			}
 		});
 		menu.add(tmp);
-		tmp = new JMenuItem("Open DICOM Directory");
+		tmp = new JMenuItem(m_languageBundle.getString("key_openDir"));
 		tmp.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -150,7 +150,7 @@ public class View extends JFrame implements IView {
 		});
 		menu.add(tmp);
 		menu.addSeparator();
-		tmp = new JMenuItem("Close");
+		tmp = new JMenuItem(m_languageBundle.getString("key_closeTab"));
 		tmp.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -158,7 +158,7 @@ public class View extends JFrame implements IView {
 			}
 		});
 		menu.add(tmp);
-		tmp = new JMenuItem("Close All");
+		tmp = new JMenuItem(m_languageBundle.getString("key_closeAllTabs"));
 		tmp.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -167,7 +167,7 @@ public class View extends JFrame implements IView {
 		});
 		menu.add(tmp);
 		menu.addSeparator();
-		tmp = new JMenuItem("Exit");
+		tmp = new JMenuItem(m_languageBundle.getString("key_exit"));
 		tmp.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -184,7 +184,7 @@ public class View extends JFrame implements IView {
 	 * a convenience method for adding a menu for plugin selection to the main menu
 	 */
 	private void addPluginMenu() {
-		JMenu menu = new JMenu("Plugins");
+		JMenu menu = new JMenu(m_languageBundle.getString("key_view"));
 		JMenuItem tmp = new JMenuItem("implement me!");
 		tmp.setEnabled(false);
 		menu.add(tmp);
@@ -206,15 +206,15 @@ public class View extends JFrame implements IView {
 			}
 		};
 		
-		JMenu menu = new JMenu("Language");
-		JMenuItem tmp = new JRadioButtonMenuItem("English", true);
+		JMenu menu = new JMenu(m_languageBundle.getString("key_language"));
+		JMenuItem tmp = new JRadioButtonMenuItem(m_languageBundle.getString("key_english"), true);
 		tmp.addActionListener(langAL);
 		bg.add(tmp);
 		menu.add(tmp);
 		//TODO add more languages here
 		
 		menu.addSeparator();
-		tmp = new JMenuItem("All changes will take effect after a restart of Dicomux.");
+		tmp = new JMenuItem(m_languageBundle.getString("key_languageNotification"));
 		tmp.setEnabled(false);
 		menu.add(tmp);
 		
@@ -236,8 +236,8 @@ public class View extends JFrame implements IView {
 	 * a convenience method for adding a help menu to the main menu
 	 */
 	private void addHelpMenu() {
-		JMenu menu = new JMenu("Help");
-		JMenuItem tmp = new JMenuItem("About");
+		JMenu menu = new JMenu(m_languageBundle.getString("key_help"));
+		JMenuItem tmp = new JMenuItem(m_languageBundle.getString("key_about"));
 		menu.add(tmp);
 		m_menuBar.add(menu);
 	}
@@ -261,7 +261,7 @@ public class View extends JFrame implements IView {
 		if (isModelRegistered()) {
 			for (int i = 0; i < m_model.getWorkspaceCount(); ++i) {
 				switch (m_model.getWorkspace(i).getTabState()) {
-				case WELCOME: m_tabbedPane.add("Welcome", makeWelcomeTab()); break;
+				case WELCOME: m_tabbedPane.add(m_languageBundle.getString("key_welcome"), makeWelcomeTab()); break;
 				case FILE_OPEN: m_tabbedPane.add("Open file", makeOpenFileTab()); break;
 				case ERROR_OPEN: m_tabbedPane.add("Error", makeErrorOpenTab()); break;
 				}
@@ -281,13 +281,13 @@ public class View extends JFrame implements IView {
 		content.add(contentHead, BorderLayout.NORTH);
 		
 		JPanel message = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0),false);
-		String text = "<html><font size=\"+2\">Welcome to Dicomux</font><br/><i>The free viewer for DICOM files.</i><br/><br/>You may want to do one of the following things:</html>";
+		String text = m_languageBundle.getString("key_welcomeHtml");
 		JLabel filler = new JLabel(text);
 		message.add(filler, BorderLayout.WEST);
 		contentHead.add(message, BorderLayout.NORTH);
 		
 		JPanel control = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0), false);
-		JButton tmp = new JButton("Open DICOM file");
+		JButton tmp = new JButton(m_languageBundle.getString("key_welcomeOpenFile"));
 		tmp.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -297,7 +297,7 @@ public class View extends JFrame implements IView {
 		});
 		control.add(tmp);
 		
-		tmp = new JButton("Open DICOM directory");
+		tmp = new JButton(m_languageBundle.getString("key_welcomeOpenDir"));
 		tmp.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -398,7 +398,7 @@ public class View extends JFrame implements IView {
 		if (imgURL != null)
 			return new ImageIcon(imgURL, description);
 		else {
-			System.err.println("Couldn't find file: " + path);
+			System.err.println(m_languageBundle.getString("key_err_loadFile") + path);
 			return null;
 		}
 	}
