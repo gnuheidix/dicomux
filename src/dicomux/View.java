@@ -4,6 +4,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Locale;
+import java.util.ResourceBundle;
 
 import javax.swing.*;
 
@@ -35,6 +36,13 @@ public class View extends JFrame implements IView {
 	 */
 	private IController m_controller = null;
 	
+	/**
+	 * The global language setting for the view
+	 * (add etc to classpath;
+	 * Run->Run Configuration->Classpath->User Entries dicomux-> Advanced...-> Add Folder -> etc)
+	 */
+	private ResourceBundle m_languageBundle = ResourceBundle.getBundle("language",Locale.GERMAN);
+	
 	@Override
 	public void registerModel(IModel model) {
 		m_model = model;
@@ -58,7 +66,7 @@ public class View extends JFrame implements IView {
 	//TODO implement
 	@Override
 	public Locale getLanguage() {
-		return null;
+		return m_languageBundle.getLocale();
 	}
 	
 	/**
