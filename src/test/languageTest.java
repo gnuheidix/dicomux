@@ -8,18 +8,18 @@ public class languageTest {
 
 	   static public void main(String[] args) {
 
-	      Locale[] supportedLocales = {
+//	      Locale[] supportedLocales = {
 
-	         Locale.GERMAN,
-	         Locale.ENGLISH
-	      };
+//	         Locale.GERMAN,
+//	         Locale.ENGLISH
+//	      };
 
 
 	      System.out.println();
 	      
 //	      iterateKeys(supportedLocales[0]);
 	      ResourceBundle labels_global = 
-	          ResourceBundle.getBundle("LabelsBundle",Locale.JAPAN);
+	          ResourceBundle.getBundle("LabelsBundle",Locale.CHINESE);
 	      
 	      System.out.println(labels_global.getString("s1"));
 	      System.out.println(labels_global.getString("s2"));
