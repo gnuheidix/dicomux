@@ -10,7 +10,6 @@ functional
 * Visualization of DICOM files with encapsulated PDFs
 ** Ability to zoom in on a certain area of the encapsulated PDF
 ** The PDF has to be displayed in the DICOM viewer without using an external application.
-** support of other document formats?
 
 * Visualization of important patient specific data
 ** Ability to configure the visibility of certain patient specific values
@@ -25,7 +24,7 @@ functional
 
 * There has to be a function in the main menu which opens a new tab and shows information about the application, its creators and its license
 
-* The application has to provide a plug-in management tool.
+* The application may has to provide a plug-in management tool.
 
 non-functional
 * Full screen visualization of the data without any disturbing GUI elements
@@ -72,13 +71,14 @@ Sprints
 * Daily Scrum Meetings won't be used
 * Sprint Review Meetings will be held on every monday at 9:45am
 * Sprint Planning Meetings will be held on every monday after the Review Meeting
+* The test of the final version of a sprint will be done by one team member at the end of a sprint. The tester reports existing failures in the review meeting. The tester has to test all implemented features.
+* Platform independence will be tested by using several virtual machines.
 
 Working packages
 * Definition of all compoments used by the DICOM viewer
 ** MVC design
 ** class diagram
 ** compoment diagram
-** use-case diagram
 * Design of the user interface
 * Implementation of the user interface
 ** language is customizable
@@ -99,14 +99,39 @@ Working packages
 ########### Sprint #0 ###########
 
 Working packages
-* Definition of all compoments used by the DICOM viewer
+* Definition of all components used by the DICOM viewer
 ** MVC design
 ** class diagram
-** compoment diagram
-** use-case diagram
+** component diagram
 * Design of the user interface
 
 Schedule
 * Begin: April/5th
-* End: April/11th 
+* End: April/11th
 
+Review meeting
+* April/12th
+* Conclusion:
+** All packages have been mostly completed.
+*** We have created a class diagram with MVC architecture. Further more we have created a state diagram which describes the Dicomux work-flow.
+*** The user interface has been designed and roughly implemented by using the class diagram.
+** The class and state diagram still needs some more attention especially the concrete classes and the plug-in interface.
+** The design of the user interface is almost completed. The workflow needs some more refinement. A prototype of the user interface is already available.
+
+########### Sprint #1 ###########
+
+Sprint meeting
+* We have to analyze the concrete workflow of the user and update the existing diagrams. This includes the analysis of the user's view.
+* In order to revise the user interface we have to include the support of multiple languages. This area has already been analyzed. We just have to design and do the implementation.
+* The plug-in interface has to be designed and implemented. For testing purpose, we have to create a simple plug-in for displaying all tags of an opened DICOM file.
+
+Working packages
+* workflow analysis
+* multilanguage support
+* design and implementation of the plug-in interface including the first plug-in
+
+Schedule
+* Begin: April/12th
+* End: April/18th
+
+Review meeting

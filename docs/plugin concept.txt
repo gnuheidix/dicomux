@@ -8,7 +8,8 @@
 ** plug-in management
 *** display all available plug-ins for the selected workspace
 *** enable the user to change the used plug-in for the current workspace
-*** it asks the user after opening a DICOM file, which plug-in shall be used for the file
+*** it asks the user after opened a DICOM file, which plug-in shall be used for the file
+**** this shall only happen if dicomux doesn't know what to do with the dicom file
 
 * Each plug-in has to provide the following functionalities.
 ** It has to provide information about its own purpose

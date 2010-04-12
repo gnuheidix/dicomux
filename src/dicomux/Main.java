@@ -24,7 +24,7 @@ public class Main {
 		@SuppressWarnings("unused")
 		Controller ctrl = new Controller(model, view);
 
-//		DicomObject dcmObj;
+//		DicomObject dcmObj = null;
 //		DicomInputStream din = null;
 //		try {
 //			din = new DicomInputStream(new File("test/pdf.dcm"));
