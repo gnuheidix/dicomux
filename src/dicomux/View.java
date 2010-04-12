@@ -38,9 +38,10 @@ public class View extends JFrame implements IView {
 	
 	/**
 	 * The global language setting for the view
+	 * (add etc to classpath;
+	 * Run->Run Configuration->Classpath->User Entries dicomux-> Advanced...-> Add Folder -> etc)
 	 */
-    private ResourceBundle m_languageBundle = 
-        ResourceBundle.getBundle("language",Locale.GERMAN);
+	private ResourceBundle m_languageBundle = ResourceBundle.getBundle("language",Locale.GERMAN);
 	
 	@Override
 	public void registerModel(IModel model) {
