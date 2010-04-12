@@ -12,5 +12,7 @@ public enum TabState {
 	FILE_OPEN,
 	DIR_OPEN,
 	ABOUT,
-	PLUGIN
+	PLUGIN_CHOOSE,
+	PLUGIN_ACTIVE,
+	ERROR_OPEN
 }

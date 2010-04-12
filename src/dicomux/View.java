@@ -41,7 +41,7 @@ public class View extends JFrame implements IView {
 	 * (add etc to classpath;
 	 * Run->Run Configuration->Classpath->User Entries dicomux-> Advanced...-> Add Folder -> etc)
 	 */
-	private ResourceBundle m_languageBundle = ResourceBundle.getBundle("language",Locale.GERMAN);
+	private ResourceBundle m_languageBundle;
 	
 	@Override
 	public void registerModel(IModel model) {
@@ -63,7 +63,6 @@ public class View extends JFrame implements IView {
 		return m_tabbedPane.getSelectedIndex();
 	}
 	
-	//TODO implement
 	@Override
 	public Locale getLanguage() {
 		return m_languageBundle.getLocale();
@@ -76,7 +75,6 @@ public class View extends JFrame implements IView {
 		initialize();
 	}
 	
-	//TODO needs localization
 	/**
 	 * initializes all components of the view
 	 */
@@ -84,6 +82,7 @@ public class View extends JFrame implements IView {
 		setTitle("Dicomux");
 		setPreferredSize(new Dimension(800, 600));
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
+		initializeLanguage();
 		
 		// extract own contentPane and set its layout manager
 		Container contentPane = getContentPane();
@@ -110,6 +109,22 @@ public class View extends JFrame implements IView {
 		setLocation(new Point (screenCenterPoint.x - getSize().width / 2,
 								screenCenterPoint.y - getSize().height / 2));
 		setVisible(true);
+	}
+	
+	//TODO implement
+	/**
+	 * initializes all language settings by checking the config file
+	 */
+	private void initializeLanguage() {
+		// check whether there is a configuration file with a last setting for the language
+			// yes: load that
+			// no: use system setting
+		m_languageBundle = ResourceBundle.getBundle("language", Locale.ENGLISH);
+		
+		UIManager.put("FileChooser.cancelButtonText", m_languageBundle.getString("cancelButtonText"));
+		UIManager.put("FileChooser.openButtonText", m_languageBundle.getString("openButtonText"));
+		UIManager.put("FileChooser.lookInLabelText", m_languageBundle.getString("lookInLabelText"));
+		// ... add more of these calls in order to localize the whole thing
 	}
 	
 	//TODO needs localization
@@ -177,6 +192,7 @@ public class View extends JFrame implements IView {
 	}
 	
 	//TODO needs localization
+	//TODO implement
 	/**
 	 * a convenience method for adding a menu for language selection to the main menu
 	 */
@@ -185,7 +201,8 @@ public class View extends JFrame implements IView {
 		ActionListener langAL = new ActionListener() { // the action listener for all language change actions
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				setLanguage();
+				// implement me
+				setLanguage(Locale.ENGLISH);
 			}
 		};
 		
@@ -209,8 +226,9 @@ public class View extends JFrame implements IView {
 	 * checks which language is selected in the language menu and writes the configuration
 	 * to the language configuration file which will be loaded at the start of the application
 	 */
-	private void setLanguage() {
-		
+	private void setLanguage(Locale locale) {
+		// write new setting to configuration file
+		// this one gets loaded at the next launch of dicomux
 	}
 	
 	//TODO needs localization
@@ -243,7 +261,9 @@ public class View extends JFrame implements IView {
 		if (isModelRegistered()) {
 			for (int i = 0; i < m_model.getWorkspaceCount(); ++i) {
 				switch (m_model.getWorkspace(i).getTabState()) {
-				case WELCOME: m_tabbedPane.add("Welcome", makeWelcomeTab());
+				case WELCOME: m_tabbedPane.add("Welcome", makeWelcomeTab()); break;
+				case FILE_OPEN: m_tabbedPane.add("Open file", makeOpenFileTab()); break;
+				case ERROR_OPEN: m_tabbedPane.add("Error", makeErrorOpenTab()); break;
 				}
 			}
 		}
@@ -267,8 +287,101 @@ public class View extends JFrame implements IView {
 		contentHead.add(message, BorderLayout.NORTH);
 		
 		JPanel control = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0), false);
-		control.add(new JButton("Open DICOM file"));
-		control.add(new JButton("Open DICOM directory"));
+		JButton tmp = new JButton("Open DICOM file");
+		tmp.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				m_controller.openDicomFileDialog();
+				
+			}
+		});
+		control.add(tmp);
+		
+		tmp = new JButton("Open DICOM directory");
+		tmp.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				m_controller.openDicomDirectoryDialog();
+				
+			}
+		});
+		control.add(tmp);
+		contentHead.add(control, BorderLayout.SOUTH);
+		
+		return content;
+	}
+	
+	//TODO localization needed
+	/**
+	 * convenience method for adding the welcome tab
+	 * @return a JPanel
+	 */
+	protected JComponent makeOpenFileTab() {
+		JPanel content = new JPanel(new BorderLayout(5 , 5), false);
+		JPanel contentHead = new JPanel(new BorderLayout(5, 0), false);
+		content.add(contentHead, BorderLayout.NORTH);
+		
+		JPanel message = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0),false);
+		String text = "<html><font size=\"+2\">Open file</font><br/><i>Please select the DICOM file, you want to open.</i><br/><br/></html>";
+		JLabel filler = new JLabel(text);
+		message.add(filler, BorderLayout.WEST);
+		contentHead.add(message, BorderLayout.NORTH);
+		
+		JPanel control = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0), false);
+		JFileChooser filechooser = new JFileChooser();
+		filechooser.setDialogType(JFileChooser.OPEN_DIALOG);
+		filechooser.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				JFileChooser chooser = (JFileChooser) e.getSource();
+				if (JFileChooser.APPROVE_SELECTION.equals(e.getActionCommand()))
+					m_controller.openDicomFile(chooser.getSelectedFile().getPath());
+				else if (JFileChooser.CANCEL_SELECTION.equals(e.getActionCommand()))
+					m_controller.closeWorkspace();
+			}
+		});
+		control.add(filechooser);
+		contentHead.add(control, BorderLayout.SOUTH);
+		
+		return content;
+	}
+	
+	//TODO localization needed
+	/**
+	 * convenience method for adding the welcome tab
+	 * @return a JPanel
+	 */
+	protected JComponent makeErrorOpenTab() {
+		JPanel content = new JPanel(new BorderLayout(5 , 5), false);
+		JPanel contentHead = new JPanel(new BorderLayout(5, 0), false);
+		content.add(contentHead, BorderLayout.NORTH);
+		
+		JPanel message = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0),false);
+		String text = "<html><font size=\"+2\">Error</font><br/><i>Dicomux was unable to open the file.</i><br/><br/>You may want to do one of the following things:</html>";
+		JLabel filler = new JLabel(text);
+		message.add(filler, BorderLayout.WEST);
+		contentHead.add(message, BorderLayout.NORTH);
+		
+		JPanel control = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0), false);
+		JButton tmp = new JButton("Open DICOM file");
+		tmp.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				m_controller.openDicomFileDialog();
+				
+			}
+		});
+		control.add(tmp);
+		
+		tmp = new JButton("Open DICOM directory");
+		tmp.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				m_controller.openDicomDirectoryDialog();
+				
+			}
+		});
+		control.add(tmp);
 		contentHead.add(control, BorderLayout.SOUTH);
 		
 		return content;
