@@ -95,9 +95,9 @@ public class Controller implements IController {
 		
 		//TODO plug-in automatic #####################
 		tmp.setPlugin(null);
-		tmp.setTabContent(TabState.PLUGIN_ACTIVE);
-		// or
 		tmp.setTabContent(TabState.PLUGIN_CHOOSE);
+		// or
+		tmp.setTabContent(TabState.PLUGIN_ACTIVE);
 		// ###########################################
 		
 		// update workspace

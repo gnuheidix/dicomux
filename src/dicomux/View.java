@@ -34,14 +34,14 @@ public class View extends JFrame implements IView {
 	/**
 	 * the model which serves as event listener
 	 */
-	private IController m_controller = null;
+	private static IController m_controller = null;
 	
 	/**
 	 * The global language setting for the view
 	 * (add etc to classpath;
 	 * Run->Run Configuration->Classpath->User Entries dicomux-> Advanced...-> Add Folder -> etc)
 	 */
-	private ResourceBundle m_languageBundle;
+	private static ResourceBundle m_languageBundle;
 	
 	@Override
 	public void registerModel(IModel model) {
@@ -72,17 +72,17 @@ public class View extends JFrame implements IView {
 	 * creates a new view
 	 */
 	public View() {
-		initialize();
+		initializeLanguage();
+		initializeApplication();
 	}
 	
 	/**
 	 * initializes all components of the view
 	 */
-	private void initialize() {
+	private void initializeApplication() {
 		setTitle("Dicomux");
 		setPreferredSize(new Dimension(800, 600));
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
-		initializeLanguage();
 		
 		// extract own contentPane and set its layout manager
 		Container contentPane = getContentPane();
@@ -127,7 +127,6 @@ public class View extends JFrame implements IView {
 		// ... add more of these calls in order to localize the whole thing
 	}
 	
-	//TODO needs localization
 	/**
 	 * a convenience method for adding a file menu to the main menu
 	 */
@@ -179,7 +178,6 @@ public class View extends JFrame implements IView {
 	}
 	
 	//TODO implement
-	//TODO needs localization
 	/**
 	 * a convenience method for adding a menu for plugin selection to the main menu
 	 */
@@ -191,7 +189,6 @@ public class View extends JFrame implements IView {
 		m_menuBar.add(menu);
 	}
 	
-	//TODO needs localization
 	//TODO implement
 	/**
 	 * a convenience method for adding a menu for language selection to the main menu
@@ -231,7 +228,6 @@ public class View extends JFrame implements IView {
 		// this one gets loaded at the next launch of dicomux
 	}
 	
-	//TODO needs localization
 	/**
 	 * a convenience method for adding a help menu to the main menu
 	 */
@@ -251,7 +247,6 @@ public class View extends JFrame implements IView {
 	}
 	
 	//TODO needs to be extended
-	//TODO needs localization
 	/**
 	 * convenience method for fetching new information from the model
 	 * this might be a bit expensive if there are many open tabs
@@ -261,145 +256,137 @@ public class View extends JFrame implements IView {
 		if (isModelRegistered()) {
 			for (int i = 0; i < m_model.getWorkspaceCount(); ++i) {
 				switch (m_model.getWorkspace(i).getTabState()) {
-				case WELCOME: m_tabbedPane.add(m_languageBundle.getString("key_welcome"), makeWelcomeTab()); break;
-				case FILE_OPEN: m_tabbedPane.add("Open file", makeOpenFileTab()); break;
-				case ERROR_OPEN: m_tabbedPane.add("Error", makeErrorOpenTab()); break;
+				case WELCOME: m_tabbedPane.add(m_languageBundle.getString("key_welcome"), StaticDialogs.makeWelcomeTab()); break;
+				case FILE_OPEN: m_tabbedPane.add("Open file", StaticDialogs.makeOpenFileTab()); break;
+				case ERROR_OPEN: m_tabbedPane.add("Error", StaticDialogs.makeErrorOpenTab()); break;
 				}
 			}
 		}
 	}
 	
-	//TODO localization needed
-	//TODO cleanup
 	/**
-	 * convenience method for adding the welcome tab
-	 * @return a JPanel
+	 * This class encapsulates all static dialogs and their convenience functions
+	 * @author heidi
+	 *
 	 */
-	protected JComponent makeWelcomeTab() {
-		JPanel content = new JPanel(new BorderLayout(5 , 5), false);
-		JPanel contentHead = new JPanel(new BorderLayout(5, 0), false);
-		content.add(contentHead, BorderLayout.NORTH);
-		
-		JPanel message = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0),false);
-		String text = m_languageBundle.getString("key_welcomeHtml");
-		JLabel filler = new JLabel(text);
-		message.add(filler, BorderLayout.WEST);
-		contentHead.add(message, BorderLayout.NORTH);
-		
-		JPanel control = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0), false);
-		JButton tmp = new JButton(m_languageBundle.getString("key_welcomeOpenFile"));
-		tmp.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				m_controller.openDicomFileDialog();
-				
-			}
-		});
-		control.add(tmp);
-		
-		tmp = new JButton(m_languageBundle.getString("key_welcomeOpenDir"));
-		tmp.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				m_controller.openDicomDirectoryDialog();
-				
-			}
-		});
-		control.add(tmp);
-		contentHead.add(control, BorderLayout.SOUTH);
-		
-		return content;
-	}
-	
-	//TODO localization needed
-	/**
-	 * convenience method for adding the welcome tab
-	 * @return a JPanel
-	 */
-	protected JComponent makeOpenFileTab() {
-		JPanel content = new JPanel(new BorderLayout(5 , 5), false);
-		JPanel contentHead = new JPanel(new BorderLayout(5, 0), false);
-		content.add(contentHead, BorderLayout.NORTH);
-		
-		JPanel message = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0),false);
-		String text = "<html><font size=\"+2\">Open file</font><br/><i>Please select the DICOM file, you want to open.</i><br/><br/></html>";
-		JLabel filler = new JLabel(text);
-		message.add(filler, BorderLayout.WEST);
-		contentHead.add(message, BorderLayout.NORTH);
-		
-		JPanel control = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0), false);
-		JFileChooser filechooser = new JFileChooser();
-		filechooser.setDialogType(JFileChooser.OPEN_DIALOG);
-		filechooser.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				JFileChooser chooser = (JFileChooser) e.getSource();
-				if (JFileChooser.APPROVE_SELECTION.equals(e.getActionCommand()))
-					m_controller.openDicomFile(chooser.getSelectedFile().getPath());
-				else if (JFileChooser.CANCEL_SELECTION.equals(e.getActionCommand()))
-					m_controller.closeWorkspace();
-			}
-		});
-		control.add(filechooser);
-		contentHead.add(control, BorderLayout.SOUTH);
-		
-		return content;
-	}
-	
-	//TODO localization needed
-	/**
-	 * convenience method for adding the welcome tab
-	 * @return a JPanel
-	 */
-	protected JComponent makeErrorOpenTab() {
-		JPanel content = new JPanel(new BorderLayout(5 , 5), false);
-		JPanel contentHead = new JPanel(new BorderLayout(5, 0), false);
-		content.add(contentHead, BorderLayout.NORTH);
-		
-		JPanel message = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0),false);
-		String text = "<html><font size=\"+2\">Error</font><br/><i>Dicomux was unable to open the file.</i><br/><br/>You may want to do one of the following things:</html>";
-		JLabel filler = new JLabel(text);
-		message.add(filler, BorderLayout.WEST);
-		contentHead.add(message, BorderLayout.NORTH);
-		
-		JPanel control = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0), false);
-		JButton tmp = new JButton("Open DICOM file");
-		tmp.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				m_controller.openDicomFileDialog();
-				
-			}
-		});
-		control.add(tmp);
-		
-		tmp = new JButton("Open DICOM directory");
-		tmp.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				m_controller.openDicomDirectoryDialog();
-				
-			}
-		});
-		control.add(tmp);
-		contentHead.add(control, BorderLayout.SOUTH);
-		
-		return content;
-	}
-	
-	/**
-	 * convenience method for opening ImageIcons // copied from http://java.sun.com/docs/books/tutorial/uiswing/components/icon.html
-	 * @param path path to the icon file
-	 * @param description description of the file
-	 * @return the ImageIcon of the opened file or null
-	 */
-	protected ImageIcon createImageIcon(String path, String description) {
-		java.net.URL imgURL = getClass().getResource(path);
-		if (imgURL != null)
-			return new ImageIcon(imgURL, description);
-		else {
-			System.err.println(m_languageBundle.getString("key_err_loadFile") + path);
-			return null;
+	private static class StaticDialogs {
+		/**
+		 * convenience method for building the welcome tab
+		 * @return a JPanel
+		 */
+		protected static JComponent makeWelcomeTab() {
+			JPanel content = new JPanel(new BorderLayout(5 , 5), false);
+			JPanel contentHead = new JPanel(new BorderLayout(5, 0), false);
+			content.add(contentHead, BorderLayout.NORTH);
+			
+			contentHead.add(makeMessage(m_languageBundle.getString("key_welcomeHtml")), BorderLayout.NORTH);
+			contentHead.add(makeOpenButtons(), BorderLayout.SOUTH);
+			
+			return content;
 		}
+		
+		//TODO localization needed
+		/**
+		 * convenience method for building the file open dialog tab
+		 * @return a JPanel
+		 */
+		protected static JComponent makeOpenFileTab() {
+			JPanel content = new JPanel(new BorderLayout(5 , 5), false);
+			JPanel contentHead = new JPanel(new BorderLayout(5, 0), false);
+			content.add(contentHead, BorderLayout.NORTH);
+			
+			contentHead.add(makeMessage("<html><font size=\"+2\">Open file</font><br/><i>Please select the DICOM file, you want to open.</i><br/><br/></html>"), BorderLayout.NORTH);
+			
+			JPanel control = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0), false);
+			JFileChooser filechooser = new JFileChooser();
+			filechooser.setDialogType(JFileChooser.OPEN_DIALOG);
+			filechooser.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					JFileChooser chooser = (JFileChooser) e.getSource();
+					if (JFileChooser.APPROVE_SELECTION.equals(e.getActionCommand()))
+						m_controller.openDicomFile(chooser.getSelectedFile().getPath());
+					else if (JFileChooser.CANCEL_SELECTION.equals(e.getActionCommand()))
+						m_controller.closeWorkspace();
+				}
+			});
+			control.add(filechooser);
+			contentHead.add(control, BorderLayout.SOUTH);
+			
+			return content;
+		}
+		
+		//TODO localization needed
+		/**
+		 * convenience method for building the error open tab
+		 * @return a JPanel
+		 */
+		protected static JComponent makeErrorOpenTab() {
+			JPanel content = new JPanel(new BorderLayout(5 , 5), false);
+			JPanel contentHead = new JPanel(new BorderLayout(5, 0), false);
+			content.add(contentHead, BorderLayout.NORTH);
+			
+			contentHead.add(makeMessage("<html><font size=\"+2\">Error</font><br/><i>Dicomux was unable to open the file.</i><br/><br/>You may want to do one of the following things:</html>"), BorderLayout.NORTH);
+			contentHead.add(makeOpenButtons(), BorderLayout.SOUTH);
+			
+			return content;
+		}
+		
+		/**
+		 * convenience method for adding a headline to a static dialog
+		 * @param msg the message - this might be HTML
+		 * @return a JPanel with the message
+		 */
+		private static JComponent makeMessage(String msg) {
+			JPanel retVal = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0),false);
+			JLabel filler = new JLabel(msg);
+			retVal.add(filler, BorderLayout.WEST);
+			return retVal;
+		}
+		
+		/**
+		 * convenience method for adding open buttons to a static dialog
+		 * @return a JPanel with open buttons
+		 */
+		private static JComponent makeOpenButtons() {
+			JPanel retVal = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0), false);
+			JButton tmp = new JButton(m_languageBundle.getString("key_welcomeOpenFile"));
+			tmp.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					m_controller.openDicomFileDialog();
+					
+				}
+			});
+			retVal.add(tmp);
+			
+			tmp = new JButton(m_languageBundle.getString("key_welcomeOpenDir"));
+			tmp.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					m_controller.openDicomDirectoryDialog();
+					
+				}
+			});
+			retVal.add(tmp);
+			
+			return retVal;
+		}
+		
+//		/**
+//		 * convenience method for opening ImageIcons // copied from http://java.sun.com/docs/books/tutorial/uiswing/components/icon.html
+//		 * @param path path to the icon file
+//		 * @param description description of the file
+//		 * @return the ImageIcon of the opened file or null
+//		 */
+//		protected static ImageIcon createImageIcon(String path, String description) {
+//			java.net.URL imgURL = getClass().getResource(path);
+//			if (imgURL != null)
+//				return new ImageIcon(imgURL, description);
+//			else {
+//				System.err.println(m_languageBundle.getString("key_err_loadFile") + path);
+//				return null;
+//			}
+//		}
 	}
 }
