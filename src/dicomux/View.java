@@ -3,8 +3,19 @@ package dicomux;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.FilenameFilter;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.util.Locale;
 import java.util.ResourceBundle;
+import java.util.Vector;
 
 import javax.swing.*;
 
@@ -41,7 +52,9 @@ public class View extends JFrame implements IView {
 	 * (add etc to classpath;
 	 * Run->Run Configuration->Classpath->User Entries dicomux-> Advanced...-> Add Folder -> etc)
 	 */
-	private static ResourceBundle m_languageBundle;
+	private static ResourceBundle m_languageBundle; 
+	
+	private final String m_langBaseName = "language";
 	
 	@Override
 	public void registerModel(IModel model) {
@@ -119,8 +132,35 @@ public class View extends JFrame implements IView {
 		// check whether there is a configuration file with a last setting for the language
 			// yes: load that
 			// no: use system setting
-		m_languageBundle = ResourceBundle.getBundle("language", Locale.ENGLISH);
+		Locale locale; 
 		
+		File langConf = new File("etc/language.setting");
+		if(langConf.exists())
+		{
+			BufferedReader br = null;
+			try {
+				br = new BufferedReader(new FileReader(langConf));
+				
+			} catch (FileNotFoundException e) {
+				//e.printStackTrace();
+				locale= new Locale(System.getProperty("user.language"));
+			}
+			try {
+				String lang = br.readLine();
+				locale= new Locale(lang);
+				
+			} catch (IOException e) {
+				//e.printStackTrace();
+				locale= new Locale(System.getProperty("user.language"));
+			}
+		}
+		else
+		{
+			locale= new Locale(System.getProperty("user.language"));
+		}
+		
+		m_languageBundle = ResourceBundle.getBundle(m_langBaseName, locale);
+
 		UIManager.put("FileChooser.cancelButtonText", m_languageBundle.getString("cancelButtonText"));
 		UIManager.put("FileChooser.openButtonText", m_languageBundle.getString("openButtonText"));
 		UIManager.put("FileChooser.lookInLabelText", m_languageBundle.getString("lookInLabelText"));
@@ -194,24 +234,40 @@ public class View extends JFrame implements IView {
 	 * a convenience method for adding a menu for language selection to the main menu
 	 */
 	private void addLanguageMenu() {
-		final ButtonGroup bg = new ButtonGroup(); // is needed to make sure that only one radiobutton is set
+		//final ButtonGroup bg = new ButtonGroup(); // is needed to make sure that only one radiobutton is set
 		ActionListener langAL = new ActionListener() { // the action listener for all language change actions
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				// implement me
-				setLanguage(Locale.ENGLISH);
+
+				setLanguage(new Locale(arg0.getActionCommand()));
 			}
 		};
 		
 		JMenu menu = new JMenu(m_languageBundle.getString("key_language"));
-		JMenuItem tmp = new JRadioButtonMenuItem(m_languageBundle.getString("key_english"), true);
-		tmp.addActionListener(langAL);
-		bg.add(tmp);
-		menu.add(tmp);
+
+		//TODO: Check Language File Content
+		File dir = new File("etc");
+		String[]lang_list = dir.list(new FilenameFilter() {
+			@Override
+			public boolean accept(File dir, String name) {
+				String regex = "^"+m_langBaseName+"_[a-z]{2}\\.properties$";
+				boolean test = name.matches(regex);
+				return test;
+			}
+		});
+		for (String i : lang_list) {
+			Locale l = new Locale(i.substring(i.indexOf("_")+1, i.indexOf(".")));
+			JMenuItem tmp = new JMenuItem(l.getLanguage());
+			tmp.addActionListener(langAL);
+			//bg.add(tmp);
+			menu.add(tmp);
+		}
+		
 		//TODO add more languages here
 		
 		menu.addSeparator();
-		tmp = new JMenuItem(m_languageBundle.getString("key_languageNotification"));
+		JMenuItem tmp = new JMenuItem(m_languageBundle.getString("key_languageNotification"));
 		tmp.setEnabled(false);
 		menu.add(tmp);
 		
@@ -226,6 +282,16 @@ public class View extends JFrame implements IView {
 	private void setLanguage(Locale locale) {
 		// write new setting to configuration file
 		// this one gets loaded at the next launch of dicomux
+		String confFilePath = new String("etc/language.setting"); 
+		FileWriter fw;
+		try {
+			fw = new FileWriter(confFilePath);
+			fw.write(locale.getLanguage());
+			fw.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	
 	/**
