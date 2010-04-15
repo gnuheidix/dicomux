@@ -124,7 +124,7 @@ public class View extends JFrame implements IView {
 		setVisible(true);
 	}
 	
-	//TODO implement
+	//
 	/**
 	 * initializes all language settings by checking the config file
 	 */
@@ -158,7 +158,7 @@ public class View extends JFrame implements IView {
 		{
 			locale= new Locale(System.getProperty("user.language"));
 		}
-		
+		// set the global language for all GUI Elements
 		m_languageBundle = ResourceBundle.getBundle(m_langBaseName, locale);
 
 		UIManager.put("FileChooser.cancelButtonText", m_languageBundle.getString("cancelButtonText"));
@@ -229,7 +229,6 @@ public class View extends JFrame implements IView {
 		m_menuBar.add(menu);
 	}
 	
-	//TODO implement
 	/**
 	 * a convenience method for adding a menu for language selection to the main menu
 	 */
@@ -238,8 +237,6 @@ public class View extends JFrame implements IView {
 		ActionListener langAL = new ActionListener() { // the action listener for all language change actions
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				// implement me
-
 				setLanguage(new Locale(arg0.getActionCommand()));
 			}
 		};
@@ -248,6 +245,7 @@ public class View extends JFrame implements IView {
 
 		//TODO: Check Language File Content
 		File dir = new File("etc");
+		// get all language files from the etc folder which are in this format BundleName_xx.properties
 		String[]lang_list = dir.list(new FilenameFilter() {
 			@Override
 			public boolean accept(File dir, String name) {
@@ -256,6 +254,7 @@ public class View extends JFrame implements IView {
 				return test;
 			}
 		});
+		//add all languages found in the language files to the language-selection menu
 		for (String i : lang_list) {
 			Locale l = new Locale(i.substring(i.indexOf("_")+1, i.indexOf(".")));
 			JMenuItem tmp = new JMenuItem(l.getLanguage());
@@ -263,9 +262,6 @@ public class View extends JFrame implements IView {
 			//bg.add(tmp);
 			menu.add(tmp);
 		}
-		
-		//TODO add more languages here
-		
 		menu.addSeparator();
 		JMenuItem tmp = new JMenuItem(m_languageBundle.getString("key_languageNotification"));
 		tmp.setEnabled(false);
@@ -274,14 +270,11 @@ public class View extends JFrame implements IView {
 		m_menuBar.add(menu);
 	}
 	
-	//TODO implement
 	/**
 	 * checks which language is selected in the language menu and writes the configuration
 	 * to the language configuration file which will be loaded at the start of the application
 	 */
 	private void setLanguage(Locale locale) {
-		// write new setting to configuration file
-		// this one gets loaded at the next launch of dicomux
 		String confFilePath = new String("etc/language.setting"); 
 		FileWriter fw;
 		try {
@@ -351,7 +344,6 @@ public class View extends JFrame implements IView {
 			return content;
 		}
 		
-		//TODO localization needed
 		/**
 		 * convenience method for building the file open dialog tab
 		 * @return a JPanel
@@ -361,11 +353,13 @@ public class View extends JFrame implements IView {
 			JPanel contentHead = new JPanel(new BorderLayout(5, 0), false);
 			content.add(contentHead, BorderLayout.NORTH);
 			
-			contentHead.add(makeMessage("<html><font size=\"+2\">Open file</font><br/><i>Please select the DICOM file, you want to open.</i><br/><br/></html>"), BorderLayout.NORTH);
+			contentHead.add(makeMessage(m_languageBundle.getString("key_html_openFile")), BorderLayout.NORTH);
 			
 			JPanel control = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0), false);
 			JFileChooser filechooser = new JFileChooser();
 			filechooser.setDialogType(JFileChooser.OPEN_DIALOG);
+			// TODO: DateiName and DateiTyp not in actual Language ??
+			filechooser.setLocale(m_languageBundle.getLocale());		// Set the actual language to the file chooser!
 			filechooser.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
@@ -382,7 +376,6 @@ public class View extends JFrame implements IView {
 			return content;
 		}
 		
-		//TODO localization needed
 		/**
 		 * convenience method for building the error open tab
 		 * @return a JPanel
@@ -392,7 +385,7 @@ public class View extends JFrame implements IView {
 			JPanel contentHead = new JPanel(new BorderLayout(5, 0), false);
 			content.add(contentHead, BorderLayout.NORTH);
 			
-			contentHead.add(makeMessage("<html><font size=\"+2\">Error</font><br/><i>Dicomux was unable to open the file.</i><br/><br/>You may want to do one of the following things:</html>"), BorderLayout.NORTH);
+			contentHead.add(makeMessage(m_languageBundle.getString("key_html_errOpenFile")), BorderLayout.NORTH);
 			contentHead.add(makeOpenButtons(), BorderLayout.SOUTH);
 			
 			return content;
