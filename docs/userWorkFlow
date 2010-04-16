@@ -1,0 +1,28 @@
+
+First we list the potential users of DICOMUX
+
+ -> Doctor
+ -> Patient
+ -> Scientists
+ -> Medicans
+ -> 
+
+This Document shows the different user workflows in the area of medical Data/ Information.
+
+It can be that the User is not a computer/ software spezialist. 
+Because of that the user want to act instinctively with any computer.
+
+
+1)
+A doctor can get differnent measurements about a patient from one or more sources.
+This measurements are stored in one Dicom File. The doctor wants to see the measurements to make a diagnose.
+To make a good diagnose the doctor needs a overview and a detailed view of all measurements.
+
+2)
+A user can have a patient historie. The user wants to compare different measurements. 
+If the measurements from the patient got better or worst the user wants to see that.
+
+3)
+If a user has a collection of measurements in one single file the user may want to filter this collection 
+and save only a part of this collection in a new file.
+     
