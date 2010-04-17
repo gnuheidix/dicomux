@@ -24,6 +24,13 @@ public interface IPlugin {
 	public Vector<Tag> getSupportedFormats();
 	
 	/**
+	 * Returns a vector with supported Tags, which describe the main functionality of that plug-in
+	 * The main application can use this data in order to decide which plug-in can be used for which dicom file
+	 * @return vector with key tags
+	 */
+	public Vector<Tag> getKeyFormats();
+	
+	/**
 	 * Sets the dicom data which is used by the plugin in order to do its work.
 	 * @param map a map of Tags and DicomElements
 	 */

@@ -21,6 +21,7 @@ public class Controller implements IController {
 	 * holds the view of the application
 	 */
 	private IView m_view;
+	
 	//TODO error handling (check for crap)
 	/**
 	 * default constructor<br/>
@@ -102,6 +103,5 @@ public class Controller implements IController {
 		
 		// update workspace
 		m_model.setWorkspace(m_view.getActiveWorkspaceId(), tmp);
-		
 	}
 }

@@ -1,23 +1,33 @@
 package dicomux;
 
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Container;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.GraphicsEnvironment;
+import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.FilenameFilter;
 import java.io.IOException;
-import java.io.ObjectOutputStream;
 import java.util.Locale;
 import java.util.ResourceBundle;
-import java.util.Vector;
 
-import javax.swing.*;
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JFileChooser;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JPanel;
+import javax.swing.JTabbedPane;
+import javax.swing.UIManager;
 
 /**
  * View for Dicomux
@@ -49,12 +59,19 @@ public class View extends JFrame implements IView {
 	
 	/**
 	 * The global language setting for the view
-	 * (add etc to classpath;
-	 * Run->Run Configuration->Classpath->User Entries dicomux-> Advanced...-> Add Folder -> etc)
 	 */
 	private static ResourceBundle m_languageBundle; 
 	
+	/**
+	 * base name of the language files which are located in etc<br/>
+	 * this constant will be used by m_languageBundle
+	 */
 	private final String m_langBaseName = "language";
+	
+	/**
+	 * path to the language setting file
+	 */
+	private final String m_pathLanguageSetting = "etc/language.setting";
 	
 	@Override
 	public void registerModel(IModel model) {
@@ -129,33 +146,17 @@ public class View extends JFrame implements IView {
 	 * initializes all language settings by checking the config file
 	 */
 	private void initializeLanguage() {
-		// check whether there is a configuration file with a last setting for the language
-			// yes: load that
-			// no: use system setting
 		Locale locale; 
 		
-		File langConf = new File("etc/language.setting");
-		if(langConf.exists())
-		{
-			BufferedReader br = null;
-			try {
-				br = new BufferedReader(new FileReader(langConf));
-				
-			} catch (FileNotFoundException e) {
-				//e.printStackTrace();
-				locale= new Locale(System.getProperty("user.language"));
-			}
-			try {
-				String lang = br.readLine();
-				locale= new Locale(lang);
-				
-			} catch (IOException e) {
-				//e.printStackTrace();
-				locale= new Locale(System.getProperty("user.language"));
-			}
-		}
-		else
-		{
+		File langConf = new File(m_pathLanguageSetting);
+		BufferedReader br = null; // load that file
+		try {
+			br = new BufferedReader(new FileReader(langConf));
+			String lang = br.readLine();
+			locale= new Locale(lang);
+			
+		} catch (IOException e) { // use the system setting if it didn't work
+			//e.printStackTrace();
 			locale= new Locale(System.getProperty("user.language"));
 		}
 		// set the global language for all GUI Elements
@@ -233,7 +234,6 @@ public class View extends JFrame implements IView {
 	 * a convenience method for adding a menu for language selection to the main menu
 	 */
 	private void addLanguageMenu() {
-		//final ButtonGroup bg = new ButtonGroup(); // is needed to make sure that only one radiobutton is set
 		ActionListener langAL = new ActionListener() { // the action listener for all language change actions
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
@@ -259,9 +259,13 @@ public class View extends JFrame implements IView {
 			Locale l = new Locale(i.substring(i.indexOf("_")+1, i.indexOf(".")));
 			JMenuItem tmp = new JMenuItem(l.getLanguage());
 			tmp.addActionListener(langAL);
-			//bg.add(tmp);
 			menu.add(tmp);
 		}
+<<<<<<< HEAD
+=======
+		
+		//TODO add more languages here
+>>>>>>> 30ece2d3be7b3940fdbf9b5f132172ebe6939828
 		menu.addSeparator();
 		JMenuItem tmp = new JMenuItem(m_languageBundle.getString("key_languageNotification"));
 		tmp.setEnabled(false);
