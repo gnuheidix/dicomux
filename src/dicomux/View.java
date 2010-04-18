@@ -261,11 +261,7 @@ public class View extends JFrame implements IView {
 			tmp.addActionListener(langAL);
 			menu.add(tmp);
 		}
-<<<<<<< HEAD
-=======
-		
-		//TODO add more languages here
->>>>>>> 30ece2d3be7b3940fdbf9b5f132172ebe6939828
+
 		menu.addSeparator();
 		JMenuItem tmp = new JMenuItem(m_languageBundle.getString("key_languageNotification"));
 		tmp.setEnabled(false);
@@ -286,7 +282,6 @@ public class View extends JFrame implements IView {
 			fw.write(locale.getLanguage());
 			fw.close();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
