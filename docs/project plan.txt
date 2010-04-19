@@ -135,3 +135,24 @@ Schedule
 * End: April/18th
 
 Review meeting
+* We have analyzed the workflow. (state diagram.dia)
+* The user interface supports multiple languages.
+* The plug-in interface has been refined. Unfortunately, we aren't having any clue of OSGi or similar plug-in frameworks. There are no plug-in capabilities designed or implemented.
+
+########### Sprint #2 ###########
+
+Sprint meeting
+* The user view has to be analyzed in order to verify our previous work. Especially the workflow and the user interface.
+* We have to check whether it is realizable for us to implement the plug-in feature. It is important to have a proof of concept before implementing this feature.
+* All static dialogs of the user interface and the workflow have to be designed and implemented.
+
+Working packages
+* user view analysis (Tobi)
+* user interface refinement (Heidi)
+* design of the plug-in interface including a proof of concept (Norbert)
+
+Schedule
+* Begin: April/19th
+* End: April/25th
+
+Review meeting

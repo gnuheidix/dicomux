@@ -1,7 +1,1 @@
 The application which will be developed in this project is a viewer for DICOM files with ECG data.
-
-In order to enable your Eclipse to build the project, please do the following.
-* add etc to classpath
-** Run -> Run Configuration -> Classpath -> 
-      User Entries -> dicomux-> Advanced -> 
-      Add Folder -> etc
