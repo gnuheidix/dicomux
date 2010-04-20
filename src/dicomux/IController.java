@@ -29,7 +29,7 @@ public interface IController {
 	/**
 	 * opens the about information
 	 */
-	public void openAboutInformation();
+	public void openAbout();
 	
 	/**
 	 * closes the application
@@ -41,6 +41,19 @@ public interface IController {
 	 * @param name file path of the dicom file
 	 */
 	public void openDicomFile(String path);
+	
+	/**
+	 * tells the model, which workspace is currently active<br/>
+	 * this call will not trigger a refresh of the view
+	 * @param n id of the workspace
+	 */
+	public void setActiveWorkspace(int n);
+
+	/**
+	 * opens a dicom directory
+	 * @param path
+	 */
+	public void openDicomDirectory(String path);
 	
 //	public void selectPlugin(int n);
 }

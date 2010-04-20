@@ -9,7 +9,6 @@ import org.dcm4che2.io.DicomInputStream;
 /**
  * Controller for Dicomux / Serves as container for all necessary ActionListeners
  * @author heidi
- *
  */
 public class Controller implements IController {
 	/**
@@ -53,22 +52,41 @@ public class Controller implements IController {
 	}
 	
 	@Override
-	public void openAboutInformation() {
-		// TODO Auto-generated method stub
-		
+	public void openAbout() {
+		for (int i = 0; i < m_model.getWorkspaceCount(); ++i) {
+			switch (m_model.getWorkspace(i).getTabState()) {
+			case ABOUT: m_model.setWorkspace(i, new TabObject(TabState.ABOUT, true)); return;
+			}
+		}
+		m_model.addWorkspace(new TabObject(TabState.ABOUT));
 	}
 	
 	@Override
 	public void openDicomDirectoryDialog() {
-		// TODO Auto-generated method stub
-		
+		for (int i = 0; i < m_model.getWorkspaceCount(); ++i) {
+			switch (m_model.getWorkspace(i).getTabState()) {
+			case ERROR_OPEN:
+			case FILE_OPEN:
+			case DIR_OPEN:
+			case WELCOME: m_model.setWorkspace(i, new TabObject(TabState.DIR_OPEN, true)); return;
+			}
+		}
+		m_model.addWorkspace(new TabObject(TabState.DIR_OPEN));
 	}
 	
 	@Override
 	public void openDicomFileDialog() {
-		m_model.setWorkspace(m_view.getActiveWorkspaceId(), new TabObject(TabState.FILE_OPEN));
+		for (int i = 0; i < m_model.getWorkspaceCount(); ++i) {
+			switch (m_model.getWorkspace(i).getTabState()) {
+			case ERROR_OPEN:
+			case FILE_OPEN:
+			case DIR_OPEN:
+			case WELCOME: m_model.setWorkspace(i, new TabObject(TabState.FILE_OPEN, true)); return;
+			}
+		}
+		m_model.addWorkspace(new TabObject(TabState.FILE_OPEN));
 	}
-
+	
 	@Override
 	public void closeApplication() {
 		System.exit(0);
@@ -84,7 +102,7 @@ public class Controller implements IController {
 			din = new DicomInputStream(new File(path));
 			dcm = din.readDicomObject();
 		} catch (IOException e) {
-			m_model.setWorkspace(m_view.getActiveWorkspaceId(), new TabObject(TabState.ERROR_OPEN));
+			m_model.setWorkspace(m_view.getActiveWorkspaceId(), new TabObject(TabState.ERROR_OPEN, true));
 			e.printStackTrace();
 			return;
 		}
@@ -92,6 +110,7 @@ public class Controller implements IController {
 		// attach dicom file to a new TabObject
 		TabObject tmp = new TabObject();
 		tmp.setDicomObj(dcm);
+		tmp.setTabActive(true);
 		tmp.setName(path);
 		
 		//TODO plug-in automatic #####################
@@ -103,5 +122,43 @@ public class Controller implements IController {
 		
 		// update workspace
 		m_model.setWorkspace(m_view.getActiveWorkspaceId(), tmp);
+	}
+
+	@Override
+	public void setActiveWorkspace(int n) {
+		m_model.setActiveWorkspace(n);
+	}
+
+	//TODO implement
+	@Override
+	public void openDicomDirectory(String path) {
+		/*
+		// try to open dicom file
+		DicomDirReader din;
+		DicomObject dcm;
+		try {
+			din = new DicomDirReader(new File(path));
+		} catch (IOException e) {
+			m_model.setWorkspace(m_view.getActiveWorkspaceId(), new TabObject(TabState.ERROR_OPEN, true));
+			e.printStackTrace();
+			return;
+		}
+		
+		// attach dicom file to a new TabObject
+		TabObject tmp = new TabObject();
+		tmp.setDicomObj(dcm);
+		tmp.setTabActive(true);
+		tmp.setName(path);
+		
+		//TODO plug-in automatic #####################
+		tmp.setPlugin(null);
+		tmp.setTabContent(TabState.PLUGIN_CHOOSE);
+		// or
+		tmp.setTabContent(TabState.PLUGIN_ACTIVE);
+		// ###########################################
+		
+		// update workspace
+		m_model.setWorkspace(m_view.getActiveWorkspaceId(), tmp);
+		*/
 	}
 }

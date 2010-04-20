@@ -28,10 +28,13 @@ import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.UIManager;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 /**
  * View for Dicomux
  * @author heidi
+ * @author tobi
  *
  */
 public class View extends JFrame implements IView {
@@ -72,6 +75,11 @@ public class View extends JFrame implements IView {
 	 * path to the language setting file
 	 */
 	private final String m_pathLanguageSetting = "etc/language.setting";
+	
+	/**
+	 * determins whether there is a refresh of the wprkspace in progress.
+	 */
+	private static boolean m_refreshInProgress = false;
 	
 	@Override
 	public void registerModel(IModel model) {
@@ -131,6 +139,15 @@ public class View extends JFrame implements IView {
 		// create a tabbed pane and add it to the content pane
 		m_tabbedPane = new JTabbedPane();
 		m_tabbedPane.setTabPlacement(JTabbedPane.TOP);
+		m_tabbedPane.addChangeListener(new ChangeListener() {
+			@Override
+			public void stateChanged(ChangeEvent e) {
+				if (!m_refreshInProgress) {
+					System.out.println(e.getSource().toString());
+					m_controller.setActiveWorkspace(m_tabbedPane.getSelectedIndex());
+				}
+			}
+		});
 		contentPane.add(m_tabbedPane, BorderLayout.CENTER);
 		
 		// display the frame in the middle of the screen
@@ -141,7 +158,7 @@ public class View extends JFrame implements IView {
 		setVisible(true);
 	}
 	
-	//
+	//TODO extend this
 	/**
 	 * initializes all language settings by checking the config file
 	 */
@@ -165,7 +182,7 @@ public class View extends JFrame implements IView {
 		UIManager.put("FileChooser.cancelButtonText", m_languageBundle.getString("cancelButtonText"));
 		UIManager.put("FileChooser.openButtonText", m_languageBundle.getString("openButtonText"));
 		UIManager.put("FileChooser.lookInLabelText", m_languageBundle.getString("lookInLabelText"));
-		// ... add more of these calls in order to localize the whole thing
+		// ... add more of these calls in order to localize the whole JFileChooser
 	}
 	
 	/**
@@ -292,6 +309,12 @@ public class View extends JFrame implements IView {
 	private void addHelpMenu() {
 		JMenu menu = new JMenu(m_languageBundle.getString("key_help"));
 		JMenuItem tmp = new JMenuItem(m_languageBundle.getString("key_about"));
+		tmp.addActionListener(new ActionListener() {			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				m_controller.openAbout();
+			}
+		});
 		menu.add(tmp);
 		m_menuBar.add(menu);
 	}
@@ -310,16 +333,27 @@ public class View extends JFrame implements IView {
 	 * this might be a bit expensive if there are many open tabs
 	 */
 	private void refreshAllTabs() {
-		m_tabbedPane.removeAll();
 		if (isModelRegistered()) {
+			m_tabbedPane.setEnabled(false);
+			m_refreshInProgress = true;
+			m_tabbedPane.removeAll();
 			for (int i = 0; i < m_model.getWorkspaceCount(); ++i) {
-				switch (m_model.getWorkspace(i).getTabState()) {
+				TabObject tmp = m_model.getWorkspace(i);
+				switch (tmp.getTabState()) {
 				case WELCOME: m_tabbedPane.add(m_languageBundle.getString("key_welcome"), StaticDialogs.makeWelcomeTab()); break;
-				case FILE_OPEN: m_tabbedPane.add("Open file", StaticDialogs.makeOpenFileTab()); break;
-				case ERROR_OPEN: m_tabbedPane.add("Error", StaticDialogs.makeErrorOpenTab()); break;
+				case FILE_OPEN: m_tabbedPane.add(m_languageBundle.getString("key_open"), StaticDialogs.makeOpenFileTab()); break;
+				case DIR_OPEN: m_tabbedPane.add(m_languageBundle.getString("key_open"), StaticDialogs.makeOpenDirTab()); break;
+				case ERROR_OPEN: m_tabbedPane.add(m_languageBundle.getString("key_error"), StaticDialogs.makeErrorOpenTab()); break;
+				case ABOUT: m_tabbedPane.add(m_languageBundle.getString("key_about"), StaticDialogs.makeAboutTab()); break;
+				}
+				if (tmp.isTabActive()) {
+					m_tabbedPane.setSelectedIndex(i);
 				}
 			}
+			m_refreshInProgress = false;
+			m_tabbedPane.setEnabled(true);
 		}
+		
 	}
 	
 	/**
@@ -337,7 +371,7 @@ public class View extends JFrame implements IView {
 			JPanel contentHead = new JPanel(new BorderLayout(5, 0), false);
 			content.add(contentHead, BorderLayout.NORTH);
 			
-			contentHead.add(makeMessage(m_languageBundle.getString("key_welcomeHtml")), BorderLayout.NORTH);
+			contentHead.add(makeMessage(m_languageBundle.getString("key_html_welcome")), BorderLayout.NORTH);
 			contentHead.add(makeOpenButtons(), BorderLayout.SOUTH);
 			
 			return content;
@@ -376,6 +410,39 @@ public class View extends JFrame implements IView {
 		}
 		
 		/**
+		 * convenience method for building the file open dialog tab
+		 * @return a JPanel
+		 */
+		protected static JComponent makeOpenDirTab() {
+			JPanel content = new JPanel(new BorderLayout(5 , 5), false);
+			JPanel contentHead = new JPanel(new BorderLayout(5, 0), false);
+			content.add(contentHead, BorderLayout.NORTH);
+			
+			contentHead.add(makeMessage(m_languageBundle.getString("key_html_openDir")), BorderLayout.NORTH);
+			
+			JPanel control = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0), false);
+			JFileChooser filechooser = new JFileChooser();
+			filechooser.setDialogType(JFileChooser.OPEN_DIALOG);
+			filechooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+			// TODO: DateiName and DateiTyp not in actual Language ??
+			filechooser.setLocale(m_languageBundle.getLocale());		// Set the actual language to the file chooser!
+			filechooser.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					JFileChooser chooser = (JFileChooser) e.getSource();
+					if (JFileChooser.APPROVE_SELECTION.equals(e.getActionCommand()))
+						m_controller.openDicomDirectory(chooser.getSelectedFile().getPath());
+					else if (JFileChooser.CANCEL_SELECTION.equals(e.getActionCommand()))
+						m_controller.closeWorkspace();
+				}
+			});
+			control.add(filechooser);
+			contentHead.add(control, BorderLayout.SOUTH);
+			
+			return content;
+		}
+		
+		/**
 		 * convenience method for building the error open tab
 		 * @return a JPanel
 		 */
@@ -386,6 +453,21 @@ public class View extends JFrame implements IView {
 			
 			contentHead.add(makeMessage(m_languageBundle.getString("key_html_errOpenFile")), BorderLayout.NORTH);
 			contentHead.add(makeOpenButtons(), BorderLayout.SOUTH);
+			
+			return content;
+		}
+		
+		/**
+		 * convenience method for building the about tab
+		 * @return a JPanel
+		 */
+		protected static JComponent makeAboutTab() {
+			JPanel content = new JPanel(new BorderLayout(5 , 5), false);
+			JPanel contentHead = new JPanel(new BorderLayout(5, 0), false);
+			content.add(contentHead, BorderLayout.NORTH);
+			
+			contentHead.add(makeMessage(m_languageBundle.getString("key_html_about")), BorderLayout.NORTH);
+			contentHead.add(makeCloseWorkspaceButton(), BorderLayout.SOUTH);
 			
 			return content;
 		}
@@ -408,22 +490,29 @@ public class View extends JFrame implements IView {
 		 */
 		private static JComponent makeOpenButtons() {
 			JPanel retVal = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0), false);
-			JButton tmp = new JButton(m_languageBundle.getString("key_welcomeOpenFile"));
+			JButton tmp = new JButton(m_languageBundle.getString("key_openFile"));
 			tmp.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					m_controller.openDicomFileDialog();
-					
 				}
 			});
 			retVal.add(tmp);
 			
-			tmp = new JButton(m_languageBundle.getString("key_welcomeOpenDir"));
+			tmp = new JButton(m_languageBundle.getString("key_openDir"));
 			tmp.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					m_controller.openDicomDirectoryDialog();
-					
+				}
+			});
+			retVal.add(tmp);
+			
+			tmp = new JButton(m_languageBundle.getString("key_exit"));
+			tmp.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					m_controller.closeApplication();
 				}
 			});
 			retVal.add(tmp);
@@ -431,6 +520,23 @@ public class View extends JFrame implements IView {
 			return retVal;
 		}
 		
+		/**
+		 * convenience method for adding open buttons to a static dialog
+		 * @return a JPanel with open buttons
+		 */
+		private static JComponent makeCloseWorkspaceButton() {
+			JPanel retVal = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0), false);
+			JButton tmp = new JButton(m_languageBundle.getString("key_closeTab"));
+			tmp.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					m_controller.closeWorkspace();
+				}
+			});
+			retVal.add(tmp);
+			
+			return retVal;
+		}
 //		/**
 //		 * convenience method for opening ImageIcons // copied from http://java.sun.com/docs/books/tutorial/uiswing/components/icon.html
 //		 * @param path path to the icon file

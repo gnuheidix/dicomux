@@ -5,7 +5,6 @@ import javax.swing.JLabel;
 
 import org.dcm4che2.data.DicomObject;
 
-//TODO redesign
 /**
  * data transfer object between IModel and IView
  * @author heidi
@@ -16,7 +15,8 @@ public class TabObject {
 	private IPlugin m_plugin;
 	private String m_name;
 	private TabState m_tabState;
-
+	private boolean m_tabActive;
+	
 	/**
 	 * default constructor
 	 */
@@ -25,19 +25,30 @@ public class TabObject {
 		m_plugin = null;
 		m_name = "";
 		m_tabState = null;
+		m_tabActive = false;
 	}
 	
 	/**
-	 * @param dicomObj
-	 * @param plugin
-	 * @param name
-	 * @param tabContent
+	 * @param tabState
 	 */
 	public TabObject(TabState tabState) {
 		m_dicomObj = null;
 		m_plugin = null;
 		m_name = null;
 		m_tabState = tabState;
+		m_tabActive = false;
+	}
+	
+	/**
+	 * @param tabState
+	 * @param tabActive
+	 */
+	public TabObject(TabState tabState, boolean tabActive) {
+		m_dicomObj = null;
+		m_plugin = null;
+		m_name = null;
+		m_tabState = tabState;
+		m_tabActive = tabActive;
 	}
 	
 	/**
@@ -105,5 +116,19 @@ public class TabObject {
 	 */
 	public void setTabContent(TabState tabState) {
 		m_tabState = tabState;
+	}
+	
+	/**
+	 * @param m_tabActive the m_tabActive to set
+	 */
+	public void setTabActive(boolean m_tabActive) {
+		this.m_tabActive = m_tabActive;
+	}
+	
+	/**
+	 * @return the m_tabActive
+	 */
+	public boolean isTabActive() {
+		return m_tabActive;
 	}
 }

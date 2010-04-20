@@ -31,13 +31,14 @@ public class Model implements IModel {
 	 */
 	public void initialize() {
 		m_tabObjects.clear();
-		m_tabObjects.add(new TabObject(TabState.WELCOME));
-		m_view.notifyView();
+		addWorkspace(new TabObject(TabState.WELCOME));
 	}
 	
 	@Override
 	public void setWorkspace(int wsId, TabObject tab) {
 		m_tabObjects.setElementAt(tab, wsId);
+		if (tab.isTabActive())
+			setActiveWorkspace(wsId);
 		m_view.notifyView();
 	}
 	
@@ -55,16 +56,35 @@ public class Model implements IModel {
 	public int getWorkspaceCount() {
 		return m_tabObjects.size();
 	}
-
+	
 	@Override
 	public void removeWorkspace(int wsId) {
-		if (m_tabObjects.size() > wsId) {
+		if (wsId < m_tabObjects.size() && wsId >= 0) {
 			m_tabObjects.remove(wsId);
 			
 			if (m_tabObjects.size() == 0)
-				m_tabObjects.add(new TabObject(TabState.WELCOME));
-			
-			m_view.notifyView();
+				initialize();
+			else {
+				setActiveWorkspace(m_tabObjects.size() - 1);
+				m_view.notifyView();
+			}
+		}
+	}
+
+	@Override
+	public void addWorkspace(TabObject tab) {
+		m_tabObjects.add(tab);
+		setActiveWorkspace(m_tabObjects.size() - 1);
+		m_view.notifyView();
+	}
+	
+	@Override
+	public void setActiveWorkspace(int wsId) {
+		if (wsId >= 0 && wsId < m_tabObjects.size()) {
+			for(TabObject i: m_tabObjects) {
+				i.setTabActive(false);
+			}
+			m_tabObjects.get(wsId).setTabActive(true);
 		}
 	}
 }
