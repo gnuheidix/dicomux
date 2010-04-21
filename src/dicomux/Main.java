@@ -1,17 +1,9 @@
 package dicomux;
 
-//import java.io.File;
-//import java.io.FileOutputStream;
-//import java.io.IOException;
-//
-//import org.dcm4che2.data.DicomObject;
-//import org.dcm4che2.data.Tag;
-//import org.dcm4che2.io.DicomInputStream;
-
 //TODO cleanup
 /**
  * Launches Dicomux<br/>
- * We determin here, which model and which view shall be used.
+ * We determine, which model and which view shall be used.
  * @author heidi
  *
  */

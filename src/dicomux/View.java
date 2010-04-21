@@ -1,9 +1,13 @@
 package dicomux;
 
+import java.awt.BasicStroke;
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.GraphicsEnvironment;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
@@ -17,6 +21,7 @@ import java.io.IOException;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
+import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
@@ -30,6 +35,7 @@ import javax.swing.JTabbedPane;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.plaf.basic.BasicButtonUI;
 
 /**
  * View for Dicomux
@@ -43,7 +49,7 @@ public class View extends JFrame implements IView {
 	/**
 	 * contains the tabbed pane which holds all workspaces
 	 */
-	private JTabbedPane m_tabbedPane;
+	private static JTabbedPane m_tabbedPane;
 	
 	/**
 	 * contains the menu bar of the application
@@ -77,9 +83,14 @@ public class View extends JFrame implements IView {
 	private final String m_pathLanguageSetting = "etc/language.setting";
 	
 	/**
-	 * determins whether there is a refresh of the wprkspace in progress.
+	 * determins whether there is a refresh of the workspace in progress
 	 */
 	private static boolean m_refreshInProgress = false;
+	
+	/**
+	 * Object for synchronizing the access to m_tabbedPane
+	 */
+	private final Object m_refreshLock = new Object(); 
 	
 	@Override
 	public void registerModel(IModel model) {
@@ -136,15 +147,17 @@ public class View extends JFrame implements IView {
 		addLanguageMenu();
 		addHelpMenu();
 		
-		// create a tabbed pane and add it to the content pane
+		// create a tabbed pane, set a ChangeListener and add it to the content pane
 		m_tabbedPane = new JTabbedPane();
 		m_tabbedPane.setTabPlacement(JTabbedPane.TOP);
 		m_tabbedPane.addChangeListener(new ChangeListener() {
 			@Override
 			public void stateChanged(ChangeEvent e) {
-				if (!m_refreshInProgress) {
-					System.out.println(e.getSource().toString());
-					m_controller.setActiveWorkspace(m_tabbedPane.getSelectedIndex());
+				synchronized (m_refreshLock) {
+					if (!m_refreshInProgress) {
+						System.out.println(e.getSource().toString());
+						m_controller.setActiveWorkspace(m_tabbedPane.getSelectedIndex());
+					}
 				}
 			}
 		});
@@ -290,6 +303,7 @@ public class View extends JFrame implements IView {
 	/**
 	 * checks which language is selected in the language menu and writes the configuration
 	 * to the language configuration file which will be loaded at the start of the application
+	 * @param locale the new language setting which should be stored
 	 */
 	private void setLanguage(Locale locale) {
 		String confFilePath = new String("etc/language.setting"); 
@@ -304,12 +318,12 @@ public class View extends JFrame implements IView {
 	}
 	
 	/**
-	 * a convenience method for adding a help menu to the main menu
+	 * A convenience method for adding a help menu to the main menu.
 	 */
 	private void addHelpMenu() {
 		JMenu menu = new JMenu(m_languageBundle.getString("key_help"));
 		JMenuItem tmp = new JMenuItem(m_languageBundle.getString("key_about"));
-		tmp.addActionListener(new ActionListener() {			
+		tmp.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				m_controller.openAbout();
@@ -320,7 +334,7 @@ public class View extends JFrame implements IView {
 	}
 	
 	/**
-	 * a convenience method for checking whether a model is registered
+	 * A convenience method for checking whether a model is registered.
 	 * @return true or false
 	 */
 	private boolean isModelRegistered() {
@@ -329,41 +343,75 @@ public class View extends JFrame implements IView {
 	
 	//TODO needs to be extended
 	/**
-	 * convenience method for fetching new information from the model
-	 * this might be a bit expensive if there are many open tabs
+	 * A convenience method for fetching new information from the model. 
+	 * This is a really expensive action. Be aware of that!
 	 */
 	private void refreshAllTabs() {
-		if (isModelRegistered()) {
-			m_tabbedPane.setEnabled(false);
-			m_refreshInProgress = true;
-			m_tabbedPane.removeAll();
-			for (int i = 0; i < m_model.getWorkspaceCount(); ++i) {
-				TabObject tmp = m_model.getWorkspace(i);
-				switch (tmp.getTabState()) {
-				case WELCOME: m_tabbedPane.add(m_languageBundle.getString("key_welcome"), StaticDialogs.makeWelcomeTab()); break;
-				case FILE_OPEN: m_tabbedPane.add(m_languageBundle.getString("key_open"), StaticDialogs.makeOpenFileTab()); break;
-				case DIR_OPEN: m_tabbedPane.add(m_languageBundle.getString("key_open"), StaticDialogs.makeOpenDirTab()); break;
-				case ERROR_OPEN: m_tabbedPane.add(m_languageBundle.getString("key_error"), StaticDialogs.makeErrorOpenTab()); break;
-				case ABOUT: m_tabbedPane.add(m_languageBundle.getString("key_about"), StaticDialogs.makeAboutTab()); break;
+		synchronized (m_refreshLock) {
+			if (isModelRegistered()) {
+				// disable the user to modify m_tabbedPane while processing
+				m_tabbedPane.setEnabled(false);
+				
+				// disable the ChangeListener of m_tabbedPane
+				m_refreshInProgress = true;
+				
+				// remove all tabs
+				m_tabbedPane.removeAll();
+				
+				// load everything from the model (really expensive)
+				for (int i = 0; i < m_model.getWorkspaceCount(); ++i) {
+					TabObject tmp = m_model.getWorkspace(i);
+					String name = "";
+					
+					// create a new tab with a certain content
+					switch (tmp.getTabState()) {
+					case WELCOME:
+						m_tabbedPane.add(StaticDialogs.makeWelcomeTab());
+						name = m_languageBundle.getString("key_welcome");
+						break;
+					case FILE_OPEN:
+						m_tabbedPane.add(StaticDialogs.makeOpenFileTab());
+						name = m_languageBundle.getString("key_open");
+						break;
+					case DIR_OPEN:
+						m_tabbedPane.add(StaticDialogs.makeOpenDirTab());
+						name = m_languageBundle.getString("key_open");
+						break;
+					case ERROR_OPEN:
+						m_tabbedPane.add(StaticDialogs.makeErrorOpenTab());
+						name = m_languageBundle.getString("key_error");
+						break;
+					case ABOUT:
+						m_tabbedPane.add(StaticDialogs.makeAboutTab());
+						name = m_languageBundle.getString("key_about");
+						break;
+					}
+					
+					// add a title and a close button to the tab
+					m_tabbedPane.setTabComponentAt(m_tabbedPane.getTabCount() - 1, new TabTitle(name));
+					
+					// select the tab if the model wants that to happen
+					if (tmp.isTabActive())
+						m_tabbedPane.setSelectedIndex(i);
 				}
-				if (tmp.isTabActive()) {
-					m_tabbedPane.setSelectedIndex(i);
-				}
+				
+				// reactivate the ChangeListener of m_tabbedPane
+				m_refreshInProgress = false;
+				
+				// enable the user to use m_tabbedPane
+				m_tabbedPane.setEnabled(true);
 			}
-			m_refreshInProgress = false;
-			m_tabbedPane.setEnabled(true);
 		}
-		
 	}
 	
 	/**
-	 * This class encapsulates all static dialogs and their convenience functions
+	 * This class holds all static dialogs and their convenience functions
 	 * @author heidi
 	 *
 	 */
 	private static class StaticDialogs {
 		/**
-		 * convenience method for building the welcome tab
+		 * convenience method for building an welcome tab
 		 * @return a JPanel
 		 */
 		protected static JComponent makeWelcomeTab() {
@@ -378,7 +426,7 @@ public class View extends JFrame implements IView {
 		}
 		
 		/**
-		 * convenience method for building the file open dialog tab
+		 * convenience method for building an file open dialog tab
 		 * @return a JPanel
 		 */
 		protected static JComponent makeOpenFileTab() {
@@ -410,7 +458,7 @@ public class View extends JFrame implements IView {
 		}
 		
 		/**
-		 * convenience method for building the file open dialog tab
+		 * convenience method for building an file open dialog tab
 		 * @return a JPanel
 		 */
 		protected static JComponent makeOpenDirTab() {
@@ -443,7 +491,7 @@ public class View extends JFrame implements IView {
 		}
 		
 		/**
-		 * convenience method for building the error open tab
+		 * convenience method for building an error open tab
 		 * @return a JPanel
 		 */
 		protected static JComponent makeErrorOpenTab() {
@@ -458,7 +506,7 @@ public class View extends JFrame implements IView {
 		}
 		
 		/**
-		 * convenience method for building the about tab
+		 * convenience method for building an about tab
 		 * @return a JPanel
 		 */
 		protected static JComponent makeAboutTab() {
@@ -467,7 +515,6 @@ public class View extends JFrame implements IView {
 			content.add(contentHead, BorderLayout.NORTH);
 			
 			contentHead.add(makeMessage(m_languageBundle.getString("key_html_about")), BorderLayout.NORTH);
-			contentHead.add(makeCloseWorkspaceButton(), BorderLayout.SOUTH);
 			
 			return content;
 		}
@@ -519,24 +566,114 @@ public class View extends JFrame implements IView {
 			
 			return retVal;
 		}
+	}
+	
+	/**
+	 * A convenience class for creating a JPanel with a title and a button, <br/>
+	 * which triggers the close of the currently active workspace<br/>
+	 * This might be used for the title of all tabs
+	 * 
+	 * This class was a part of the Java Tutorial
+	 * http://java.sun.com/docs/books/tutorial/uiswing/examples/components/TabComponentsDemoProject/src/components/ButtonTabComponent.java
+	 *
+	 * Copyright (c) 1995 - 2008 Sun Microsystems, Inc.  All rights reserved.
+	 *
+	 * Redistribution and use in source and binary forms, with or without
+	 * modification, are permitted provided that the following conditions
+	 * are met:
+	 *
+	 *   - Redistributions of source code must retain the above copyright
+	 *     notice, this list of conditions and the following disclaimer.
+	 *
+	 *   - Redistributions in binary form must reproduce the above copyright
+	 *     notice, this list of conditions and the following disclaimer in the
+	 *     documentation and/or other materials provided with the distribution.
+	 *
+	 *   - Neither the name of Sun Microsystems nor the names of its
+	 *     contributors may be used to endorse or promote products derived
+	 *     from this software without specific prior written permission.
+	 *
+	 * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+	 * IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+	 * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+	 * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+	 * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+	 * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+	 * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+	 * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+	 * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+	 * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+	 * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+	 */
+	private class TabTitle extends JPanel {
+		private static final long serialVersionUID = 682821987337403501L;
+
+		public TabTitle(String name) {
+			super(new FlowLayout(FlowLayout.LEFT, 0, 0));
+			
+			if (name == null) {
+				throw new NullPointerException();
+			}
+			setOpaque(false);
+			
+			JLabel label = new JLabel(name);
+			//add more space between the label and the button
+			label.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 5));
+			add(label);
+			
+			//tab button
+			JButton button = new TabButton();
+			add(button);
+			
+			//add more space to the top of the component
+			setBorder(BorderFactory.createEmptyBorder(2, 0, 0, 0));
+		}
 		
-		/**
-		 * convenience method for adding open buttons to a static dialog
-		 * @return a JPanel with open buttons
-		 */
-		private static JComponent makeCloseWorkspaceButton() {
-			JPanel retVal = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0), false);
-			JButton tmp = new JButton(m_languageBundle.getString("key_closeTab"));
-			tmp.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent e) {
+		private class TabButton extends JButton implements ActionListener {
+			private static final long serialVersionUID = 6661492050736259563L;
+			private final int buttonSize = 17;
+			
+			public TabButton() {
+				setPreferredSize(new Dimension(buttonSize, buttonSize));
+				setToolTipText(m_languageBundle.getString("key_closeTab"));
+				setUI(new BasicButtonUI());
+				setContentAreaFilled(false);
+				setFocusable(false);
+				setBorder(BorderFactory.createEtchedBorder());
+				setBorderPainted(false);
+				setRolloverEnabled(true);
+				addActionListener(this);
+			}
+			
+			public void actionPerformed(ActionEvent e) {
+				int i = m_tabbedPane.indexOfTabComponent(TabTitle.this);
+				if (i != -1) {
+					m_tabbedPane.setSelectedIndex(i);
 					m_controller.closeWorkspace();
 				}
-			});
-			retVal.add(tmp);
+			}
 			
-			return retVal;
+			protected void paintComponent(Graphics g) {
+				super.paintComponent(g);
+				Graphics2D g2 = (Graphics2D) g.create();
+				
+				if (getModel().isPressed()) {
+					g2.translate(1, 1);
+				}
+				g2.setStroke(new BasicStroke(2));
+				g2.setColor(Color.BLACK);
+				if (getModel().isRollover()) {
+					g2.setColor(Color.LIGHT_GRAY);
+				}
+				int delta = 6;
+				g2.drawLine(delta, delta, getWidth() - delta - 1, getHeight() - delta - 1);
+				g2.drawLine(getWidth() - delta - 1, delta, delta, getHeight() - delta - 1);
+				g2.dispose();
+			}
 		}
+	}
+}
+
 //		/**
 //		 * convenience method for opening ImageIcons // copied from http://java.sun.com/docs/books/tutorial/uiswing/components/icon.html
 //		 * @param path path to the icon file
@@ -552,5 +689,3 @@ public class View extends JFrame implements IView {
 //				return null;
 //			}
 //		}
-	}
-}

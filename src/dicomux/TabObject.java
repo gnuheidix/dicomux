@@ -8,13 +8,32 @@ import org.dcm4che2.data.DicomObject;
 /**
  * data transfer object between IModel and IView
  * @author heidi
- *
+ * @see TabState
  */
 public class TabObject {
+	/**
+	 * Dicom file of the workspace
+	 */
 	private DicomObject m_dicomObj;
+	
+	/**
+	 * Plug-in which is currently bound to that workspace
+	 */
 	private IPlugin m_plugin;
+	
+	/**
+	 * Name of that workspace
+	 */
 	private String m_name;
+	
+	/**
+	 * State of that workspace
+	 */
 	private TabState m_tabState;
+	
+	/**
+	 * States whether this tab is currently selected
+	 */
 	private boolean m_tabActive;
 	
 	/**
@@ -70,7 +89,7 @@ public class TabObject {
 	}
 	
 	/**
-	 * @param mDicomObj the m_dicomObj to set
+	 * @param dicomObj the m_dicomObj to set
 	 */
 	public void setDicomObj(DicomObject dicomObj) {
 		m_dicomObj = dicomObj;
@@ -84,7 +103,7 @@ public class TabObject {
 	}
 	
 	/**
-	 * @param mPlugin the m_plugin to set
+	 * @param plugin the m_plugin to set
 	 */
 	public void setPlugin(IPlugin plugin) {
 		m_plugin = plugin;
@@ -98,7 +117,7 @@ public class TabObject {
 	}
 	
 	/**
-	 * @param mName the m_name to set
+	 * @param name the m_name to set
 	 */
 	public void setName(String name) {
 		m_name = name;
@@ -112,14 +131,14 @@ public class TabObject {
 	}
 	
 	/**
-	 * @param mTabContent the m_tabContent to set
+	 * @param tabState
 	 */
 	public void setTabContent(TabState tabState) {
 		m_tabState = tabState;
 	}
 	
 	/**
-	 * @param m_tabActive the m_tabActive to set
+	 * @param m_tabActive
 	 */
 	public void setTabActive(boolean m_tabActive) {
 		this.m_tabActive = m_tabActive;

@@ -7,7 +7,7 @@ import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.io.DicomInputStream;
 
 /**
- * Controller for Dicomux / Serves as container for all necessary ActionListeners
+ * Controller for Dicomux / Serves as a container for all necessary methods which alter the model
  * @author heidi
  */
 public class Controller implements IController {

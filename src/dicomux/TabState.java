@@ -1,11 +1,9 @@
-/**
- * 
- */
 package dicomux;
 
 /**
+ * Represents all possible states of a TabObject
  * @author heidi
- *
+ * @see TabObject
  */
 public enum TabState {
 	WELCOME,
