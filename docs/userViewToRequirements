@@ -3,25 +3,25 @@ In this document we try to find requirements for the software from our userWorkF
 It also acts as a checklist.
 
 UserWorkFlow_________Requirement_______________________________________Satisfied___________
-	1)		|		- open a DICOM file								|
-			|		- View of all information inside the file		|
-			|		- Get exact values of any measurement chart		|
-			|		- View of any measurement chart					|
-			|		-												|
+	1)				- open a DICOM file								
+					- View of all information inside the file		
+					- Get exact values of any measurement chart		
+					- View of any measurement chart					
+					-												
 ___________________________________________________________________________________________
-	2)		|		- open multiple DICOM files						|
-			|		- (see multiple views in one frame)				|
-			|		- 												|
+	2)				- open multiple DICOM files						
+					- (see multiple views in one frame)				
+					- 												
 ___________________________________________________________________________________________
-	3)		|		-
+	3)				-
 ___________________________________________________________________________________________
-	4)		|		-
+	4)				-
 ___________________________________________________________________________________________
-	5)		|		-
+	5)				-
 ___________________________________________________________________________________________
-	6)		|		-
+	6)				-
 ___________________________________________________________________________________________
-	7)		|		-
+	7)				-
 ___________________________________________________________________________________________
-	8)		|		-
+	8)				-
 ___________________________________________________________________________________________
