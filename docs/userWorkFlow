@@ -7,7 +7,9 @@ First we list the potential users of DICOMUX
  -> Medical scientist
  -> 
 
-This Document shows different workflows in the area of medical Data/ Information. The mind of this document is not to find requirements for software. It is more an analysis of different general workflows in the area of medical -data and –information.
+This Document shows different workflows in the area of medical Data/ Information. 
+The mind of this document is not to define requirements for software. 
+It is more an analysis of different general workflows in the area of medical -data and –information.
 
 
 It can be that the User is not a computer/ software specialist. 
@@ -24,14 +26,20 @@ Someone could need a patient history. He/she wants to compare different measurem
 If the measurements from the patient got better or worse he/she wants to see that.
 
 3)
-If a user has a collection of measurements in one single file the user may want to filter this collection and save only a part of this collection in a new file.
+If a someone has a collection of measurements in one single file 
+he/she may want to filter this collection and save only a part of this collection in a new file.
   
 4) 
-It can be difficult to find one special value in a collection of measurements. A user may want to search for a special detail.
+It can be difficult to find one special value in a collection of measurements. 
+It should be possible to search for a special detail.
 5) 
-One or more files can contain measurements of a patient. A doctor wants to give the patient a CD with these measurements. The patient should be able to see all information about the measurements without special computer / medical knowledge.
+One or more files can contain measurements of a patient. 
+A doctor wants to give the patient a CD with these measurements. 
+The patient should be able to see all information about the measurements without special computer / medical knowledge.
 6) 
-Someone may have measurements from more than one patient. Someone may want navigate easily between the different patients. It could be useful to have a patient list.
+Someone may have measurements from more than one patient. 
+Someone may want navigate easily between the different patients. 
+It could be useful to have a patient list.
 
 7) 
 A doctor wants to see if a patient is sick
