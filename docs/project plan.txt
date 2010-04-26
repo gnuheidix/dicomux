@@ -156,3 +156,30 @@ Schedule
 * End: April/25th
 
 Review meeting
+* The user view has been analyzed properly.
+* The static dialogs Welcome, OpenFile, OpenDirectory, About, ErrorOpen have been implemented. The workflow has been implemented too.
+* The plug-in feature is not really making progress. There is still no working proof of concept.
+
+########### Sprint #3 ###########
+
+Sprint meeting
+* A checklist has to be created in order to verify implemented features.
+* JFileChooser has to be localized.
+* We have to enable dicomux to open dicom files and display its content.
+* Some work has been done on the waveform rendering. This has to be continued.
+* There is still no working plug-in concept. We have to create one in this sprint or we have to remove this feature from our todo list.
+
+Working packages
+* checklist creation (Tobi)
+* JFileChooser localization (Tobi)
+* open dicom file and display its content (Heidi, Tobi)
+* continue work on the waveform render engine (Norbert)
+* deliver a plug-in concept (Norbert)
+
+Schedule
+* Begin: April/26th
+* End: May/2nd
+
+Review meeting
+
+
