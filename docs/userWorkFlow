@@ -1,4 +1,3 @@
-
 First we list the potential users of DICOMUX
 
  -> Doctor
@@ -9,7 +8,7 @@ First we list the potential users of DICOMUX
 
 This Document shows different workflows in the area of medical Data/ Information. 
 The mind of this document is not to define requirements for software. 
-It is more an analysis of different general workflows in the area of medical -data and –information.
+It is more an analysis of different general workflows in the area of medical -data and ï¿½information.
 
 
 It can be that the User is not a computer/ software specialist. 
@@ -32,10 +31,12 @@ he/she may want to filter this collection and save only a part of this collectio
 4) 
 It can be difficult to find one special value in a collection of measurements. 
 It should be possible to search for a special detail.
+
 5) 
 One or more files can contain measurements of a patient. 
 A doctor wants to give the patient a CD with these measurements. 
 The patient should be able to see all information about the measurements without special computer / medical knowledge.
+
 6) 
 Someone may have measurements from more than one patient. 
 Someone may want navigate easily between the different patients. 
