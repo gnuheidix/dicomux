@@ -161,4 +161,15 @@ public class Controller implements IController {
 		m_model.setWorkspace(m_view.getActiveWorkspaceId(), tmp);
 		*/
 	}
+
+	@Override
+	public void reinitializeApplicationDialog() {
+		for (int i = 0; i < m_model.getWorkspaceCount(); ++i) {
+			switch (m_model.getWorkspace(i).getTabState()) {
+			case WELCOME:
+			case RESTART: m_model.setWorkspace(i, new TabObject(TabState.RESTART, true)); return;
+			}
+		}
+		m_model.addWorkspace(new TabObject(TabState.RESTART));
+	}
 }

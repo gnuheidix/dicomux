@@ -55,5 +55,10 @@ public interface IController {
 	 */
 	public void openDicomDirectory(String path);
 	
+	/**
+	 * reinitialization of the whole application dialog
+	 */
+	void reinitializeApplicationDialog();
+	
 //	public void selectPlugin(int n);
 }

@@ -63,6 +63,11 @@ public class View extends JFrame implements IView {
 	private IModel m_model = null;
 	
 	/**
+	 * this object (for access from an inner class)
+	 */
+	private static View m_view;
+	
+	/**
 	 * the model which serves as event listener
 	 */
 	private static IController m_controller = null;
@@ -122,6 +127,7 @@ public class View extends JFrame implements IView {
 	 * creates a new view
 	 */
 	public View() {
+		m_view = this;
 		initializeLanguage();
 		initializeApplication();
 	}
@@ -133,7 +139,6 @@ public class View extends JFrame implements IView {
 		setTitle("Dicomux");
 		setPreferredSize(new Dimension(800, 600));
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
-
 		setIconImage(new ImageIcon("etc/logo.gif").getImage());
 		
 		// extract own contentPane and set its layout manager
@@ -145,10 +150,7 @@ public class View extends JFrame implements IView {
 		setJMenuBar(m_menuBar);
 		
 		// add menu entries to the main menu
-		addFileMenu();
-		addPluginMenu();
-		addLanguageMenu();
-		addHelpMenu();
+		initializeMenus();
 		
 		// create a tabbed pane, set a ChangeListener and add it to the content pane
 		m_tabbedPane = new JTabbedPane();
@@ -199,6 +201,17 @@ public class View extends JFrame implements IView {
 		UIManager.put("FileChooser.openButtonText", m_languageBundle.getString("openButtonText"));
 		UIManager.put("FileChooser.lookInLabelText", m_languageBundle.getString("lookInLabelText"));
 		// ... add more of these calls in order to localize the whole JFileChooser
+	}
+	
+	/**
+	 * initializes the whole main menu
+	 */
+	private void initializeMenus() {
+		m_menuBar.removeAll();
+		addFileMenu();
+		addPluginMenu();
+		addLanguageMenu();
+		addHelpMenu();
 	}
 	
 	/**
@@ -271,6 +284,7 @@ public class View extends JFrame implements IView {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				setLanguage(new Locale(arg0.getActionCommand()));
+				m_controller.reinitializeApplicationDialog();
 			}
 		};
 		
@@ -387,6 +401,10 @@ public class View extends JFrame implements IView {
 					case ABOUT:
 						m_tabbedPane.add(StaticDialogs.makeAboutTab());
 						name = m_languageBundle.getString("key_about");
+						break;
+					case RESTART:
+						m_tabbedPane.add(StaticDialogs.makeRestartTab(this));
+						name = m_languageBundle.getString("key_restart");
 						break;
 					}
 					
@@ -523,6 +541,20 @@ public class View extends JFrame implements IView {
 		}
 		
 		/**
+		 * convenience method for building an about tab
+		 * @return a JPanel
+		 */
+		protected static JComponent makeRestartTab(View dicomux) {
+			JPanel content = new JPanel(new BorderLayout(5 , 5), false);
+			JPanel contentHead = new JPanel(new BorderLayout(5, 0), false);
+			content.add(contentHead, BorderLayout.NORTH);
+			
+			contentHead.add(makeMessage(m_languageBundle.getString("key_html_restart")), BorderLayout.NORTH);
+			contentHead.add(makeRestartButtons(), BorderLayout.SOUTH);
+			return content;
+		}
+		
+		/**
 		 * convenience method for adding a headline to a static dialog
 		 * @param msg the message - this might be HTML
 		 * @return a JPanel with the message
@@ -531,6 +563,37 @@ public class View extends JFrame implements IView {
 			JPanel retVal = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0),false);
 			JLabel filler = new JLabel(msg);
 			retVal.add(filler, BorderLayout.WEST);
+			return retVal;
+		}
+		
+		/**
+		 * convenience method for adding open buttons to a static dialog
+		 * @return a JPanel with open buttons
+		 */
+		private static JComponent makeRestartButtons() {
+			JPanel retVal = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0), false);
+			JButton tmp = new JButton(m_languageBundle.getString("key_continueWork"));
+			tmp.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					m_controller.closeWorkspace();
+				}
+			});
+			retVal.add(tmp);
+			
+			tmp = new JButton(m_languageBundle.getString("key_restart"));
+			tmp.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					m_controller.closeAllWorkspaces();
+					m_view.initializeLanguage();
+					m_view.initializeMenus();
+					m_view.refreshAllTabs();
+					m_view.repaint();
+				}
+			});
+			retVal.add(tmp);
+			
 			return retVal;
 		}
 		
