@@ -44,7 +44,7 @@ public interface IModel {
 	public void removeWorkspace(int wsId);
 	
 	/**
-	 * initalizes the whole model and notifies the view
+	 * initalizes the whole model
 	 * @return 
 	 */
 	public void initialize();

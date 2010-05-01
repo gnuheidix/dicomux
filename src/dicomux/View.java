@@ -159,10 +159,8 @@ public class View extends JFrame implements IView {
 			@Override
 			public void stateChanged(ChangeEvent e) {
 				synchronized (m_refreshLock) {
-					if (!m_refreshInProgress) {
-						System.out.println(e.getSource().toString());
+					if (!m_refreshInProgress)
 						m_controller.setActiveWorkspace(m_tabbedPane.getSelectedIndex());
-					}
 				}
 			}
 		});
@@ -405,6 +403,10 @@ public class View extends JFrame implements IView {
 					case RESTART:
 						m_tabbedPane.add(StaticDialogs.makeRestartTab(this));
 						name = m_languageBundle.getString("key_restart");
+						break;
+					case PLUGIN_ACTIVE:
+						m_tabbedPane.add(tmp.getContent());
+						name = tmp.getName();
 						break;
 					}
 					

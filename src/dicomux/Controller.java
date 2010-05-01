@@ -92,76 +92,55 @@ public class Controller implements IController {
 		System.exit(0);
 	}
 	
-	//TODO implement good error handling and plug-in automatic
+	//TODO implement good plug-in automatic
 	@Override
 	public void openDicomFile(String path) {
 		// try to open dicom file
-		DicomInputStream din;
-		DicomObject dcm;
+		DicomObject dicomObject;
+		File fileObject;
 		try {
-			din = new DicomInputStream(new File(path));
-			dcm = din.readDicomObject();
+			fileObject = new File(path);
+			DicomInputStream din = new DicomInputStream(fileObject);
+			dicomObject = din.readDicomObject();
 		} catch (IOException e) {
 			m_model.setWorkspace(m_view.getActiveWorkspaceId(), new TabObject(TabState.ERROR_OPEN, true));
 			e.printStackTrace();
 			return;
 		}
 		
-		// attach dicom file to a new TabObject
+		// attach the dicom file we've just opened to a new TabObject
 		TabObject tmp = new TabObject();
-		tmp.setDicomObj(dcm);
+		tmp.setDicomObj(dicomObject);
 		tmp.setTabActive(true);
-		tmp.setName(path);
+		tmp.setName(fileObject.getName());
 		
-		//TODO plug-in automatic #####################
-		tmp.setPlugin(null);
+		// choose a suitable plug-in automatically or let the user decide that
+		//TODO implement plug-in automatic ------------------------------------------
 		tmp.setTabContent(TabState.PLUGIN_CHOOSE);
 		// or
 		tmp.setTabContent(TabState.PLUGIN_ACTIVE);
-		// ###########################################
+		IPlugin chosenPlugin = new RawPlugin(m_view.getLanguage());
+		// --------------------------------------------------------------------------
 		
-		// update workspace
+		// push the DicomObject to the plug-in and add it to the new TabObject
+		chosenPlugin.setData(dicomObject);
+		tmp.setPlugin(chosenPlugin);
+		
+		// push the new TabObject to our workspace
 		m_model.setWorkspace(m_view.getActiveWorkspaceId(), tmp);
 	}
-
+	
 	@Override
 	public void setActiveWorkspace(int n) {
 		m_model.setActiveWorkspace(n);
 	}
-
+	
 	//TODO implement
 	@Override
 	public void openDicomDirectory(String path) {
-		/*
-		// try to open dicom file
-		DicomDirReader din;
-		DicomObject dcm;
-		try {
-			din = new DicomDirReader(new File(path));
-		} catch (IOException e) {
-			m_model.setWorkspace(m_view.getActiveWorkspaceId(), new TabObject(TabState.ERROR_OPEN, true));
-			e.printStackTrace();
-			return;
-		}
 		
-		// attach dicom file to a new TabObject
-		TabObject tmp = new TabObject();
-		tmp.setDicomObj(dcm);
-		tmp.setTabActive(true);
-		tmp.setName(path);
-		
-		//TODO plug-in automatic #####################
-		tmp.setPlugin(null);
-		tmp.setTabContent(TabState.PLUGIN_CHOOSE);
-		// or
-		tmp.setTabContent(TabState.PLUGIN_ACTIVE);
-		// ###########################################
-		
-		// update workspace
-		m_model.setWorkspace(m_view.getActiveWorkspaceId(), tmp);
-		*/
 	}
-
+	
 	@Override
 	public void reinitializeApplicationDialog() {
 		for (int i = 0; i < m_model.getWorkspaceCount(); ++i) {

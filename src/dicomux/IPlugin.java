@@ -1,8 +1,10 @@
 package dicomux;
 
-import java.util.*;
+import java.util.Locale;
+
 import javax.swing.JComponent;
-import org.dcm4che2.data.DicomElement;
+
+import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 
 /**
@@ -18,23 +20,23 @@ public interface IPlugin {
 	public JComponent getContent();
 	
 	/**
-	 * Returns a vector with supported Tags. These tags are used by dicomux to deliver the correct data
-	 * @return a vector with Tags
+	 * Returns an array with supported Tags. These tags are used by dicomux to deliver the correct data.
+	 * @return an array with dicom tags
 	 */
-	public Vector<Tag> getSupportedFormats();
+	public Tag[] getSupportedFormats();
 	
 	/**
-	 * Returns a vector with supported Tags, which describe the main functionality of that plug-in
-	 * The main application can use this data in order to decide which plug-in can be used for which dicom file
-	 * @return vector with key tags
+	 * Returns an array with supported Tags, which describe the main functionality of that plug-in
+	 * The main application can use this data in order to decide which plug-in can be used for which dicom file.
+	 * @return an array with key dicom tags
 	 */
-	public Vector<Tag> getKeyFormats();
+	public Tag[] getKeyFormats();
 	
 	/**
 	 * Sets the dicom data which is used by the plugin in order to do its work.
-	 * @param map a map of Tags and DicomElements
+	 * @param dcm a DicomObject containing all data of the file
 	 */
-	public void setData(Map<Tag, DicomElement> map);
+	public void setData(DicomObject dcm);
 	
 	/**
 	 * Returns the name of the plug-in. This value is used by the controller in order to create the menu of available plug-ins.<br/>

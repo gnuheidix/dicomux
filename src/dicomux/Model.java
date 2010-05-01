@@ -25,10 +25,7 @@ public class Model implements IModel {
 		m_tabObjects = new Vector<TabObject>(5, 5);
 	}
 	
-	/**
-	 * clears the vector, adds a welcome message and notifies the view
-	 * @return 
-	 */
+	@Override
 	public void initialize() {
 		m_tabObjects.clear();
 		addWorkspace(new TabObject(TabState.WELCOME));
@@ -81,10 +78,10 @@ public class Model implements IModel {
 	@Override
 	public void setActiveWorkspace(int wsId) {
 		if (wsId >= 0 && wsId < m_tabObjects.size()) {
-			for(TabObject i: m_tabObjects) {
+			for(TabObject i: m_tabObjects) { // set all workspaces to inactive
 				i.setTabActive(false);
 			}
-			m_tabObjects.get(wsId).setTabActive(true);
+			m_tabObjects.get(wsId).setTabActive(true); // set the specified workspace to active
 		}
 	}
 }
