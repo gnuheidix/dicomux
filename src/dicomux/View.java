@@ -38,6 +38,8 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.plaf.basic.BasicButtonUI;
 
+import com.sun.java.swing.plaf.nimbus.FileChooserPainter;
+
 /**
  * View for Dicomux
  * @author heidi
@@ -195,9 +197,45 @@ public class View extends JFrame implements IView {
 		// set the global language for all GUI Elements
 		m_languageBundle = ResourceBundle.getBundle(m_langBaseName, locale);
 
+		/*
 		UIManager.put("FileChooser.cancelButtonText", m_languageBundle.getString("cancelButtonText"));
 		UIManager.put("FileChooser.openButtonText", m_languageBundle.getString("openButtonText"));
 		UIManager.put("FileChooser.lookInLabelText", m_languageBundle.getString("lookInLabelText"));
+		
+		UIManager.put("FileChooser.fileNameLabelText" , m_languageBundle.getString("fileNameLabelText"));
+		UIManager.put("FileChooser.homeFolderToolTipText" , m_languageBundle.getString("homeFolderToolTipText"));
+		UIManager.put("FileChooser.newFolderToolTipText" , m_languageBundle.getString("newFolderToolTipText"));
+		UIManager.put("FileChooser.listViewButtonToolTipText" , m_languageBundle.getString("listViewButtonToolTipTextlist"));
+		UIManager.put("FileChooser.detailsViewButtonToolTipText"  , m_languageBundle.getString("detailsViewButtonToolTipText"));
+		*/
+		
+		UIManager.put("FileChooser.acceptAllFileFilterText" , m_languageBundle.getString("acceptAllFileFilterText"));
+		UIManager.put("FileChooser.cancelButtonText" , m_languageBundle.getString("cancelButtonText"));
+		UIManager.put("FileChooser.cancelButtonToolTipText" , m_languageBundle.getString("cancelButtonToolTipText"));
+		UIManager.put("FileChooser.detailsViewButtonAccessibleName" , m_languageBundle.getString("detailsViewButtonAccessibleName"));
+		UIManager.put("FileChooser.detailsViewButtonToolTipText" , m_languageBundle.getString("detailsViewButtonToolTipText"));
+		UIManager.put("FileChooser.directoryDescriptionText" , m_languageBundle.getString("directoryDescriptionText"));
+		UIManager.put("FileChooser.fileDescriptionText" , m_languageBundle.getString("fileDescriptionText"));
+		UIManager.put("FileChooser.fileNameLabelText" , m_languageBundle.getString("fileNameLabelText"));
+		UIManager.put("FileChooser.filesOfTypeLabelText" , m_languageBundle.getString("filesOfTypeLabelText"));
+		UIManager.put("FileChooser.helpButtonText" , m_languageBundle.getString("helpButtonText"));
+		UIManager.put("FileChooser.helpButtonToolTipText" , m_languageBundle.getString("helpButtonToolTipText"));
+		UIManager.put("FileChooser.homeFolderAccessibleName" , m_languageBundle.getString("homeFolderAccessibleName"));
+		UIManager.put("FileChooser.homeFolderToolTipText" , m_languageBundle.getString("homeFolderToolTipText"));
+		UIManager.put("FileChooser.listViewButtonAccessibleName" , m_languageBundle.getString("listViewButtonAccessibleName"));
+		UIManager.put("FileChooser.listViewButtonToolTipText" , m_languageBundle.getString("listViewButtonToolTipText"));
+		UIManager.put("FileChooser.lookInLabelText" , m_languageBundle.getString("lookInLabelText"));
+		UIManager.put("FileChooser.newFolderAccessibleName" , m_languageBundle.getString("newFolderAccessibleName"));
+		UIManager.put("FileChooser.newFolderErrorText" , m_languageBundle.getString("newFolderErrorText"));
+		UIManager.put("FileChooser.newFolderToolTipText" , m_languageBundle.getString("newFolderToolTipText"));
+		UIManager.put("FileChooser.openButtonText" , m_languageBundle.getString("openButtonText"));
+		UIManager.put("FileChooser.openButtonToolTipText" , m_languageBundle.getString("openButtonToolTipText"));
+		UIManager.put("FileChooser.saveButtonText" , m_languageBundle.getString("saveButtonText"));
+		UIManager.put("FileChooser.saveButtonToolTipText" , m_languageBundle.getString("saveButtonToolTipText"));
+		UIManager.put("FileChooser.updateButtonText" , m_languageBundle.getString("updateButtonText"));
+		UIManager.put("FileChooser.updateButtonToolTipText" , m_languageBundle.getString("updateButtonToolTipText"));
+		UIManager.put("FileChooser.upFolderAccessibleName" , m_languageBundle.getString("upFolderAccessibleName"));
+		UIManager.put("FileChooser.upFolderToolTipText" , m_languageBundle.getString("upFolderToolTipText"));
 		// ... add more of these calls in order to localize the whole JFileChooser
 	}
 	
