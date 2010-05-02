@@ -9,6 +9,7 @@ import org.dcm4che2.data.DicomObject;
  * data transfer object between IModel and IView
  * @author heidi
  * @see TabState
+ * @see APlugin
  */
 public class TabObject {
 	/**
@@ -19,7 +20,7 @@ public class TabObject {
 	/**
 	 * Plug-in which is currently bound to that workspace
 	 */
-	private IPlugin m_plugin;
+	private APlugin m_plugin;
 	
 	/**
 	 * Name of that workspace
@@ -98,14 +99,14 @@ public class TabObject {
 	/**
 	 * @return the m_plugin
 	 */
-	public IPlugin getPlugin() {
+	public APlugin getPlugin() {
 		return m_plugin;
 	}
 	
 	/**
 	 * @param plugin the m_plugin to set
 	 */
-	public void setPlugin(IPlugin plugin) {
+	public void setPlugin(APlugin plugin) {
 		m_plugin = plugin;
 	}
 	

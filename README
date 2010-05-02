@@ -1,1 +1,8 @@
 The application which will be developed in this project is a viewer for DICOM files with ECG data.
+
+own license
+- GPLv3
+
+used external libraries
+- dcm4che - http://www.dcm4che.org/
+- JPedal LGPL release - http://www.jpedal.org/os_response.php

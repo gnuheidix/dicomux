@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 
 import org.dcm4che2.data.DicomObject;
+import org.dcm4che2.data.Tag;
 import org.dcm4che2.io.DicomInputStream;
 
 /**
@@ -21,7 +22,7 @@ public class Controller implements IController {
 	 */
 	private IView m_view;
 	
-	//TODO error handling (check for crap)
+	//TODO check for crap
 	/**
 	 * default constructor<br/>
 	 * registers the view in the model and vice versa<br>
@@ -92,7 +93,8 @@ public class Controller implements IController {
 		System.exit(0);
 	}
 	
-	//TODO implement good plug-in automatic
+	//TODO implement a better plug-in automatic by using the keyTags of the plug-ins
+	//TODO update the view menu to enable the user to change the used plug-in
 	@Override
 	public void openDicomFile(String path) {
 		// try to open dicom file
@@ -115,14 +117,20 @@ public class Controller implements IController {
 		tmp.setName(fileObject.getName());
 		
 		// choose a suitable plug-in automatically or let the user decide that
-		//TODO implement plug-in automatic ------------------------------------------
 		tmp.setTabContent(TabState.PLUGIN_CHOOSE);
 		// or
 		tmp.setTabContent(TabState.PLUGIN_ACTIVE);
-		IPlugin chosenPlugin = new RawPlugin(m_view.getLanguage());
+		APlugin chosenPlugin;
+		if (dicomObject.getString(Tag.MIMETypeOfEncapsulatedDocument) != null &&
+				dicomObject.get(Tag.EncapsulatedDocument) != null &&
+				dicomObject.getString(Tag.MIMETypeOfEncapsulatedDocument).equalsIgnoreCase("application/pdf"))
+			chosenPlugin = new PDFPlugin();
+		else
+			chosenPlugin = new RawPlugin();
 		// --------------------------------------------------------------------------
 		
 		// push the DicomObject to the plug-in and add it to the new TabObject
+		chosenPlugin.setLanguage(m_view.getLanguage());
 		chosenPlugin.setData(dicomObject);
 		tmp.setPlugin(chosenPlugin);
 		

@@ -37,5 +37,6 @@
 	<classpathentry kind="lib" path="lib/log4j-1.2.13.jar"/>
 	<classpathentry kind="lib" path="lib/slf4j-api-1.5.0.jar"/>
 	<classpathentry kind="lib" path="lib/slf4j-log4j12-1.5.0.jar"/>
+	<classpathentry kind="lib" path="lib/jpedal_lgpl.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

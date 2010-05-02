@@ -4,7 +4,6 @@ import java.awt.BorderLayout;
 import java.util.Iterator;
 import java.util.Locale;
 
-import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTree;
@@ -13,37 +12,13 @@ import javax.swing.tree.MutableTreeNode;
 
 import org.dcm4che2.data.DicomElement;
 import org.dcm4che2.data.DicomObject;
-import org.dcm4che2.data.Tag;
 
-public class RawPlugin implements IPlugin {
-	private final Tag[] m_supportedFormats = {};
-	private final Tag[] m_keyFormats = {};
-	private JComponent m_content;
+public class RawPlugin extends APlugin {
 	private JTree m_tree;
-	
-	public RawPlugin(Locale locale) {
-		// locale is not needed in this plug-in 
-		m_content = new JPanel(new BorderLayout(5, 5));
-	}
-	
-	@Override
-	public JComponent getContent() {
-		return m_content;
-	}
-	
-	@Override
-	public Tag[] getKeyFormats() {
-		return m_keyFormats;
-	}
 	
 	@Override
 	public String getName() {
 		return "RawData";
-	}
-	
-	@Override
-	public Tag[] getSupportedFormats() {
-		return m_supportedFormats;
 	}
 	
 	@Override
@@ -54,8 +29,9 @@ public class RawPlugin implements IPlugin {
 		// disable the visibility of the root node
 		m_tree.setRootVisible(false);
 		
-		// add the JTree to a JScrollPane and add it to the content pane of the plug-in
+		// add the JTree to a JScrollPane, get a fresh content pane and add the scroll pane to the content pane of the plug-in
 		JScrollPane scrollpane = new JScrollPane(m_tree);
+		m_content = new JPanel(new BorderLayout(5, 5));
 		m_content.add(scrollpane, BorderLayout.CENTER);
 	}
 	
