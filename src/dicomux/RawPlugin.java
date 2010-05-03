@@ -13,6 +13,11 @@ import javax.swing.tree.MutableTreeNode;
 import org.dcm4che2.data.DicomElement;
 import org.dcm4che2.data.DicomObject;
 
+/**
+ * This plug-in is for inspecting all elements of a DicomObject in a JTree.
+ * @author heidi
+ *
+ */
 public class RawPlugin extends APlugin {
 	private JTree m_tree;
 	
@@ -23,7 +28,7 @@ public class RawPlugin extends APlugin {
 	
 	@Override
 	public void setData(DicomObject dcm) {
-		// create a new JTree, add it to a JScrollPane and add it to the m_content pane
+		// create a new JTree and extract all DicomElements into it
 		m_tree = new JTree(extractAllDicomElements("/", dcm));
 		
 		// disable the visibility of the root node

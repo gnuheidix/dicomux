@@ -10,6 +10,11 @@ import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 import org.jpedal.PdfDecoder;
 
+/**
+ * This plug-in is for opening an encapsulated PDF in an DicomObject
+ * @author heidi
+ *
+ */
 public class PDFPlugin extends APlugin {
 	protected final int[] m_keyFormats = {Tag.MIMETypeOfEncapsulatedDocument, Tag.EncapsulatedDocument};
 
