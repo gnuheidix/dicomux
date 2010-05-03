@@ -12,6 +12,7 @@ import javax.swing.tree.MutableTreeNode;
 
 import org.dcm4che2.data.DicomElement;
 import org.dcm4che2.data.DicomObject;
+import org.dcm4che2.util.TagUtils;
 
 /**
  * This plug-in is for inspecting all elements of a DicomObject in a JTree.
@@ -55,9 +56,13 @@ public class RawPlugin extends APlugin {
 		while (iter.hasNext()) {
 			DicomElement element = iter.next();
 			
+			// extract important information from the element
+			int tagId = element.tag();
+			String nodeValue = TagUtils.toString(tagId) + " [" + object.vrOf(tagId).toString() + "] " + object.nameOf(tagId);
+			
 			if (element.hasDicomObjects()) { // the DicomElement contains more DicomObjects
 				// create a root node which holds the name of this big DicomElement
-				DefaultMutableTreeNode multiNode = new DefaultMutableTreeNode(element.toString(), true);
+				DefaultMutableTreeNode multiNode = new DefaultMutableTreeNode(nodeValue + " [" + element.countItems() + " Items]", true);
 				
 				// extract all DicomObjects from the DicomElement recursively
 				for (int i = 0; i < element.countItems(); ++i)
@@ -68,7 +73,7 @@ public class RawPlugin extends APlugin {
 			}
 			else { // the DicomElement doesn't contain more DicomObjects
 				// simply add the DicomElement to the main tree
-				retVal.add(new DefaultMutableTreeNode(element.toString(), false));
+				retVal.add(new DefaultMutableTreeNode(nodeValue, false));
 			}
 		}
 		
