@@ -181,5 +181,31 @@ Schedule
 * End: May/2nd
 
 Review meeting
+* A checklist has been created, but it needs some more attention.
+* The localization of JFileChooser has been completed for german and english language.
+* Dicomux is now able to open dicom files. A plug-in for displaying raw data and a plug-in for encapsulated pdfs have been implemented.
+* The plug-in concept didn't make any progress. We decided to suspend this task until the waveform render engine is working properly.
+* The work on the waveform engine is in progress.
+
+########### Sprint #4 ###########
+
+Sprint meeting
+* Pdf plug-in needs to be extended with a zoom and page switching functionality.
+* The code quality of the raw plug-in has to be improved. (exceptions, checks, ...)
+* Some work has been done on the waveform rendering. This has to be continued.
+* Prof. Dr. Johner needs some diagrams.
+
+Working packages
+* extend pdf plug-in (Tobi)
+* improve raw plug-in (Heidi)
+* continue work on the waveform render engine (Norbert)
+* create report for Prof. Dr. Johner
+
+Schedule
+* Begin: May/3rd
+* End: May/9th
+
+Review meeting
+
 
 

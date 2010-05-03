@@ -38,8 +38,6 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.plaf.basic.BasicButtonUI;
 
-import com.sun.java.swing.plaf.nimbus.FileChooserPainter;
-
 /**
  * View for Dicomux
  * @author heidi
