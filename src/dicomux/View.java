@@ -174,7 +174,6 @@ public class View extends JFrame implements IView {
 		setVisible(true);
 	}
 	
-	//TODO extend this
 	/**
 	 * initializes all language settings by checking the config file
 	 */
@@ -192,21 +191,11 @@ public class View extends JFrame implements IView {
 			//e.printStackTrace();
 			locale= new Locale(System.getProperty("user.language"));
 		}
-		// set the global language for all GUI Elements
+		
+		// set the global language for all GUI Elements (load the ResourceBundle)
 		m_languageBundle = ResourceBundle.getBundle(m_langBaseName, locale);
-
-		/*
-		UIManager.put("FileChooser.cancelButtonText", m_languageBundle.getString("cancelButtonText"));
-		UIManager.put("FileChooser.openButtonText", m_languageBundle.getString("openButtonText"));
-		UIManager.put("FileChooser.lookInLabelText", m_languageBundle.getString("lookInLabelText"));
 		
-		UIManager.put("FileChooser.fileNameLabelText" , m_languageBundle.getString("fileNameLabelText"));
-		UIManager.put("FileChooser.homeFolderToolTipText" , m_languageBundle.getString("homeFolderToolTipText"));
-		UIManager.put("FileChooser.newFolderToolTipText" , m_languageBundle.getString("newFolderToolTipText"));
-		UIManager.put("FileChooser.listViewButtonToolTipText" , m_languageBundle.getString("listViewButtonToolTipTextlist"));
-		UIManager.put("FileChooser.detailsViewButtonToolTipText"  , m_languageBundle.getString("detailsViewButtonToolTipText"));
-		*/
-		
+		// set all localization entries for JFileChooser
 		UIManager.put("FileChooser.acceptAllFileFilterText" , m_languageBundle.getString("acceptAllFileFilterText"));
 		UIManager.put("FileChooser.cancelButtonText" , m_languageBundle.getString("cancelButtonText"));
 		UIManager.put("FileChooser.cancelButtonToolTipText" , m_languageBundle.getString("cancelButtonToolTipText"));
@@ -234,7 +223,6 @@ public class View extends JFrame implements IView {
 		UIManager.put("FileChooser.updateButtonToolTipText" , m_languageBundle.getString("updateButtonToolTipText"));
 		UIManager.put("FileChooser.upFolderAccessibleName" , m_languageBundle.getString("upFolderAccessibleName"));
 		UIManager.put("FileChooser.upFolderToolTipText" , m_languageBundle.getString("upFolderToolTipText"));
-		// ... add more of these calls in order to localize the whole JFileChooser
 	}
 	
 	/**
@@ -310,6 +298,7 @@ public class View extends JFrame implements IView {
 		m_menuBar.add(menu);
 	}
 	
+	// check for crap
 	/**
 	 * a convenience method for adding a menu for language selection to the main menu
 	 */
@@ -323,8 +312,7 @@ public class View extends JFrame implements IView {
 		};
 		
 		JMenu menu = new JMenu(m_languageBundle.getString("key_language"));
-
-		//TODO: Check Language File Content
+		
 		File dir = new File("etc");
 		// get all language files from the etc folder which are in this format BundleName_xx.properties
 		String[]lang_list = dir.list(new FilenameFilter() {
@@ -342,7 +330,7 @@ public class View extends JFrame implements IView {
 			tmp.addActionListener(langAL);
 			menu.add(tmp);
 		}
-
+		
 		menu.addSeparator();
 		JMenuItem tmp = new JMenuItem(m_languageBundle.getString("key_languageNotification"));
 		tmp.setEnabled(false);
@@ -392,7 +380,6 @@ public class View extends JFrame implements IView {
 		return m_model != null;
 	}
 	
-	//TODO needs to be extended
 	/**
 	 * A convenience method for fetching new information from the model. 
 	 * This is a really expensive action. Be aware of that!

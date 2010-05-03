@@ -199,7 +199,7 @@ Working packages
 * extend pdf plug-in (Tobi)
 * improve raw plug-in (Heidi)
 * continue work on the waveform render engine (Norbert)
-* create report for Prof. Dr. Johner
+* create report for Prof. Dr. Johner (TNH)
 
 Schedule
 * Begin: May/3rd

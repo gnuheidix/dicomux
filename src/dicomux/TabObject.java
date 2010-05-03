@@ -134,7 +134,7 @@ public class TabObject {
 	/**
 	 * @param tabState
 	 */
-	public void setTabContent(TabState tabState) {
+	public void setTabState(TabState tabState) {
 		m_tabState = tabState;
 	}
 	

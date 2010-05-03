@@ -117,9 +117,9 @@ public class Controller implements IController {
 		tmp.setName(fileObject.getName());
 		
 		// choose a suitable plug-in automatically or let the user decide that
-		tmp.setTabContent(TabState.PLUGIN_CHOOSE);
+		tmp.setTabState(TabState.PLUGIN_CHOOSE);
 		// or
-		tmp.setTabContent(TabState.PLUGIN_ACTIVE);
+		tmp.setTabState(TabState.PLUGIN_ACTIVE);
 		APlugin chosenPlugin;
 		if (dicomObject.getString(Tag.MIMETypeOfEncapsulatedDocument) != null &&
 				dicomObject.get(Tag.EncapsulatedDocument) != null &&
