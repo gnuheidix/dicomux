@@ -1,6 +1,8 @@
 package dicomux;
 
 import java.awt.BorderLayout;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.util.Locale;
 
 import javax.swing.JPanel;
@@ -48,6 +50,15 @@ public class PDFPlugin extends APlugin {
 		
 		// get a new content pane and add the PDF scrollpane to it
 		m_content = new JPanel(new BorderLayout(5, 5));
+		
+		m_content.addComponentListener(new ComponentAdapter() {
+			@Override
+			public void componentResized(ComponentEvent e) {
+				System.out.println(m_content.getSize().toString());
+				super.componentResized(e);
+			}
+		});
+		
 		m_content.add(currentScroll);
 	}
 	
