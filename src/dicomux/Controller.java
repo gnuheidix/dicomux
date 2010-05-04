@@ -129,9 +129,19 @@ public class Controller implements IController {
 			chosenPlugin = new RawPlugin();
 		// --------------------------------------------------------------------------
 		
-		// push the DicomObject to the plug-in and add it to the new TabObject
+		// push the currently used language to the new plug-in
 		chosenPlugin.setLanguage(m_view.getLanguage());
-		chosenPlugin.setData(dicomObject);
+		
+		// push the DicomObject to the plug-in
+		try {
+			chosenPlugin.setData(dicomObject);
+		} catch (Exception e) {
+			m_model.setWorkspace(m_view.getActiveWorkspaceId(), new TabObject(TabState.ERROR_OPEN, true));
+			e.printStackTrace();
+			return;
+		}
+		
+		// bind the new plug-in to the TabObject
 		tmp.setPlugin(chosenPlugin);
 		
 		// push the new TabObject to our workspace

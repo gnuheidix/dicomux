@@ -29,7 +29,7 @@ public class RawPlugin extends APlugin {
 	}
 	
 	@Override
-	public void setData(DicomObject dcm) {
+	public void setData(DicomObject dcm) throws Exception{
 		// create a new JTree and extract all DicomElements into it
 		m_tree = new JTree(extractAllDicomElements("/", dcm));
 		
@@ -48,7 +48,7 @@ public class RawPlugin extends APlugin {
 	 * @param object DicomObject which has to be extracted
 	 * @return a MutableTreeNode which has the rootElement as root node and all DicomElements of object
 	 */
-	private MutableTreeNode extractAllDicomElements(Object rootElement, DicomObject object) {
+	private MutableTreeNode extractAllDicomElements(Object rootElement, DicomObject object) throws Exception {
 		// create root node
 		DefaultMutableTreeNode retVal = new DefaultMutableTreeNode(rootElement, true);
 		
@@ -63,7 +63,7 @@ public class RawPlugin extends APlugin {
 			
 			if (element.hasDicomObjects()) { // the DicomElement contains more DicomObjects
 				// extract ItemCount from the element and create a root node which holds the name of this big DicomElement
-				nodeValue += " [ItemCount: " + element.countItems() + "]";
+				nodeValue += " [Items: " + element.countItems() + "]";
 				DefaultMutableTreeNode multiNode = new DefaultMutableTreeNode(nodeValue, true);
 				
 				// extract all DicomObjects from the DicomElement recursively

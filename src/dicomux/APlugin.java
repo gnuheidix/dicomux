@@ -44,8 +44,9 @@ public abstract class APlugin {
 	/**
 	 * Sets the dicom data which is used by the plugin in order to do its work.
 	 * @param dcm a DicomObject containing all data of the file
+	 * @throws Exception 
 	 */
-	public abstract void setData(DicomObject dcm);
+	public abstract void setData(DicomObject dcm) throws Exception;
 	
 	/**
 	 * Returns the name of the plug-in. This value is used by the controller in order to create the menu of available plug-ins.<br/>
