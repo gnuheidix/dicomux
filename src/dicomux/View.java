@@ -20,6 +20,7 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.Locale;
 import java.util.ResourceBundle;
+import java.util.Vector;
 
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
@@ -56,6 +57,11 @@ public class View extends JFrame implements IView {
 	 * contains the menu bar of the application
 	 */
 	private JMenuBar m_menuBar;
+	
+	/**
+	 * contains all suitable plug-ins for the currently opened DicomObject
+	 */
+	private JMenu m_pluginMenu;
 	
 	/**
 	 * the model which serves as data source
@@ -159,8 +165,16 @@ public class View extends JFrame implements IView {
 			@Override
 			public void stateChanged(ChangeEvent e) {
 				synchronized (m_refreshLock) {
-					if (!m_refreshInProgress)
-						m_controller.setActiveWorkspace(m_tabbedPane.getSelectedIndex());
+					if (!m_refreshInProgress) {
+						// get the index of the selected workspace
+						int newWorkspaceIndex = m_tabbedPane.getSelectedIndex();
+						
+						// tell the controller what happened
+						m_controller.setActiveWorkspace(newWorkspaceIndex);
+						
+						// update the plug-ins menu
+						addPluginMenuEntries(m_model.getWorkspace(newWorkspaceIndex).getSuitablePlugins());
+					}
 				}
 			}
 		});
@@ -286,16 +300,38 @@ public class View extends JFrame implements IView {
 		m_menuBar.add(menu);
 	}
 	
-	//TODO implement
 	/**
 	 * a convenience method for adding a menu for plugin selection to the main menu
 	 */
 	private void addPluginMenu() {
-		JMenu menu = new JMenu(m_languageBundle.getString("key_view"));
-		JMenuItem tmp = new JMenuItem("implement me!");
-		tmp.setEnabled(false);
-		menu.add(tmp);
-		m_menuBar.add(menu);
+		m_pluginMenu = new JMenu(m_languageBundle.getString("key_view"));
+		addPluginMenuEntries(null);
+		m_menuBar.add(m_pluginMenu);
+	}
+	
+	/**
+	 * a convenience method for adding all suitable plug-ins of the currently opened workspace to the plug-in menu
+	 * @param suitablePlugins
+	 */
+	private void addPluginMenuEntries(Vector<APlugin> suitablePlugins) {
+		if (suitablePlugins == null || suitablePlugins.size() == 0) {
+			m_pluginMenu.setEnabled(false);
+			m_pluginMenu.removeAll();
+		}
+		else {
+			m_pluginMenu.setEnabled(true);
+			m_pluginMenu.removeAll();
+			for (final APlugin i: suitablePlugins) {
+				JMenuItem tmp = new JMenuItem(i.getName());
+				tmp.addActionListener(new ActionListener() {
+					@Override
+					public void actionPerformed(ActionEvent arg0) {
+						m_controller.setActivePlugin(i.getName());
+					}
+				});
+				m_pluginMenu.add(tmp);
+			}
+		}
 	}
 	
 	// check for crap
@@ -433,12 +469,14 @@ public class View extends JFrame implements IView {
 						break;
 					}
 					
-					// add a title and a close button to the tab
+					// add a title and a close button to the TabObject
 					m_tabbedPane.setTabComponentAt(m_tabbedPane.getTabCount() - 1, new TabTitle(name));
 					
-					// select the tab if the model wants that to happen
-					if (tmp.isTabActive())
+					// select the tab if the model wants that to happen and get all supported plug-ins from the TabObject
+					if (tmp.isTabActive()) {
 						m_tabbedPane.setSelectedIndex(i);
+						addPluginMenuEntries(tmp.getSuitablePlugins());
+					}
 				}
 				
 				// reactivate the ChangeListener of m_tabbedPane

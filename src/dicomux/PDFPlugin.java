@@ -18,8 +18,7 @@ import org.jpedal.PdfDecoder;
  *
  */
 public class PDFPlugin extends APlugin {
-	protected final int[] m_keyFormats = {Tag.MIMETypeOfEncapsulatedDocument, Tag.EncapsulatedDocument};
-
+	
 	@Override
 	public String getName() {
 		return "Encapsulated PDF";
@@ -66,5 +65,11 @@ public class PDFPlugin extends APlugin {
 	@Override
 	public void setLanguage(Locale locale) {
 		
+	}
+	
+	@Override
+	public int[] getKeyTags() {
+		final int[] keyFormats = {Tag.MIMETypeOfEncapsulatedDocument, Tag.EncapsulatedDocument};
+		return keyFormats;
 	}
 }
