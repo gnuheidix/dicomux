@@ -27,7 +27,7 @@ public class PDFPlugin extends APlugin {
 	
 	// TODO: check for crap; add zoom and page select buttons;
 	@Override
-	public void setData(DicomObject dcm) {
+	public void setData(DicomObject dcm) throws Exception{
 		PdfDecoder pdfDecoder = new PdfDecoder(true);
 		
 		try {
