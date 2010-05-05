@@ -23,7 +23,6 @@ import org.jpedal.PdfDecoder;
  *
  */
 public class PDFPlugin extends APlugin {
-	protected final int[] m_keyFormats = {Tag.MIMETypeOfEncapsulatedDocument, Tag.EncapsulatedDocument};
 	Dimension contend_dim;
 	Dimension pdf_dim;
 	
@@ -155,5 +154,11 @@ public class PDFPlugin extends APlugin {
 	@Override
 	public void setLanguage(Locale locale) {
 		
+	}
+	
+	@Override
+	public int[] getKeyTags() {
+		final int[] keyFormats = {Tag.MIMETypeOfEncapsulatedDocument, Tag.EncapsulatedDocument};
+		return keyFormats;
 	}
 }

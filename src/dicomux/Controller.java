@@ -1,10 +1,9 @@
 package dicomux;
 
 import java.io.File;
-import java.io.IOException;
+import java.util.Vector;
 
 import org.dcm4che2.data.DicomObject;
-import org.dcm4che2.data.Tag;
 import org.dcm4che2.io.DicomInputStream;
 
 /**
@@ -12,6 +11,12 @@ import org.dcm4che2.io.DicomInputStream;
  * @author heidi
  */
 public class Controller implements IController {
+	/**
+	 * holds instances of all available plug-ins<br/>
+	 * It's very important that plug-ins without any keyFormats are at the end of the list.
+	 */
+	private final APlugin m_availblePlugins[] = {new PDFPlugin(), new RawPlugin()};
+	
 	/**
 	 * holds the model of the application
 	 */
@@ -93,59 +98,62 @@ public class Controller implements IController {
 		System.exit(0);
 	}
 	
-	//TODO implement a better plug-in automatic by using the keyTags of the plug-ins
-	//TODO update the view menu to enable the user to change the used plug-in
 	@Override
 	public void openDicomFile(String path) {
-		// try to open dicom file
-		DicomObject dicomObject;
-		File fileObject;
 		try {
-			fileObject = new File(path);
+			// open the dicom file
+			File fileObject = new File(path);
 			DicomInputStream din = new DicomInputStream(fileObject);
-			dicomObject = din.readDicomObject();
-		} catch (IOException e) {
-			m_model.setWorkspace(m_view.getActiveWorkspaceId(), new TabObject(TabState.ERROR_OPEN, true));
-			e.printStackTrace();
-			return;
-		}
-		
-		// attach the dicom file we've just opened to a new TabObject
-		TabObject tmp = new TabObject();
-		tmp.setDicomObj(dicomObject);
-		tmp.setTabActive(true);
-		tmp.setName(fileObject.getName());
-		
-		// choose a suitable plug-in automatically or let the user decide that
-		tmp.setTabState(TabState.PLUGIN_CHOOSE);
-		// or
-		tmp.setTabState(TabState.PLUGIN_ACTIVE);
-		APlugin chosenPlugin;
-		if (dicomObject.getString(Tag.MIMETypeOfEncapsulatedDocument) != null &&
-				dicomObject.get(Tag.EncapsulatedDocument) != null &&
-				dicomObject.getString(Tag.MIMETypeOfEncapsulatedDocument).equalsIgnoreCase("application/pdf"))
-			chosenPlugin = new PDFPlugin();
-		else
-			chosenPlugin = new RawPlugin();
-		// --------------------------------------------------------------------------
-		
-		// push the currently used language to the new plug-in
-		chosenPlugin.setLanguage(m_view.getLanguage());
-		
-		// push the DicomObject to the plug-in
-		try {
-			chosenPlugin.setData(dicomObject);
+			DicomObject dicomObject = din.readDicomObject();
+			
+			// look for a suitable plug-in for the opened DicomObject
+			APlugin chosenPlugin = null;
+			Vector<APlugin> suitablePlugins = new Vector<APlugin>();
+			for (int i = 0; i < m_availblePlugins.length; ++i) { // iterate over all available plug-ins
+				APlugin tmp = m_availblePlugins[i];
+				boolean pluginOK = true;
+				for (int j = 0; j < tmp.getKeyTags().length; ++j) // does the selected plug-in support all needed Tags?
+					if (dicomObject.get(tmp.getKeyTags()[j]) == null) {
+						pluginOK = false;
+						break;
+					}
+				if (pluginOK) { // the selected plug-in supports all needed Tags
+					suitablePlugins.add(tmp);
+				}
+			}
+			
+			if (suitablePlugins.size() > 0) {
+				// select the first plug-in of the suitable plug-ins
+				chosenPlugin = suitablePlugins.firstElement().getClass().newInstance();
+				
+				// push the currently used language to the new plug-in
+				chosenPlugin.setLanguage(m_view.getLanguage());
+				
+				// push the DicomObject to the plug-in
+				chosenPlugin.setData(dicomObject);
+				
+				// create a new TabObject and fill it with all we got
+				TabObject tmp = new TabObject();
+				tmp.setDicomObj(dicomObject);
+				tmp.setTabActive(true);
+				tmp.setName(fileObject.getName());
+				tmp.setTabState(TabState.PLUGIN_ACTIVE);
+				tmp.setPlugin(chosenPlugin);
+				tmp.setSuitablePlugins(suitablePlugins);
+				
+				// push the new TabObject to our workspace
+				m_model.setWorkspace(m_view.getActiveWorkspaceId(), tmp);
+			}
+			else
+				throw new Exception("No suitable plug-in found!");
 		} catch (Exception e) {
+			// something didn't work - let's show an error message
 			m_model.setWorkspace(m_view.getActiveWorkspaceId(), new TabObject(TabState.ERROR_OPEN, true));
 			e.printStackTrace();
 			return;
 		}
 		
-		// bind the new plug-in to the TabObject
-		tmp.setPlugin(chosenPlugin);
-		
-		// push the new TabObject to our workspace
-		m_model.setWorkspace(m_view.getActiveWorkspaceId(), tmp);
+//		dicomObject.getString(Tag.MIMETypeOfEncapsulatedDocument).equalsIgnoreCase("application/pdf"))
 	}
 	
 	@Override
@@ -168,5 +176,37 @@ public class Controller implements IController {
 			}
 		}
 		m_model.addWorkspace(new TabObject(TabState.RESTART));
+	}
+	
+	@Override
+	public void setActivePlugin(String name) {
+		try {
+			// search for the plug-in with the suitable name
+			for (int i = 0; i < m_availblePlugins.length; ++i) {
+				if (m_availblePlugins[i].getName().equals(name)) {
+					// get the active workspace ID from the view
+					int activeWorkspaceId = m_view.getActiveWorkspaceId();
+					
+					// extract the TabObject from the model
+					TabObject tmp = m_model.getWorkspace(activeWorkspaceId);
+					
+					// create a new instance of the selected plug-in
+					APlugin selectedPlugin = m_availblePlugins[i].getClass().newInstance();
+					
+					// initialize the selected plug-in with all needed data
+					selectedPlugin.setLanguage(m_view.getLanguage());
+					selectedPlugin.setData(tmp.getDicomObj());
+					
+					// bind the plug-in to the workspace and write all changes to the model
+					tmp.setPlugin(selectedPlugin);
+					m_model.setWorkspace(activeWorkspaceId, tmp);
+				}
+			}
+		} catch (Exception e) {
+			// something didn't work - let's show an error message
+			m_model.setWorkspace(m_view.getActiveWorkspaceId(), new TabObject(TabState.ERROR_OPEN, true));
+			e.printStackTrace();
+			return;
+		}
 	}
 }

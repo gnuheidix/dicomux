@@ -92,4 +92,10 @@ public class RawPlugin extends APlugin {
 	public void setLanguage(Locale locale) {
 		// not needed in this plug-in
 	}
+	
+	@Override
+	public int[] getKeyTags() {
+		final int[] keyFormats = {};
+		return keyFormats;
+	}
 }

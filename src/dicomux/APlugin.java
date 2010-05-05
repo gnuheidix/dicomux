@@ -14,7 +14,6 @@ import org.dcm4che2.data.DicomObject;
  *
  */
 public abstract class APlugin {
-	protected final int[] m_keyFormats = {};
 	protected JComponent m_content;
 	
 	/**
@@ -35,11 +34,9 @@ public abstract class APlugin {
 	/**
 	 * Returns an array with supported Tags, which describe the main functionality of that plug-in
 	 * The main application can use this data in order to decide which plug-in can be used for which dicom file.
-	 * @return an array with key dicom tags
+	 * @return an array with key dicom tags // return an empty array if the plug-in supports everything
 	 */
-	public int[] getKeyTags() {
-		return m_keyFormats;
-	}
+	public abstract int[] getKeyTags();
 	
 	/**
 	 * Sets the dicom data which is used by the plugin in order to do its work.

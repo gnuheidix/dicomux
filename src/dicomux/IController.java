@@ -48,7 +48,7 @@ public interface IController {
 	 * @param n id of the workspace
 	 */
 	public void setActiveWorkspace(int n);
-
+	
 	/**
 	 * opens a dicom directory
 	 * @param path
@@ -59,6 +59,12 @@ public interface IController {
 	 * reinitialization of the whole application dialog
 	 */
 	void reinitializeApplicationDialog();
+	
+	/**
+	 * sets the active plug-in for the active workspace
+	 * @param name the name of the plug-in
+	 */
+	public void setActivePlugin(String name);
 	
 //	public void selectPlugin(int n);
 }

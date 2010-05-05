@@ -1,5 +1,7 @@
 package dicomux;
 
+import java.util.Vector;
+
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 
@@ -20,7 +22,7 @@ public class TabObject {
 	/**
 	 * Plug-in which is currently bound to that workspace
 	 */
-	private APlugin m_plugin;
+	private APlugin m_activePlugin;
 	
 	/**
 	 * Name of that workspace
@@ -38,14 +40,20 @@ public class TabObject {
 	private boolean m_tabActive;
 	
 	/**
+	 * holds all suitable plug-ins for the DicomObject
+	 */
+	private Vector<APlugin> m_suitablePlugins;
+	
+	/**
 	 * default constructor
 	 */
 	public TabObject() {
 		m_dicomObj = null;
-		m_plugin = null;
-		m_name = "";
+		m_activePlugin = null;
+		m_name = null;
 		m_tabState = null;
 		m_tabActive = false;
+		m_suitablePlugins = new Vector<APlugin>();
 	}
 	
 	/**
@@ -53,10 +61,11 @@ public class TabObject {
 	 */
 	public TabObject(TabState tabState) {
 		m_dicomObj = null;
-		m_plugin = null;
+		m_activePlugin = null;
 		m_name = null;
 		m_tabState = tabState;
 		m_tabActive = false;
+		m_suitablePlugins = new Vector<APlugin>();
 	}
 	
 	/**
@@ -65,10 +74,11 @@ public class TabObject {
 	 */
 	public TabObject(TabState tabState, boolean tabActive) {
 		m_dicomObj = null;
-		m_plugin = null;
+		m_activePlugin = null;
 		m_name = null;
 		m_tabState = tabState;
 		m_tabActive = tabActive;
+		m_suitablePlugins = new Vector<APlugin>();
 	}
 	
 	/**
@@ -76,8 +86,8 @@ public class TabObject {
 	 * @return content from the plugin
 	 */
 	public JComponent getContent() {
-		if (m_plugin != null)
-			return m_plugin.getContent();
+		if (m_activePlugin != null)
+			return m_activePlugin.getContent();
 		else
 			return new JLabel("ERROR: No plug-in loaded for this tab!");
 	}
@@ -100,14 +110,14 @@ public class TabObject {
 	 * @return the m_plugin
 	 */
 	public APlugin getPlugin() {
-		return m_plugin;
+		return m_activePlugin;
 	}
 	
 	/**
 	 * @param plugin the m_plugin to set
 	 */
 	public void setPlugin(APlugin plugin) {
-		m_plugin = plugin;
+		m_activePlugin = plugin;
 	}
 	
 	/**
@@ -141,8 +151,8 @@ public class TabObject {
 	/**
 	 * @param m_tabActive
 	 */
-	public void setTabActive(boolean m_tabActive) {
-		this.m_tabActive = m_tabActive;
+	public void setTabActive(boolean tabActive) {
+		this.m_tabActive = tabActive;
 	}
 	
 	/**
@@ -150,5 +160,21 @@ public class TabObject {
 	 */
 	public boolean isTabActive() {
 		return m_tabActive;
+	}
+	
+	/**
+	 * 
+	 * @param suitablePlugins
+	 */
+	public void setSuitablePlugins(Vector<APlugin> suitablePlugins) {
+		m_suitablePlugins = suitablePlugins;
+	}
+	
+	/**
+	 * 
+	 * @return all suitable plug-ins for the opened DicomObject
+	 */
+	public Vector<APlugin> getSuitablePlugins() {
+		return m_suitablePlugins;
 	}
 }
