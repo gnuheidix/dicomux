@@ -12,6 +12,5 @@ public enum TabState {
 	ABOUT,
 	PLUGIN_CHOOSE,
 	PLUGIN_ACTIVE,
-	ERROR_OPEN,
-	RESTART
+	ERROR_OPEN
 }

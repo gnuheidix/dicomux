@@ -74,11 +74,6 @@ public class View extends JFrame implements IView {
 	private IModel m_model = null;
 	
 	/**
-	 * this object (for access from an inner class)
-	 */
-	private static View m_view;
-	
-	/**
 	 * the model which serves as event listener
 	 */
 	private static IController m_controller = null;
@@ -138,7 +133,6 @@ public class View extends JFrame implements IView {
 	 * creates a new view
 	 */
 	public View() {
-		m_view = this;
 		initializeLanguage();
 		initializeApplication();
 	}
@@ -193,6 +187,7 @@ public class View extends JFrame implements IView {
 		setVisible(true);
 	}
 	
+	// TODO complete localization of JFileChooser
 	/**
 	 * initializes all language settings by checking the config file
 	 */
@@ -347,8 +342,17 @@ public class View extends JFrame implements IView {
 		ActionListener langAL = new ActionListener() { // the action listener for all language change actions
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
+				// set the language in the view
 				setLanguage(new Locale(arg0.getActionCommand()));
-				m_controller.reinitializeApplicationDialog();
+				
+				// inform the controller what happened
+				m_controller.reinitializeApplicationDialog(getLanguage());
+				
+				// reinitialize the view
+				initializeLanguage();
+				initializeMenus();
+				refreshAllTabs();
+				repaint();
 			}
 		};
 		
@@ -463,10 +467,6 @@ public class View extends JFrame implements IView {
 					case ABOUT:
 						m_tabbedPane.add(StaticDialogs.makeAboutTab());
 						name = m_languageBundle.getString("key_about");
-						break;
-					case RESTART:
-						m_tabbedPane.add(StaticDialogs.makeRestartTab(this));
-						name = m_languageBundle.getString("key_restart");
 						break;
 					case PLUGIN_ACTIVE:
 						m_tabbedPane.add(tmp.getContent());
@@ -611,20 +611,6 @@ public class View extends JFrame implements IView {
 		}
 		
 		/**
-		 * convenience method for building an about tab
-		 * @return a JPanel
-		 */
-		protected static JComponent makeRestartTab(View dicomux) {
-			JPanel content = new JPanel(new BorderLayout(5 , 5), false);
-			JPanel contentHead = new JPanel(new BorderLayout(5, 0), false);
-			content.add(contentHead, BorderLayout.NORTH);
-			
-			contentHead.add(makeMessage(m_languageBundle.getString("key_html_restart")), BorderLayout.NORTH);
-			contentHead.add(makeRestartButtons(), BorderLayout.SOUTH);
-			return content;
-		}
-		
-		/**
 		 * convenience method for adding a headline to a static dialog
 		 * @param msg the message - this might be HTML
 		 * @return a JPanel with the message
@@ -633,37 +619,6 @@ public class View extends JFrame implements IView {
 			JPanel retVal = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0),false);
 			JLabel filler = new JLabel(msg);
 			retVal.add(filler, BorderLayout.WEST);
-			return retVal;
-		}
-		
-		/**
-		 * convenience method for adding open buttons to a static dialog
-		 * @return a JPanel with open buttons
-		 */
-		private static JComponent makeRestartButtons() {
-			JPanel retVal = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0), false);
-			JButton tmp = new JButton(m_languageBundle.getString("key_continueWork"));
-			tmp.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					m_controller.closeWorkspace();
-				}
-			});
-			retVal.add(tmp);
-			
-			tmp = new JButton(m_languageBundle.getString("key_restart"));
-			tmp.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					m_controller.closeAllWorkspaces();
-					m_view.initializeLanguage();
-					m_view.initializeMenus();
-					m_view.refreshAllTabs();
-					m_view.repaint();
-				}
-			});
-			retVal.add(tmp);
-			
 			return retVal;
 		}
 		

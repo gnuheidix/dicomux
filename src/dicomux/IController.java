@@ -1,5 +1,7 @@
 package dicomux;
 
+import java.util.Locale;
+
 /**
  * all concrete controllers have to implement this interface
  * @author heidi
@@ -57,8 +59,9 @@ public interface IController {
 	
 	/**
 	 * reinitialization of the whole application dialog
+	 * @param locale 
 	 */
-	void reinitializeApplicationDialog();
+	void reinitializeApplicationDialog(Locale locale);
 	
 	/**
 	 * sets the active plug-in for the active workspace

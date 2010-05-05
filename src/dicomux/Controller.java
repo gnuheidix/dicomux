@@ -1,6 +1,7 @@
 package dicomux;
 
 import java.io.File;
+import java.util.Locale;
 import java.util.Vector;
 
 import org.dcm4che2.data.DicomObject;
@@ -168,14 +169,14 @@ public class Controller implements IController {
 	}
 	
 	@Override
-	public void reinitializeApplicationDialog() {
+	public void reinitializeApplicationDialog(Locale locale) {
 		for (int i = 0; i < m_model.getWorkspaceCount(); ++i) {
-			switch (m_model.getWorkspace(i).getTabState()) {
-			case WELCOME:
-			case RESTART: m_model.setWorkspace(i, new TabObject(TabState.RESTART, true)); return;
+			TabObject selectedWorkspace = m_model.getWorkspace(i);
+			APlugin selectedPlugin = selectedWorkspace.getPlugin();
+			if (selectedPlugin != null) {
+				selectedPlugin.setLanguage(locale);
 			}
 		}
-		m_model.addWorkspace(new TabObject(TabState.RESTART));
 	}
 	
 	@Override
