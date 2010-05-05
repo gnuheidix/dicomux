@@ -49,6 +49,11 @@ public class View extends JFrame implements IView {
 	private static final long serialVersionUID = -3586989981842552511L;
 	
 	/**
+	 * the path to the last selected folder
+	 */
+	private static String m_lastSelectedFilePath = null;
+	
+	/**
 	 * contains the tabbed pane which holds all workspaces
 	 */
 	private static JTabbedPane m_tabbedPane;
@@ -521,7 +526,7 @@ public class View extends JFrame implements IView {
 			contentHead.add(makeMessage(m_languageBundle.getString("key_html_openFile")), BorderLayout.NORTH);
 			
 			JPanel control = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0), false);
-			JFileChooser filechooser = new JFileChooser();
+			JFileChooser filechooser = new JFileChooser(m_lastSelectedFilePath);
 			filechooser.setDialogType(JFileChooser.OPEN_DIALOG);
 			// TODO: DateiName and DateiTyp not in actual Language ??
 			filechooser.setLocale(m_languageBundle.getLocale());		// Set the actual language to the file chooser!
@@ -529,8 +534,10 @@ public class View extends JFrame implements IView {
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					JFileChooser chooser = (JFileChooser) e.getSource();
-					if (JFileChooser.APPROVE_SELECTION.equals(e.getActionCommand()))
+					if (JFileChooser.APPROVE_SELECTION.equals(e.getActionCommand())) {
+						m_lastSelectedFilePath = chooser.getSelectedFile().getAbsolutePath();
 						m_controller.openDicomFile(chooser.getSelectedFile().getPath());
+					}
 					else if (JFileChooser.CANCEL_SELECTION.equals(e.getActionCommand()))
 						m_controller.closeWorkspace();
 				}
