@@ -16,7 +16,7 @@ public class Controller implements IController {
 	 * holds instances of all available plug-ins<br/>
 	 * It's very important that plug-ins without any keyFormats are at the end of the list.
 	 */
-	private final APlugin m_availblePlugins[] = {new PDFPlugin(), new RawPlugin()};
+	private final APlugin m_availblePlugins[] = {new WaveformPlugin(), new PDFPlugin(), new RawPlugin()};
 	
 	/**
 	 * holds the model of the application

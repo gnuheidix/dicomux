@@ -25,7 +25,7 @@ public class RawPlugin extends APlugin {
 	
 	@Override
 	public String getName() {
-		return "RawData";
+		return "Raw Data";
 	}
 	
 	@Override
