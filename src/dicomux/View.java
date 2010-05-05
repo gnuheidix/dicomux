@@ -346,7 +346,7 @@ public class View extends JFrame implements IView {
 				setLanguage(new Locale(arg0.getActionCommand()));
 				
 				// inform the controller what happened
-				m_controller.reinitializeApplicationDialog(getLanguage());
+				m_controller.setLanguage(getLanguage());
 				
 				// reinitialize the view
 				initializeLanguage();

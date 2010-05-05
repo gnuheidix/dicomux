@@ -169,7 +169,7 @@ public class Controller implements IController {
 	}
 	
 	@Override
-	public void reinitializeApplicationDialog(Locale locale) {
+	public void setLanguage(Locale locale) {
 		for (int i = 0; i < m_model.getWorkspaceCount(); ++i) {
 			TabObject selectedWorkspace = m_model.getWorkspace(i);
 			APlugin selectedPlugin = selectedWorkspace.getPlugin();

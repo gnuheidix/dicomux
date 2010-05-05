@@ -58,10 +58,10 @@ public interface IController {
 	public void openDicomDirectory(String path);
 	
 	/**
-	 * reinitialization of the whole application dialog
+	 * informs the model that the language of the application has been changed
 	 * @param locale 
 	 */
-	void reinitializeApplicationDialog(Locale locale);
+	void setLanguage(Locale locale);
 	
 	/**
 	 * sets the active plug-in for the active workspace
