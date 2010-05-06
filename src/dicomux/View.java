@@ -144,7 +144,7 @@ public class View extends JFrame implements IView {
 		setTitle("Dicomux");
 		setPreferredSize(new Dimension(800, 600));
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
-		setIconImage(new ImageIcon("etc/logo.gif").getImage());
+		setIconImage(new ImageIcon("etc/images/logo.png").getImage());
 		
 		// extract own contentPane and set its layout manager
 		Container contentPane = getContentPane();
@@ -158,8 +158,7 @@ public class View extends JFrame implements IView {
 		initializeMenus();
 		
 		// create a tabbed pane, set a ChangeListener and add it to the content pane
-		m_tabbedPane = new JTabbedPane();
-		m_tabbedPane.setTabPlacement(JTabbedPane.TOP);
+		m_tabbedPane = new JTabbedPane(JTabbedPane.TOP, JTabbedPane.SCROLL_TAB_LAYOUT);
 		m_tabbedPane.addChangeListener(new ChangeListener() {
 			@Override
 			public void stateChanged(ChangeEvent e) {
@@ -432,11 +431,11 @@ public class View extends JFrame implements IView {
 	private void refreshAllTabs() {
 		synchronized (m_refreshLock) {
 			if (isModelRegistered()) {
-				// disable the user to modify m_tabbedPane while processing
-				m_tabbedPane.setEnabled(false);
-				
 				// disable the ChangeListener of m_tabbedPane
 				m_refreshInProgress = true;
+				
+				// disable the user to modify m_tabbedPane while processing
+				m_tabbedPane.setEnabled(false);
 				
 				// remove all tabs
 				m_tabbedPane.removeAll();
@@ -602,10 +601,15 @@ public class View extends JFrame implements IView {
 		 */
 		protected static JComponent makeAboutTab() {
 			JPanel content = new JPanel(new BorderLayout(5 , 5), false);
-			JPanel contentHead = new JPanel(new BorderLayout(5, 0), false);
-			content.add(contentHead, BorderLayout.NORTH);
 			
+			JPanel contentHead = new JPanel(new BorderLayout(5, 0), false);
 			contentHead.add(makeMessage(m_languageBundle.getString("key_html_about")), BorderLayout.NORTH);
+			content.add(contentHead, BorderLayout.CENTER);
+			
+			JPanel logos = new JPanel(new FlowLayout(FlowLayout.RIGHT, 5, 5));
+			logos.add(new JLabel(new ImageIcon("etc/images/logo_big.png")));
+			logos.add(new JLabel(new ImageIcon("etc/images/gplv3.png")));
+			content.add(logos, BorderLayout.SOUTH);
 			
 			return content;
 		}
@@ -618,7 +622,7 @@ public class View extends JFrame implements IView {
 		private static JComponent makeMessage(String msg) {
 			JPanel retVal = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0),false);
 			JLabel filler = new JLabel(msg);
-			retVal.add(filler, BorderLayout.WEST);
+			retVal.add(filler);
 			return retVal;
 		}
 		
@@ -629,6 +633,7 @@ public class View extends JFrame implements IView {
 		private static JComponent makeOpenButtons() {
 			JPanel retVal = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0), false);
 			JButton tmp = new JButton(m_languageBundle.getString("key_openFile"));
+			tmp.setIcon(new ImageIcon("etc/images/text-x-generic.png"));
 			tmp.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
@@ -638,6 +643,7 @@ public class View extends JFrame implements IView {
 			retVal.add(tmp);
 			
 			tmp = new JButton(m_languageBundle.getString("key_openDir"));
+			tmp.setIcon(new ImageIcon("etc/images/folder.png"));
 			tmp.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
@@ -647,6 +653,7 @@ public class View extends JFrame implements IView {
 			retVal.add(tmp);
 			
 			tmp = new JButton(m_languageBundle.getString("key_exit"));
+			tmp.setIcon(new ImageIcon("etc/images/system-log-out.png"));
 			tmp.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {

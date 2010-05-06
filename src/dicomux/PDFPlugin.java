@@ -21,6 +21,7 @@ import org.jpedal.objects.PdfPageData;
 /**
  * This plug-in is for opening an encapsulated PDF in an DicomObject
  * @author heidi
+ * @author tobi
  *
  */
 public class PDFPlugin extends APlugin {
