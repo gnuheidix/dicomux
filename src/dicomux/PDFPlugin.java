@@ -16,6 +16,7 @@ import javax.swing.JScrollPane;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 import org.jpedal.PdfDecoder;
+import org.jpedal.objects.PdfPageData;
 
 /**
  * This plug-in is for opening an encapsulated PDF in an DicomObject
@@ -36,6 +37,7 @@ public class PDFPlugin extends APlugin {
 	@Override
 	public void setData(DicomObject dcm) throws Exception{
 		pdfDecoder = new PdfDecoder(true);
+		contend_dim = new Dimension();
 		
 		try {
 			// open PDF file
@@ -60,9 +62,8 @@ public class PDFPlugin extends APlugin {
 				System.out.println("m_content size " + m_content.getSize().toString());
 				System.out.println("PDF-Size "+pdfDecoder.getSize());
 				super.componentResized(e);
-				
 				contend_dim = m_content.getSize();
-				pdf_dim = pdfDecoder.getSize();
+				fitToPage();
 				
 			}
 		});
@@ -110,25 +111,8 @@ public class PDFPlugin extends APlugin {
 		zoomFit.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				float scale_y, scale_x;
-				scale_x = ((pdfDecoder.getScaling() / ((float)pdf_dim.width + 20))) * (float)contend_dim.width;
-				scale_y = ((pdfDecoder.getScaling() / (float)pdf_dim.height)) * (float)contend_dim.height;
-				System.out.println("scale_x: " + scale_x  );
-				pdfDecoder.setPageParameters(scale_x,1);
-				if(scale_x <= scale_y)
-				{
-					pdfDecoder.setPageParameters(scale_x,1);
-					System.out.println("scale_x"+ scale_x);
-					
-				}
-				else
-				{
-					pdfDecoder.setPageParameters(scale_y,1);
-					System.out.println("scale_y"+ scale_y);
-				}
 				
-				System.out.println("scaleX"+scale_x+"scaleY"+scale_y);
-				
+				fitToPage();
 				m_content.repaint();
 				currentScroll.updateUI();
 			}});
@@ -138,6 +122,34 @@ public class PDFPlugin extends APlugin {
 		m_content.add(currentScroll, BorderLayout.CENTER);
 	}
 
+	private void fitToPage()
+	{
+		PdfPageData pageData = pdfDecoder.getPdfPageData();
+		
+		System.out.println("getScaledMediaBoxHeight"+pageData.getScaledMediaBoxHeight(1));
+		System.out.println("getScaledMediaBoxWidth"+pageData.getScaledMediaBoxWidth(1));
+		int height = pageData.getScaledMediaBoxHeight(1);
+		int width = pageData.getScaledMediaBoxWidth(1);
+		
+		float scale_y, scale_x;
+		scale_x = ((pdfDecoder.getScaling() / ((float)width))) * (float)contend_dim.width;
+		scale_y = ((pdfDecoder.getScaling() / (float)height)) * (float)contend_dim.height;
+		System.out.println("scale_x: " + scale_x  );
+		System.out.println("scale_y: " + scale_y  );
+
+		if(scale_x <= scale_y)
+		{
+			pdfDecoder.setPageParameters(scale_x,1);
+			System.out.println("scale_x"+ scale_x);
+		}
+		else
+		{
+			pdfDecoder.setPageParameters(scale_y,1);
+			System.out.println("scale_y"+ scale_y);
+		}
+		
+	}
+	
 	private void zoomIn(float inc,int page)
 	{
 		//pdfDecoder.setSize(pdfDecoder.getWidth()+inc, pdfDecoder.getHeight()+inc);
