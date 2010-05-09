@@ -82,6 +82,7 @@ public class PDFPlugin extends APlugin {
 		
 		// add to JScrollPane
 		final JScrollPane currentScroll = new JScrollPane();
+		currentScroll.getVerticalScrollBar().setUnitIncrement(40);
 		currentScroll.setViewportView(pdfDecoder);
 //		
 		currentScroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
