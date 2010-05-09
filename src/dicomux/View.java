@@ -460,7 +460,7 @@ public class View extends JFrame implements IView {
 						name = m_languageBundle.getString("key_open");
 						break;
 					case ERROR_OPEN:
-						m_tabbedPane.add(StaticDialogs.makeErrorOpenTab());
+						m_tabbedPane.add(StaticDialogs.makeErrorOpenTab(tmp.getName()));
 						name = m_languageBundle.getString("key_error");
 						break;
 					case ABOUT:
@@ -584,13 +584,14 @@ public class View extends JFrame implements IView {
 		 * convenience method for building an error open tab
 		 * @return a JPanel
 		 */
-		protected static JComponent makeErrorOpenTab() {
+		protected static JComponent makeErrorOpenTab(String msg) {
 			JPanel content = new JPanel(new BorderLayout(5 , 5), false);
 			JPanel contentHead = new JPanel(new BorderLayout(5, 0), false);
 			content.add(contentHead, BorderLayout.NORTH);
 			
 			contentHead.add(makeMessage(m_languageBundle.getString("key_html_errOpenFile")), BorderLayout.NORTH);
-			contentHead.add(makeOpenButtons(), BorderLayout.SOUTH);
+			contentHead.add(makeOpenButtons(), BorderLayout.CENTER);
+			contentHead.add(makeMessage("Error code: " + msg), BorderLayout.SOUTH);
 			
 			return content;
 		}
