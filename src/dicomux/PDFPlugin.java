@@ -9,6 +9,7 @@ import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.util.Locale;
 
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -29,6 +30,7 @@ public class PDFPlugin extends APlugin {
 	private Dimension contend_dim;
 	private int pdf_page;
 	private JLabel page_lable;
+	private Locale language;
 	
 	@Override
 	public String getName() {
@@ -43,6 +45,9 @@ public class PDFPlugin extends APlugin {
 		contend_dim = new Dimension();
 		pdf_page = 1;
 		
+		// get a new content pane and add the PDF scrollpane to it
+		m_content = new JPanel(new BorderLayout(5, 5));
+		
 		try {
 			// open PDF file
 			pdfDecoder.openPdfArray(dcm.get(Tag.EncapsulatedDocument).getBytes());
@@ -55,13 +60,9 @@ public class PDFPlugin extends APlugin {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
 		// set scaling to 100%
 		pdfDecoder.setPageParameters((float)0.77,pdf_page);
-		
-		// get a new content pane and add the PDF scrollpane to it
-		m_content = new JPanel(new BorderLayout(5, 5));
-		
+				
 		m_content.addComponentListener(new ComponentAdapter() {
 			@Override
 			public void componentResized(ComponentEvent e) {
@@ -96,7 +97,9 @@ public class PDFPlugin extends APlugin {
 		//add zoom buttons
 		
 		// Zoom out
-		JButton zoomOut = new JButton("-");
+//		JButton zoomOut = new JButton("-");
+		JButton zoomOut = new JButton();
+		zoomOut.setIcon(new ImageIcon("etc/images/zoomOut.png"));
 		zoomOut.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
@@ -107,7 +110,8 @@ public class PDFPlugin extends APlugin {
 		tools.add(zoomOut);
 
 		// Zoom In
-		JButton zoomIn = new JButton("+");
+		JButton zoomIn = new JButton();
+		zoomIn.setIcon(new ImageIcon("etc/images/zoomIn.png"));
 		zoomIn.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
@@ -118,7 +122,8 @@ public class PDFPlugin extends APlugin {
 		tools.add(zoomIn);
 		
 		// Page fit
-		JButton zoomFit = new JButton("fit");
+		JButton zoomFit = new JButton();
+		zoomFit.setIcon(new ImageIcon("etc/images/fitToPage.png"));
 		zoomFit.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
@@ -130,7 +135,8 @@ public class PDFPlugin extends APlugin {
 		tools.add(zoomFit);
 		
 		//prev Page
-		JButton prevPage = new JButton("prev");
+		JButton prevPage = new JButton();
+		prevPage.setIcon(new ImageIcon("etc/images/go-previous.png"));
 		prevPage.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
@@ -161,7 +167,8 @@ public class PDFPlugin extends APlugin {
 		tools.add(page_lable);
 		
 		//next Page
-		JButton nextPage = new JButton("next");
+		JButton nextPage = new JButton();
+		nextPage.setIcon(new ImageIcon("etc/images/go-next.png"));
 		nextPage.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
@@ -234,7 +241,7 @@ public class PDFPlugin extends APlugin {
 	// TODO: implement
 	@Override
 	public void setLanguage(Locale locale) {
-		
+		language = locale;
 	}
 	
 	@Override
