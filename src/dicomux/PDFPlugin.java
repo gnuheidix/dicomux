@@ -1,12 +1,8 @@
 package dicomux;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.Graphics;
-import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
@@ -17,7 +13,6 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.border.Border;
 
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;

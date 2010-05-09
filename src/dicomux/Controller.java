@@ -149,7 +149,9 @@ public class Controller implements IController {
 				throw new Exception("No suitable plug-in found!");
 		} catch (Exception e) {
 			// something didn't work - let's show an error message
-			m_model.setWorkspace(m_view.getActiveWorkspaceId(), new TabObject(TabState.ERROR_OPEN, true));
+			TabObject errorTab = new TabObject(TabState.ERROR_OPEN, true);
+			errorTab.setName(e.getMessage());
+			m_model.setWorkspace(m_view.getActiveWorkspaceId(), errorTab);
 			e.printStackTrace();
 			return;
 		}

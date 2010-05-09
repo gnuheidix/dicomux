@@ -9,16 +9,13 @@ import java.awt.Graphics2D;
 import java.awt.GridLayout;
 import java.awt.RenderingHints;
 import java.awt.geom.Line2D;
-import java.util.Arrays;
 import java.util.Locale;
 
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 
 import org.dcm4che2.data.DicomElement;
 import org.dcm4che2.data.DicomObject;
-import org.dcm4che2.data.SpecificCharacterSet;
 import org.dcm4che2.data.Tag;
 
 /**
@@ -42,56 +39,45 @@ public class WaveformPlugin extends APlugin {
 	@Override
 	public void setData(DicomObject dcm) throws Exception {
 		m_content = new JPanel(new BorderLayout(5, 5));
-//		JLabel msg = new JLabel("Dicomux is currently unable to render ECG waveforms.");
-//		msg.setHorizontalAlignment(JLabel.CENTER);
-//		m_content.add(msg, BorderLayout.CENTER);
 		
 		// get WaveformSequence
 		DicomElement temp = dcm.get(Tag.WaveformSequence);
-		if(temp == null) {
-			System.out.println("Error: could not read WaveformSequence");
-			return;
-		}
+		if(temp == null)
+			throw new Exception("Error: could not read WaveformSequence");
+		
 		dcm = temp.getDicomObject();
 		
 		// read the number of allocated bits per sample 
 		// used to differ between general ECG and 12 Lead ECG
 		DicomElement bitsAllocated = dcm.get(Tag.WaveformBitsAllocated);
-		if(bitsAllocated == null) {
-			System.out.println("Error: could not read WaveformBitsAllocated");
-			return;
-		}
+		if(bitsAllocated == null)
+			throw new Exception("Error: could not read WaveformBitsAllocated");
 		
 		// read waveform data which contains the samples
 		DicomElement waveformData = dcm.get(Tag.WaveformData);
-		if(waveformData == null) {
-			System.out.println("Error: could not read WaveformData");
-			return;
-		}
+		if(waveformData == null)
+			throw new Exception("Error: could not read WaveformData");
 		
 		DicomElement samplingFrequency = dcm.get(Tag.SamplingFrequency);
-		if(samplingFrequency == null) {
-			System.out.println("Error: could not read SamplingFrequency");
-			return;
-		}
+		if(samplingFrequency == null)
+			throw new Exception("Error: could not read SamplingFrequency");
+		
 		double frequency = samplingFrequency.getDouble(true);
 		
 		//read number of samples per channel
 		DicomElement samples = dcm.get(Tag.NumberOfWaveformSamples);
-		if(samples == null) {
-			System.out.println("Error: could not read NumberOfWaveformSamples");
-			return;
-		}
+		if(samples == null)
+			throw new Exception("Error: could not read NumberOfWaveformSamples");
+			
 		int numberOfSamples = samples.getInt(true);
 		
 		int seconds = (int) (numberOfSamples / frequency);
 		
 		// read number of channels
 		DicomElement channels = dcm.get(Tag.NumberOfWaveformChannels);
-		if(channels == null) {
-			System.out.println("Error: could not read NumberOfWaveformChannels");
-			return;
-		}
+		if(channels == null)
+			throw new Exception("Error: could not read NumberOfWaveformChannels");
+			
 		int numberOfChannels = channels.getInt(true);
 		
 		int[][] data = new int[numberOfChannels][numberOfSamples];
@@ -109,10 +95,7 @@ public class WaveformPlugin extends APlugin {
 			}
 		}
 		else
-		{
-			System.out.println("Error: bitsAllocated is an unexpected value, value: " + bitsAllocated.getInt(true));
-			return;
-		}
+			throw new Exception("Error: bitsAllocated is an unexpected value, value: " + bitsAllocated.getInt(true));
 		
 		JPanel channelpane = new JPanel();
 		channelpane.setBackground(Color.BLACK);
@@ -128,7 +111,6 @@ public class WaveformPlugin extends APlugin {
 		scroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
 		
 		m_content.add(scroll, BorderLayout.CENTER);
-		
 	}
 	
 	// TODO implement if necessary
