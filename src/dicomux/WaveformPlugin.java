@@ -7,6 +7,8 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.RenderingHints;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
@@ -225,7 +227,8 @@ public class WaveformPlugin extends APlugin {
 			this.setLayout(layout);
 			
 			this.info = new JPanel();
-			BoxLayout infolayout = new BoxLayout(info, BoxLayout.PAGE_AXIS);
+			//BoxLayout infolayout = new BoxLayout(info, BoxLayout.PAGE_AXIS);
+			GridBagLayout infolayout = new GridBagLayout();
 			info.setLayout(infolayout);
 			info.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 			
@@ -233,17 +236,56 @@ public class WaveformPlugin extends APlugin {
 			info.setSize(new Dimension(this.infowidth,(int)this.height));
 			info.setMaximumSize(new Dimension(this.infowidth, Short.MAX_VALUE));
 			
+			GridBagConstraints c1 = new GridBagConstraints();
+			c1.weightx = 0.5;
+			c1.gridwidth = 2;
+			c1.gridx = 0;
+			c1.gridy = 0;
+			c1.anchor = GridBagConstraints.LAST_LINE_START;
+			
 			JLabel leadname = new JLabel(this.lead);
-			info.add(leadname);
-			info.add(Box.createRigidArea(new Dimension(0, 3)));
+			info.add(leadname, c1);
 			
-			JLabel minimum = new JLabel("Minimum: " + this.min);
-			info.add(minimum);
-			info.add(Box.createRigidArea(new Dimension(0, 3)));
+			//info.add(Box.createRigidArea(new Dimension(0, 3)));
 			
-			JLabel maximum = new JLabel("Minimum: " + this.max);
-			info.add(maximum);
-			info.add(Box.createRigidArea(new Dimension(0, 3)));
+			GridBagConstraints c2 = new GridBagConstraints();
+			c2.weightx = 0.5;
+			c2.gridx = 0;
+			c2.gridy = 1;
+			c2.anchor = GridBagConstraints.LAST_LINE_START;
+			
+			JLabel minimum = new JLabel("Minimum:");
+			info.add(minimum, c2);
+			
+			GridBagConstraints c3 = new GridBagConstraints();
+			c3.weightx = 0.5;
+			c3.gridx = 1;
+			c3.gridy = 1;
+			c3.anchor = GridBagConstraints.LAST_LINE_END;
+			
+			JLabel minimum_value = new JLabel("" + this.min);
+			info.add(minimum_value, c3);
+			
+			//info.add(Box.createRigidArea(new Dimension(0, 3)));
+			
+			GridBagConstraints c4 = new GridBagConstraints();
+			c4.weightx = 0.5;
+			c4.gridx = 0;
+			c4.gridy = 2;
+			c4.anchor = GridBagConstraints.LAST_LINE_START;
+			
+			JLabel maximum = new JLabel("Maximum:");
+			info.add(maximum, c4);
+			
+			GridBagConstraints c5 = new GridBagConstraints();
+			c5.weightx = 0.5;
+			c5.gridx = 1;
+			c5.gridy = 2;
+			c5.anchor = GridBagConstraints.LAST_LINE_END;
+			
+			JLabel maximum_value = new JLabel("" + this.max);
+			info.add(maximum_value, c5);
+			//info.add(Box.createRigidArea(new Dimension(0, 3)));
 			
 			
 			this.add(info, BorderLayout.WEST);
