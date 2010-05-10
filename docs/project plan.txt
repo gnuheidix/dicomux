@@ -206,6 +206,30 @@ Schedule
 * End: May/9th
 
 Review meeting
+* Prof. Dr. Johner got the report; the meeting with him was successful
+** He tries to get more Dicom files for testing purposes
+* The RawPlugin has been improved and needs no further attention.
+* The PDF plug-in has been extended but still needs some more attention.
+* The waveform render engine has been included in Dicomux. It's capable of rendering 12 lead ECG.
 
+########### Sprint #5 ###########
 
+Sprint meeting
+* Some work has been done on the waveform plug-in. This has to be continued.
+* All functions of the PDF plug-in need to be improved.
+** page switchers only visible if more than one page
+** resize of the application has to be handled properly
+** the fit to page function has to work
+* The plug-in mechanism has to be improved in order to make sure that the selected plug-in really fits to the file.
+
+Working packages
+* improve pdf plug-in (Tobi)
+* continue work on the waveform render plug-in (Norbert)
+* improve plug-in mechanism (Heidi)
+
+Schedule
+* Begin: May/10th
+* End: May/16th
+
+Review meeting
 
