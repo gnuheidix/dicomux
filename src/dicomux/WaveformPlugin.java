@@ -6,16 +6,22 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.GridLayout;
 import java.awt.RenderingHints;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.awt.geom.Line2D;
 import java.util.Locale;
+import java.util.Vector;
 
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 
 import org.dcm4che2.data.DicomElement;
 import org.dcm4che2.data.DicomObject;
+import org.dcm4che2.data.SpecificCharacterSet;
 import org.dcm4che2.data.Tag;
 
 /**
@@ -24,6 +30,10 @@ import org.dcm4che2.data.Tag;
  * @author norbert
  */
 public class WaveformPlugin extends APlugin {
+	
+	private Vector<ChannelPanel> pannels = new Vector<ChannelPanel>(12);
+	
+	
 	@Override
 	public int[] getKeyTags() {
 		final int[] keyTags = {Tag.WaveformSequence};
@@ -97,13 +107,45 @@ public class WaveformPlugin extends APlugin {
 		else
 			throw new Exception("Error: bitsAllocated is an unexpected value, value: " + bitsAllocated.getInt(true));
 		
+		DicomElement channelDef = dcm.get(Tag.ChannelDefinitionSequence);
+		if(channelDef == null) 
+			throw new Exception("Error: could not read ChannelDefinitionSequence");
+		
+		
+		String[] leads = new String[numberOfChannels];  
+		for(int i = 0; i < channelDef.countItems(); i++) {
+			DicomObject object = channelDef.getDicomObject(i);
+			DicomElement tmpElement =  object.get(Tag.ChannelSourceSequence);
+			
+			if(tmpElement == null)
+				throw new Exception("Error: could not read ChannelSourceSequence");
+			
+			DicomObject channelSS =  tmpElement.getDicomObject();
+			if(channelSS == null) 
+				throw new Exception("Error: could not read ChannelSourceSequence DicomObject");
+			
+			DicomElement meaning = channelSS.get(Tag.CodeMeaning);
+			if(meaning == null) 
+				throw new Exception("Error: could not read Code Meaning");
+			
+			String lead = meaning.getValueAsString(new SpecificCharacterSet("UTF-8"), 50);
+			leads[i] = lead;	
+		}
+		
+		
+		
 		JPanel channelpane = new JPanel();
 		channelpane.setBackground(Color.BLACK);
-		channelpane.setLayout(new GridLayout(12, 1, 0, 2));
+		BoxLayout layout = new BoxLayout(channelpane, BoxLayout.PAGE_AXIS);
+		
+		channelpane.setLayout(layout);
 		
 		for(int i = 0; i < numberOfChannels; i++) {
-			ChannelPanel chPannel = new ChannelPanel(data[i], 765, 92, seconds);
+			ChannelPanel chPannel = new ChannelPanel(data[i], 765, 92, seconds, leads[i]);
 			channelpane.add(chPannel);
+			channelpane.add(Box.createRigidArea(new Dimension(0,2)));
+			// add panel to vector
+			this.pannels.add(chPannel);
 		}
 		
 		JScrollPane scroll = new JScrollPane(channelpane);
@@ -111,6 +153,18 @@ public class WaveformPlugin extends APlugin {
 		scroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
 		
 		m_content.add(scroll, BorderLayout.CENTER);
+		
+		m_content.addComponentListener(new ComponentAdapter() {
+			@Override
+			public void componentResized(ComponentEvent e) {
+				super.componentResized(e);
+				Dimension m_content_dim = m_content.getSize();
+				Dimension dim = new Dimension(m_content.getWidth() - 20, (int) (m_content_dim.getHeight() / 4));
+				repaintPanels(dim);
+			}
+		});
+		
+		
 	}
 	
 	// TODO implement if necessary
@@ -118,22 +172,98 @@ public class WaveformPlugin extends APlugin {
 	public void setLanguage(Locale locale) {
 		
 	}
-
-
+	
+	private void repaintPanels(Dimension dim) {
+		if(!this.pannels.isEmpty()) {
+			for (ChannelPanel p : this.pannels) {
+				p.setPreferredSize(dim);
+				p.setSize(dim);
+				p.repaint();
+			}
+		}
+	}
+	
 	private class ChannelPanel extends JPanel {
+		
+		private static final long serialVersionUID = 2025755356632083060L;
+		private int secs;
+		private double height;
+		private double width;
+		private int[] data;
+		private String lead;
+		private JPanel info;
+		private DrawingPanel graph;
+
+		public ChannelPanel(int[] values, int width, int height, int secs, String lead) {
+			this.data = values;
+			this.setPreferredSize(new Dimension(width, height));
+			this.setSize(new Dimension(width, height));
+			this.secs = secs;
+			this.lead = lead;
+
+			
+			Dimension dim = this.getPreferredSize();
+			this.height = dim.getHeight();
+			this.width = dim.getWidth();
+			
+			BoxLayout layout = new BoxLayout(this, BoxLayout.LINE_AXIS);
+			this.setLayout(layout);
+			
+			this.info = new JPanel();
+			info.setPreferredSize(new Dimension(100,(int)this.height));
+			info.setSize(new Dimension(100,(int)this.height));
+			info.setMaximumSize(new Dimension(100, Short.MAX_VALUE));
+			
+			JLabel leadname = new JLabel(this.lead);
+			info.add(leadname);
+			
+			this.add(info, BorderLayout.WEST);
+			
+			this.graph = new DrawingPanel(this.data,(int) (this.width - 100), (int) this.height, this.secs);
+			dim = new Dimension((int) (this.width - 100), (int) this.height);
+			graph.setPreferredSize(dim);
+			graph.setSize(dim);
+			
+			this.add(graph, BorderLayout.EAST);
+		}
+		
+		public void paintComponent( Graphics g ) {
+			super.paintComponent(g);
+			
+			Dimension dim = this.getPreferredSize();
+			this.height = dim.getHeight();
+			this.width = dim.getWidth();
+			
+			info.setPreferredSize(new Dimension(100,(int)this.height));
+			info.setSize(new Dimension(100,(int)this.height));
+			info.setMaximumSize(new Dimension(100, Short.MAX_VALUE));
+			info.repaint();
+			
+			dim = new Dimension((int) (this.width - 100), (int) this.height);
+			graph.setPreferredSize(dim);
+			graph.setSize(dim);
+			graph.repaint();
+			
+		}
+		
+	}
+	
+
+	private class DrawingPanel extends JPanel {
 		
 		private static final long serialVersionUID = 856943381513072262L;
 		private int[] data;
 		private float scalingWidth;
 		private int secs;
 		
-		public ChannelPanel(int[] values, int width, int height, int secs) {
+		public DrawingPanel(int[] values, int width, int height, int secs) {
 			this.data = values;
 			this.setPreferredSize(new Dimension(width, height));
+			this.setSize(new Dimension(width, height));
 			this.secs = secs;
 		}
 		
-		public void paintComponent( Graphics g ){
+		public void paintComponent( Graphics g ) {
 		
 			int mv_cell_count = 6;
 			int secs_cell_count = this.secs * 5;
@@ -191,8 +321,7 @@ public class WaveformPlugin extends APlugin {
 			// draw waveform as line using the given values
 			g2.setColor(Color.BLACK);
 			g2.setStroke(new BasicStroke(1.2f));
-			for(int i  = 0; i < (this.data.length - 1); i++)
-			{
+			for(int i  = 0; i < (this.data.length - 1); i++) {
 				int a = i;
 				int b = i + 1;
 				Line2D line = new Line2D.Double(this.scalingWidth * a, (dim.height /2 - ( (float)(this.data[a] / (float) 100) * cellheight) ), 
