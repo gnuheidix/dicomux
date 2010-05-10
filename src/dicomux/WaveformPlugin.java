@@ -3,6 +3,7 @@ package dicomux;
 import java.awt.BasicStroke;
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -13,6 +14,7 @@ import java.awt.geom.Line2D;
 import java.util.Locale;
 import java.util.Vector;
 
+import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JLabel;
@@ -192,16 +194,29 @@ public class WaveformPlugin extends APlugin {
 		private int[] data;
 		private String lead;
 		private JPanel info;
+		private int max;
+		private int min;
 		private DrawingPanel graph;
+		private final int infowidth = 120;
 
 		public ChannelPanel(int[] values, int width, int height, int secs, String lead) {
 			this.data = values;
+			
+			this.min = this.data[0];
+			this.max = this.data[0];
+			
+			for(int i = 0; i < this.data.length; i++ ) {
+				if(this.min > this.data[i])
+					this.min = this.data[i];
+				if(this.max < this.data[i])
+					this.max = this.data[i];
+			}
+			
 			this.setPreferredSize(new Dimension(width, height));
 			this.setSize(new Dimension(width, height));
 			this.secs = secs;
 			this.lead = lead;
-
-			
+						
 			Dimension dim = this.getPreferredSize();
 			this.height = dim.getHeight();
 			this.width = dim.getWidth();
@@ -210,17 +225,31 @@ public class WaveformPlugin extends APlugin {
 			this.setLayout(layout);
 			
 			this.info = new JPanel();
-			info.setPreferredSize(new Dimension(100,(int)this.height));
-			info.setSize(new Dimension(100,(int)this.height));
-			info.setMaximumSize(new Dimension(100, Short.MAX_VALUE));
+			BoxLayout infolayout = new BoxLayout(info, BoxLayout.PAGE_AXIS);
+			info.setLayout(infolayout);
+			info.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+			
+			info.setPreferredSize(new Dimension(this.infowidth,(int)this.height));
+			info.setSize(new Dimension(this.infowidth,(int)this.height));
+			info.setMaximumSize(new Dimension(this.infowidth, Short.MAX_VALUE));
 			
 			JLabel leadname = new JLabel(this.lead);
 			info.add(leadname);
+			info.add(Box.createRigidArea(new Dimension(0, 3)));
+			
+			JLabel minimum = new JLabel("Minimum: " + this.min);
+			info.add(minimum);
+			info.add(Box.createRigidArea(new Dimension(0, 3)));
+			
+			JLabel maximum = new JLabel("Minimum: " + this.max);
+			info.add(maximum);
+			info.add(Box.createRigidArea(new Dimension(0, 3)));
+			
 			
 			this.add(info, BorderLayout.WEST);
 			
-			this.graph = new DrawingPanel(this.data,(int) (this.width - 100), (int) this.height, this.secs);
-			dim = new Dimension((int) (this.width - 100), (int) this.height);
+			this.graph = new DrawingPanel(this.data,(int) (this.width - this.infowidth), (int) this.height, this.secs);
+			dim = new Dimension((int) (this.width - this.infowidth), (int) this.height);
 			graph.setPreferredSize(dim);
 			graph.setSize(dim);
 			
@@ -234,12 +263,12 @@ public class WaveformPlugin extends APlugin {
 			this.height = dim.getHeight();
 			this.width = dim.getWidth();
 			
-			info.setPreferredSize(new Dimension(100,(int)this.height));
-			info.setSize(new Dimension(100,(int)this.height));
-			info.setMaximumSize(new Dimension(100, Short.MAX_VALUE));
+			info.setPreferredSize(new Dimension(this.infowidth,(int)this.height));
+			info.setSize(new Dimension(this.infowidth,(int)this.height));
+			info.setMaximumSize(new Dimension(this.infowidth, Short.MAX_VALUE));
 			info.repaint();
 			
-			dim = new Dimension((int) (this.width - 100), (int) this.height);
+			dim = new Dimension((int) (this.width - this.infowidth), (int) this.height);
 			graph.setPreferredSize(dim);
 			graph.setSize(dim);
 			graph.repaint();
