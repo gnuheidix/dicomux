@@ -3,7 +3,6 @@ package dicomux;
 import java.awt.BasicStroke;
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -12,7 +11,10 @@ import java.awt.GridBagLayout;
 import java.awt.RenderingHints;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionAdapter;
 import java.awt.geom.Line2D;
+import java.text.DecimalFormat;
 import java.util.Locale;
 import java.util.Vector;
 
@@ -198,11 +200,16 @@ public class WaveformPlugin extends APlugin {
 		private JPanel info;
 		private int max;
 		private int min;
+		private JLabel mv_pos_label;
+		private JLabel secs_pos_label;
 		private DrawingPanel graph;
 		private final int infowidth = 120;
 
 		public ChannelPanel(int[] values, int width, int height, int secs, String lead) {
 			this.data = values;
+			
+			this.mv_pos_label = new JLabel();
+			this.secs_pos_label = new JLabel();
 			
 			this.min = this.data[0];
 			this.max = this.data[0];
@@ -227,7 +234,6 @@ public class WaveformPlugin extends APlugin {
 			this.setLayout(layout);
 			
 			this.info = new JPanel();
-			//BoxLayout infolayout = new BoxLayout(info, BoxLayout.PAGE_AXIS);
 			GridBagLayout infolayout = new GridBagLayout();
 			info.setLayout(infolayout);
 			info.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
@@ -238,21 +244,22 @@ public class WaveformPlugin extends APlugin {
 			
 			GridBagConstraints c1 = new GridBagConstraints();
 			c1.weightx = 0.5;
-			c1.gridwidth = 2;
+			c1.gridwidth = 3;
 			c1.gridx = 0;
 			c1.gridy = 0;
-			c1.anchor = GridBagConstraints.LAST_LINE_START;
+			c1.ipady = 5;
+			c1.anchor = GridBagConstraints.LINE_START;
 			
 			JLabel leadname = new JLabel(this.lead);
 			info.add(leadname, c1);
 			
-			//info.add(Box.createRigidArea(new Dimension(0, 3)));
-			
 			GridBagConstraints c2 = new GridBagConstraints();
 			c2.weightx = 0.5;
+			c2.gridwidth = 2;
 			c2.gridx = 0;
 			c2.gridy = 1;
-			c2.anchor = GridBagConstraints.LAST_LINE_START;
+			c2.ipady = 5;
+			c2.anchor = GridBagConstraints.LINE_START;
 			
 			JLabel minimum = new JLabel("Minimum:");
 			info.add(minimum, c2);
@@ -261,18 +268,19 @@ public class WaveformPlugin extends APlugin {
 			c3.weightx = 0.5;
 			c3.gridx = 1;
 			c3.gridy = 1;
-			c3.anchor = GridBagConstraints.LAST_LINE_END;
+			c3.ipady = 5;
+			c3.anchor = GridBagConstraints.LINE_END;
 			
 			JLabel minimum_value = new JLabel("" + this.min);
 			info.add(minimum_value, c3);
 			
-			//info.add(Box.createRigidArea(new Dimension(0, 3)));
-			
 			GridBagConstraints c4 = new GridBagConstraints();
 			c4.weightx = 0.5;
+			c4.gridwidth = 2;
 			c4.gridx = 0;
 			c4.gridy = 2;
-			c4.anchor = GridBagConstraints.LAST_LINE_START;
+			c4.ipady = 5;
+			c4.anchor = GridBagConstraints.LINE_START;
 			
 			JLabel maximum = new JLabel("Maximum:");
 			info.add(maximum, c4);
@@ -281,16 +289,65 @@ public class WaveformPlugin extends APlugin {
 			c5.weightx = 0.5;
 			c5.gridx = 1;
 			c5.gridy = 2;
-			c5.anchor = GridBagConstraints.LAST_LINE_END;
+			c5.ipady = 5;
+			c5.anchor = GridBagConstraints.LINE_END;
 			
 			JLabel maximum_value = new JLabel("" + this.max);
 			info.add(maximum_value, c5);
-			//info.add(Box.createRigidArea(new Dimension(0, 3)));
+			
+			GridBagConstraints c6 = new GridBagConstraints();
+			c6.weightx = 0.5;
+			c6.gridwidth = 3;
+			c6.gridx = 0;
+			c6.gridy = 3;
+			c6.ipady = 5;
+			c6.anchor = GridBagConstraints.LINE_START;
+			
+			JLabel position = new JLabel("Position");
+			info.add(position, c6);
+			
+			GridBagConstraints c7 = new GridBagConstraints();
+			c7.weightx = 0.5;
+			c7.gridx = 0;
+			c7.gridy = 4;
+			c7.ipady = 5;
+			c7.anchor = GridBagConstraints.LINE_START;
+			
+			JLabel mv_pos = new JLabel("mV:");
+			info.add(mv_pos, c7);
+			
+			GridBagConstraints c8 = new GridBagConstraints();
+			c8.weightx = 0.5;
+			c8.gridx = 1;
+			c8.gridy = 4;
+			c8.ipady = 5;
+			c8.anchor = GridBagConstraints.LINE_END;
+			
+			info.add(this.mv_pos_label, c8);
+			
+			GridBagConstraints c9 = new GridBagConstraints();
+			c9.weightx = 0.5;
+			c9.gridx = 0;
+			c9.gridy = 5;
+			c9.ipady = 5;
+			c9.anchor = GridBagConstraints.LINE_START;
+			
+			JLabel secs_pos = new JLabel("Second:");
+			info.add(secs_pos, c9);
+
+			GridBagConstraints c10 = new GridBagConstraints();
+			c10.weightx = 0.5;
+			c10.gridx = 1;
+			c10.gridy = 5;
+			c10.ipady = 5;
+			c10.anchor = GridBagConstraints.LINE_END;
+			
+			info.add(this.secs_pos_label, c10);
 			
 			
 			this.add(info, BorderLayout.WEST);
 			
-			this.graph = new DrawingPanel(this.data,(int) (this.width - this.infowidth), (int) this.height, this.secs);
+			this.graph = new DrawingPanel(this.data,(int) (this.width - this.infowidth), (int) this.height, this.secs, this);
 			dim = new Dimension((int) (this.width - this.infowidth), (int) this.height);
 			graph.setPreferredSize(dim);
 			graph.setSize(dim);
@@ -317,6 +374,16 @@ public class WaveformPlugin extends APlugin {
 			
 		}
 		
+		public void setPosition(double mv, double sec) {
+		
+			DecimalFormat form = new DecimalFormat("#.##");
+
+			this.secs_pos_label.setText(Double.toString(Double.valueOf(form.format(sec))));
+			
+			double tmp = Math.round(mv);		
+			this.mv_pos_label.setText(Double.toString(tmp));
+		}
+		
 	}
 	
 
@@ -326,18 +393,20 @@ public class WaveformPlugin extends APlugin {
 		private int[] data;
 		private float scalingWidth;
 		private int secs;
+		private ChannelPanel upper;
 		
-		public DrawingPanel(int[] values, int width, int height, int secs) {
+		public DrawingPanel(int[] values, int width, int height, int secs, ChannelPanel upper) {
 			this.data = values;
 			this.setPreferredSize(new Dimension(width, height));
 			this.setSize(new Dimension(width, height));
 			this.secs = secs;
+			this.upper = upper;
 		}
 		
 		public void paintComponent( Graphics g ) {
 		
 			int mv_cell_count = 6;
-			int secs_cell_count = this.secs * 5;
+			int secs_cell_count = this.secs * 10;
 			
 			super.paintComponent(g);
 			Graphics2D g2 = (Graphics2D) g;
@@ -350,10 +419,10 @@ public class WaveformPlugin extends APlugin {
 			g2.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_NORMALIZE);
 			g2.setRenderingHint(RenderingHints.KEY_DITHERING, RenderingHints.VALUE_DITHER_ENABLE);
 						
-			Dimension dim = getPreferredSize();
+			final Dimension dim = getPreferredSize();
 			// calculate height and width of the cells
-			double cellheight = dim.getHeight() / mv_cell_count;
-			double cellwidth = dim.getWidth() / secs_cell_count;
+			final double cellheight = dim.getHeight() / mv_cell_count;
+			final double cellwidth = dim.getWidth() / secs_cell_count;
 			
 			// calculate the scaling which is dependent to the width
 			this.scalingWidth =  (float) (cellwidth / (data.length / secs_cell_count ));
@@ -362,7 +431,7 @@ public class WaveformPlugin extends APlugin {
 			g2.setColor(new Color(231, 84, 72));
 			// draw horizontal lines
 			for(int i = 0; i < mv_cell_count; i++) {
-				if(i % 10 == 0)
+				if(i % (mv_cell_count / 2) == 0)
 				{
 					g2.setStroke(new BasicStroke(2.0f));
 				}
@@ -377,7 +446,7 @@ public class WaveformPlugin extends APlugin {
 			
 			// draw vertical lines
 			for(int i = 0; i < secs_cell_count; i++ ) {
-				if(i % 5 == 0)
+				if(i % 10 == 0)
 				{
 					g2.setStroke(new BasicStroke(2.0f));
 				}
@@ -399,6 +468,20 @@ public class WaveformPlugin extends APlugin {
 						this.scalingWidth * b, ( dim.height /2 - ( (float)(this.data[b] / (float) 100) * cellheight ) ));
 				g2.draw(line);
 			 }
+			
+			this.addMouseMotionListener( new MouseMotionAdapter() {
+						
+					@Override
+					public void mouseMoved(MouseEvent e) {
+						
+						double sec = e.getPoint().getX() / cellwidth * 0.1;
+						double mv = ((dim.getHeight() / 2) - e.getPoint().getY()) / cellheight * 100;
+						
+						upper.setPosition(mv, sec);
+					}
+				}
+			);
+				
 			
 		}	
 		
