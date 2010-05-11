@@ -378,7 +378,7 @@ public class WaveformPlugin extends APlugin {
 		
 			DecimalFormat form = new DecimalFormat("#.##");
 
-			this.secs_pos_label.setText(Double.toString(Double.valueOf(form.format(sec))));
+			this.secs_pos_label.setText(form.format(sec));
 			
 			double tmp = Math.round(mv);		
 			this.mv_pos_label.setText(Double.toString(tmp));
