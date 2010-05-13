@@ -8,6 +8,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.util.Locale;
+import java.util.ResourceBundle;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -31,12 +32,28 @@ public class PDFPlugin extends APlugin {
 	private int pdf_page;
 	private JLabel page_lable;
 	private Locale language;
+	private static ResourceBundle m_languageBundle; 
+	/**
+	 * base name of the language files which are located in etc<br/>
+	 * this constant will be used by m_languageBundle
+	 */
+	private final String m_langBaseName = "language";
+	private final JScrollPane currentScroll;
 	
 	@Override
 	public String getName() {
 		return "Encapsulated PDF";
 	}
 	private PdfDecoder pdfDecoder;
+	
+	public PDFPlugin()
+	{
+		if(language == null)
+		language = new Locale(System.getProperty("user.language"));
+		
+		m_languageBundle = ResourceBundle.getBundle(m_langBaseName,language );
+		currentScroll = new JScrollPane();
+	}
 	
 	// TODO: check for crap; add zoom and page select buttons;
 	@Override
@@ -61,8 +78,9 @@ public class PDFPlugin extends APlugin {
 			e.printStackTrace();
 		}
 		// set scaling to 100%
-		pdfDecoder.setPageParameters((float)0.77,pdf_page);
-				
+//		pdfDecoder.setPageParameters((float)0.77,pdf_page);
+		pdfDecoder.setPageParameters(2,pdf_page);		
+		
 		m_content.addComponentListener(new ComponentAdapter() {
 			@Override
 			public void componentResized(ComponentEvent e) {
@@ -70,14 +88,15 @@ public class PDFPlugin extends APlugin {
 				System.out.println("PDF-Size "+pdfDecoder.getSize());
 				super.componentResized(e);
 				contend_dim = m_content.getSize();
-				fitToPage();
+				//fitToPage();
 				
 			}
 		});
 		
 		
 		// add to JScrollPane
-		final JScrollPane currentScroll = new JScrollPane();
+		//final JScrollPane currentScroll = new JScrollPane();
+		
 		currentScroll.getVerticalScrollBar().setUnitIncrement(40);
 		currentScroll.setViewportView(pdfDecoder);
 //		
@@ -86,7 +105,7 @@ public class PDFPlugin extends APlugin {
 //		//currentScroll.setSize(200, 200);
 //		
 		JPanel tools = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 5));
-//		
+		JPanel tools_navigation = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 5));
 //		pdfDecoder.setSize(m_content.getSize());
 		currentScroll.add(pdfDecoder);
 		currentScroll.setViewportView(pdfDecoder);
@@ -129,6 +148,7 @@ public class PDFPlugin extends APlugin {
 			public void actionPerformed(ActionEvent arg0) {
 				
 				fitToPage();
+				fitToPage();
 				m_content.repaint();
 				currentScroll.updateUI();
 			}});
@@ -160,11 +180,11 @@ public class PDFPlugin extends APlugin {
 				page_lable.setText("Page " + pdf_page + " of " + pdfDecoder.getPageCount());
 				m_content.repaint();
 			}});
-		tools.add(prevPage);
+		tools_navigation.add(prevPage);
 		
 		// Lable PageOf
 		page_lable = new JLabel("Page " + pdf_page + " of " + pdfDecoder.getPageCount() );
-		tools.add(page_lable);
+		tools_navigation.add(page_lable);
 		
 		//next Page
 		JButton nextPage = new JButton();
@@ -191,37 +211,44 @@ public class PDFPlugin extends APlugin {
 				page_lable.setText("Page " + pdf_page + " of " + pdfDecoder.getPageCount());
 				m_content.repaint();
 			}});
-		tools.add(nextPage);
+		tools_navigation.add(nextPage);
 		
-
+		if(pdfDecoder.getPageCount() > 1)
+		tools.add(tools_navigation);
+		
 		m_content.add(tools, BorderLayout.NORTH);
 		m_content.add(currentScroll, BorderLayout.CENTER);
+	
 	}
 
 	private void fitToPage()
 	{
 		PdfPageData pageData = pdfDecoder.getPdfPageData();
-		
-		System.out.println("getMediaBoxHeight"+pageData.getMediaBoxHeight(pdf_page));
-		System.out.println("getMediaBoxWidth"+pageData.getMediaBoxWidth(pdf_page));
+
+		System.out.println("getScaledMediaBoxHeight"+pageData.getScaledMediaBoxHeight(pdf_page));
+		System.out.println("getScaledMediaBoxWidth"+pageData.getScaledMediaBoxWidth(pdf_page));
 		int height = pageData.getScaledMediaBoxHeight(pdf_page);
 		int width = pageData.getScaledMediaBoxWidth(pdf_page);
 		
 		float scale_y, scale_x;
-		scale_x = ((pdfDecoder.getScaling() / ((float)width))) * (float)contend_dim.width;
-		scale_y = ((pdfDecoder.getScaling() / (float)height)) * (float)contend_dim.height;
+		scale_x = ((float)pdfDecoder.getScaling() / (float)width) * (float)((float)contend_dim.width - (float)200*(float)pdfDecoder.getScaling());
+		scale_y = ((float)pdfDecoder.getScaling() / (float)height) * (float)((float)contend_dim.height + (float)140*(float)pdfDecoder.getScaling());
+		
+		System.out.println("scaling before: " + pdfDecoder.getScaling());
+		System.out.println("contend_dim.width: "+contend_dim.width);
+		System.out.println("contend_dim.height: "+contend_dim.height);
 		System.out.println("scale_x: " + scale_x  );
 		System.out.println("scale_y: " + scale_y  );
 
-		if(scale_x <= scale_y)
+		if(scale_x < scale_y)
 		{
 			pdfDecoder.setPageParameters(scale_x,pdf_page);
-			System.out.println("scale_x"+ scale_x);
+			System.out.println("scale_x after"+ scale_x);
 		}
 		else
 		{
 			pdfDecoder.setPageParameters(scale_y,pdf_page);
-			System.out.println("scale_y"+ scale_y);
+			System.out.println("scale_y after"+ scale_y);
 		}
 		
 	}
@@ -242,6 +269,9 @@ public class PDFPlugin extends APlugin {
 	@Override
 	public void setLanguage(Locale locale) {
 		language = locale;
+		// set the global language for all GUI Elements (load the ResourceBundle)
+		
+		
 	}
 	
 	@Override
