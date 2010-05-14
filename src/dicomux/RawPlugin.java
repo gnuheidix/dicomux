@@ -66,7 +66,7 @@ public class RawPlugin extends APlugin {
 				nodeValue += " [Items: " + element.countItems() + "]";
 				DefaultMutableTreeNode multiNode = new DefaultMutableTreeNode(nodeValue, true);
 				
-				// extract all DicomObjects from the DicomElement recursively
+				// extract all DicomObjects of the DicomElement recursively
 				for (int i = 0; i < element.countItems(); ++i)
 					multiNode.add(extractAllDicomElements("Item " + i, element.getDicomObject(i)));
 				
@@ -91,11 +91,5 @@ public class RawPlugin extends APlugin {
 	@Override
 	public void setLanguage(Locale locale) {
 		// not needed in this plug-in
-	}
-	
-	@Override
-	public int[] getKeyTags() {
-		final int[] keyFormats = {};
-		return keyFormats;
 	}
 }

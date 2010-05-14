@@ -46,8 +46,11 @@ public class PDFPlugin extends APlugin {
 	}
 	private PdfDecoder pdfDecoder;
 	
-	public PDFPlugin()
+	public PDFPlugin() throws Exception
 	{
+		m_keyTag.addKey(Tag.MIMETypeOfEncapsulatedDocument, "application/pdf");
+		m_keyTag.addKey(Tag.EncapsulatedDocument, null);
+		
 		if(language == null)
 		language = new Locale(System.getProperty("user.language"));
 		
@@ -272,11 +275,5 @@ public class PDFPlugin extends APlugin {
 		// set the global language for all GUI Elements (load the ResourceBundle)
 		
 		
-	}
-	
-	@Override
-	public int[] getKeyTags() {
-		final int[] keyFormats = {Tag.MIMETypeOfEncapsulatedDocument, Tag.EncapsulatedDocument};
-		return keyFormats;
 	}
 }

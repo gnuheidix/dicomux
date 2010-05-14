@@ -16,7 +16,7 @@ public class Controller implements IController {
 	 * holds instances of all available plug-ins<br/>
 	 * It's very important that plug-ins without any keyFormats are at the end of the list.
 	 */
-	private final APlugin m_availblePlugins[] = {new WaveformPlugin(), new PDFPlugin(), new RawPlugin()};
+	private final Vector<APlugin> m_availblePlugins;
 	
 	/**
 	 * holds the model of the application
@@ -35,12 +35,18 @@ public class Controller implements IController {
 	 * calls initialize() of the model
 	 * @param model
 	 * @param view
+	 * @throws Exception 
 	 * @see IModel
 	 * @see IView
 	 */
-	public Controller(IModel model, IView view) {
+	public Controller(IModel model, IView view) throws Exception {
 		m_model = model;
 		m_view = view;
+		
+		m_availblePlugins = new Vector<APlugin>();
+		m_availblePlugins.add(new WaveformPlugin());
+		m_availblePlugins.add(new PDFPlugin());
+		m_availblePlugins.add(new RawPlugin());
 		
 		m_model.registerView(m_view);
 		m_view.registerModel(m_model);
@@ -110,15 +116,10 @@ public class Controller implements IController {
 			// look for a suitable plug-in for the opened DicomObject
 			APlugin chosenPlugin = null;
 			Vector<APlugin> suitablePlugins = new Vector<APlugin>();
-			for (int i = 0; i < m_availblePlugins.length; ++i) { // iterate over all available plug-ins
-				APlugin tmp = m_availblePlugins[i];
-				boolean pluginOK = true;
-				for (int j = 0; j < tmp.getKeyTags().length; ++j) // does the selected plug-in support all needed Tags?
-					if (dicomObject.get(tmp.getKeyTags()[j]) == null) {
-						pluginOK = false;
-						break;
-					}
-				if (pluginOK) { // the selected plug-in supports all needed Tags
+			for (int i = 0; i < m_availblePlugins.size(); ++i) { // iterate over all available plug-ins
+				APlugin tmp = m_availblePlugins.get(i);
+				// does the selected plug-in support our DicomObject? 
+				if (tmp.getKeyTag().checkDicomObject(dicomObject)) {
 					suitablePlugins.add(tmp);
 				}
 			}
@@ -185,8 +186,8 @@ public class Controller implements IController {
 	public void setActivePlugin(String name) {
 		try {
 			// search for the plug-in with the suitable name
-			for (int i = 0; i < m_availblePlugins.length; ++i) {
-				if (m_availblePlugins[i].getName().equals(name)) {
+			for (int i = 0; i < m_availblePlugins.size(); ++i) {
+				if (m_availblePlugins.get(i).getName().equals(name)) {
 					// get the active workspace ID from the view
 					int activeWorkspaceId = m_view.getActiveWorkspaceId();
 					
@@ -194,7 +195,7 @@ public class Controller implements IController {
 					TabObject tmp = m_model.getWorkspace(activeWorkspaceId);
 					
 					// create a new instance of the selected plug-in
-					APlugin selectedPlugin = m_availblePlugins[i].getClass().newInstance();
+					APlugin selectedPlugin = m_availblePlugins.get(i).getClass().newInstance();
 					
 					// initialize the selected plug-in with all needed data
 					selectedPlugin.setLanguage(m_view.getLanguage());

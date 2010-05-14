@@ -15,12 +15,14 @@ import org.dcm4che2.data.DicomObject;
  */
 public abstract class APlugin {
 	protected JComponent m_content;
+	protected KeyTag m_keyTag;
 	
 	/**
 	 * default constructor which initializes m_content with a JPanel including a BorderLayout layout manager
 	 */
 	public APlugin() {
 		m_content = new JPanel(new BorderLayout(5, 5));
+		m_keyTag = new KeyTag();
 	}
 	
 	/**
@@ -32,11 +34,14 @@ public abstract class APlugin {
 	}
 	
 	/**
-	 * Returns an array with supported Tags, which describe the main functionality of that plug-in
+	 * Returns an KeyTag object which holds all necessary information about the supported Tags of that plug-in.
 	 * The main application can use this data in order to decide which plug-in can be used for which dicom file.
-	 * @return an array with key dicom tags // return an empty array if the plug-in supports everything
+	 * @return a KeyTag object
+	 * @see KeyTag
 	 */
-	public abstract int[] getKeyTags();
+	public KeyTag getKeyTag() {
+		return m_keyTag;
+	}
 	
 	/**
 	 * Sets the dicom data which is used by the plugin in order to do its work.
