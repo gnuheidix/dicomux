@@ -59,7 +59,7 @@ public class WaveformPlugin extends APlugin {
 		// get WaveformSequence
 		DicomElement temp = dcm.get(Tag.WaveformSequence);
 		if(temp == null)
-			throw new Exception("Error: could not read WaveformSequence");
+			throw new Exception("Could not read WaveformSequence");
 		
 		dcm = temp.getDicomObject();
 		
@@ -67,23 +67,23 @@ public class WaveformPlugin extends APlugin {
 		// used to differ between general ECG and 12 Lead ECG
 		DicomElement bitsAllocated = dcm.get(Tag.WaveformBitsAllocated);
 		if(bitsAllocated == null)
-			throw new Exception("Error: could not read WaveformBitsAllocated");
+			throw new Exception("Could not read WaveformBitsAllocated");
 		
 		// read waveform data which contains the samples
 		DicomElement waveformData = dcm.get(Tag.WaveformData);
 		if(waveformData == null)
-			throw new Exception("Error: could not read WaveformData");
+			throw new Exception("Could not read WaveformData");
 		
 		DicomElement samplingFrequency = dcm.get(Tag.SamplingFrequency);
 		if(samplingFrequency == null)
-			throw new Exception("Error: could not read SamplingFrequency");
+			throw new Exception("Could not read SamplingFrequency");
 		
 		double frequency = samplingFrequency.getDouble(true);
 		
 		//read number of samples per channel
 		DicomElement samples = dcm.get(Tag.NumberOfWaveformSamples);
 		if(samples == null)
-			throw new Exception("Error: could not read NumberOfWaveformSamples");
+			throw new Exception("Could not read NumberOfWaveformSamples");
 			
 		int numberOfSamples = samples.getInt(true);
 		
@@ -92,7 +92,7 @@ public class WaveformPlugin extends APlugin {
 		// read number of channels
 		DicomElement channels = dcm.get(Tag.NumberOfWaveformChannels);
 		if(channels == null)
-			throw new Exception("Error: could not read NumberOfWaveformChannels");
+			throw new Exception("Could not read NumberOfWaveformChannels");
 			
 		int numberOfChannels = channels.getInt(true);
 		
@@ -100,22 +100,22 @@ public class WaveformPlugin extends APlugin {
 		if(bitsAllocated.getInt(true) == 16) {
 			short[] tmp = waveformData.getShorts(true);	
 			for (int i = 0; i < tmp.length; i++ ) {
-				data[i%12][i/12] = (int) tmp[i];
+				data[i%numberOfChannels][i/numberOfChannels] = (int) tmp[i];
 			}
 		}
 		else if(bitsAllocated.getInt(true) == 8)
 		{
 			byte[] tmp = waveformData.getBytes();
 			for (int i = 0; i < tmp.length; i++ ) {
-				data[i%12][i/12] = (int) tmp[i];
+				data[i%numberOfChannels][i/numberOfChannels] = (int) tmp[i];
 			}
 		}
 		else
-			throw new Exception("Error: bitsAllocated is an unexpected value, value: " + bitsAllocated.getInt(true));
+			throw new Exception("bitsAllocated is an unexpected value, value: " + bitsAllocated.getInt(true));
 		
 		DicomElement channelDef = dcm.get(Tag.ChannelDefinitionSequence);
 		if(channelDef == null) 
-			throw new Exception("Error: could not read ChannelDefinitionSequence");
+			throw new Exception("Could not read ChannelDefinitionSequence");
 		
 		
 		String[] leads = new String[numberOfChannels];  
@@ -124,11 +124,11 @@ public class WaveformPlugin extends APlugin {
 			DicomElement tmpElement =  object.get(Tag.ChannelSourceSequence);
 			
 			if(tmpElement == null)
-				throw new Exception("Error: could not read ChannelSourceSequence");
+				throw new Exception("Could not read ChannelSourceSequence");
 			
 			DicomObject channelSS =  tmpElement.getDicomObject();
 			if(channelSS == null) 
-				throw new Exception("Error: could not read ChannelSourceSequence DicomObject");
+				throw new Exception("Could not read ChannelSourceSequence DicomObject");
 			
 			DicomElement meaning = channelSS.get(Tag.CodeMeaning);
 			if(meaning == null) 
@@ -380,8 +380,8 @@ public class WaveformPlugin extends APlugin {
 
 			this.secs_pos_label.setText(form.format(sec));
 			
-			double tmp = Math.round(mv);		
-			this.mv_pos_label.setText(Double.toString(tmp));
+			form = new DecimalFormat("####.##");
+			this.mv_pos_label.setText(form.format(mv));
 		}
 		
 	}
