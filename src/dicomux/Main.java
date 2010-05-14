@@ -1,5 +1,7 @@
 package dicomux;
 
+import javax.swing.JOptionPane;
+
 /**
  * Launches Dicomux<br/>
  * We determine, which model and which view shall be used.
@@ -12,7 +14,11 @@ public class Main {
 		IModel model = new Model();
 		IView view = new View();
 		
-		@SuppressWarnings("unused")
-		Controller ctrl = new Controller(model, view);
+		try {
+			@SuppressWarnings("unused")
+			Controller ctrl = new Controller(model, view);
+		} catch (Exception e) {
+			JOptionPane.showMessageDialog(null, "Internal error during launch.\nPlease check plug-ins.");
+		}
 	}
 }

@@ -32,18 +32,17 @@ import org.dcm4che2.data.Tag;
 
 /**
  * This plug-in is for displaying waveform ecg data in a graphical way.
- * @author heidi
  * @author norbert
  */
 public class WaveformPlugin extends APlugin {
 	
 	private Vector<ChannelPanel> pannels = new Vector<ChannelPanel>(12);
 	
-	
-	@Override
-	public int[] getKeyTags() {
-		final int[] keyTags = {Tag.WaveformSequence};
-		return keyTags;
+	public WaveformPlugin() throws Exception {
+		super();
+		m_keyTag.addKey(Tag.Modality, "ECG");
+		m_keyTag.addKey(Tag.WaveformSequence, null);
+		m_keyTag.addKey(Tag.WaveformData, null);
 	}
 	
 	@Override
@@ -51,7 +50,6 @@ public class WaveformPlugin extends APlugin {
 		return "Waveform ECG";
 	}
 	
-	// implement
 	@Override
 	public void setData(DicomObject dcm) throws Exception {
 		m_content = new JPanel(new BorderLayout(5, 5));
@@ -132,7 +130,7 @@ public class WaveformPlugin extends APlugin {
 			
 			DicomElement meaning = channelSS.get(Tag.CodeMeaning);
 			if(meaning == null) 
-				throw new Exception("Error: could not read Code Meaning");
+				throw new Exception("Could not read Code Meaning");
 			
 			String lead = meaning.getValueAsString(new SpecificCharacterSet("UTF-8"), 50);
 			leads[i] = lead;	
