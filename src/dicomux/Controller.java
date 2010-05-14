@@ -46,6 +46,7 @@ public class Controller implements IController {
 		m_availblePlugins = new Vector<APlugin>();
 		m_availblePlugins.add(new WaveformPlugin());
 		m_availblePlugins.add(new PDFPlugin());
+		m_availblePlugins.add(new PatientDataPlugin());
 		m_availblePlugins.add(new RawPlugin());
 		
 		m_model.registerView(m_view);

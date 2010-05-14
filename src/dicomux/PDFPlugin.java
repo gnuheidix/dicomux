@@ -48,6 +48,7 @@ public class PDFPlugin extends APlugin {
 	
 	public PDFPlugin() throws Exception
 	{
+		super();
 		m_keyTag.addKey(Tag.MIMETypeOfEncapsulatedDocument, "application/pdf");
 		m_keyTag.addKey(Tag.EncapsulatedDocument, null);
 		

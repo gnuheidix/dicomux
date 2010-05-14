@@ -39,6 +39,7 @@ public class WaveformPlugin extends APlugin {
 	private Vector<ChannelPanel> pannels = new Vector<ChannelPanel>(12);
 	
 	public WaveformPlugin() throws Exception {
+		super();
 		m_keyTag.addKey(Tag.Modality, "ECG");
 		m_keyTag.addKey(Tag.WaveformSequence, null);
 		m_keyTag.addKey(Tag.WaveformData, null);
