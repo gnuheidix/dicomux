@@ -4,11 +4,14 @@ import java.awt.BasicStroke;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.RenderingHints;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.MouseEvent;
@@ -21,6 +24,8 @@ import java.util.Vector;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -37,12 +42,15 @@ import org.dcm4che2.data.Tag;
 public class WaveformPlugin extends APlugin {
 	
 	private Vector<ChannelPanel> pannels = new Vector<ChannelPanel>(12);
+	private double zoomLevel;
 	
 	public WaveformPlugin() throws Exception {
 		super();
 		m_keyTag.addKey(Tag.Modality, "ECG");
 		m_keyTag.addKey(Tag.WaveformSequence, null);
 		m_keyTag.addKey(Tag.WaveformData, null);
+		
+		this.zoomLevel = 3.0f;
 	}
 	
 	@Override
@@ -164,12 +172,62 @@ public class WaveformPlugin extends APlugin {
 			channelpane.add(Box.createRigidArea(new Dimension(0,2)));
 			// add panel to vector
 			this.pannels.add(chPannel);
-		}
+		}		
 		
-		JScrollPane scroll = new JScrollPane(channelpane);
+		final JScrollPane scroll = new JScrollPane(channelpane);
 		scroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		scroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
 		
+		
+		JPanel tools = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 5));
+		
+		JButton zoomOut = new JButton();
+		zoomOut.setIcon(new ImageIcon("etc/images/zoomOut.png"));
+		zoomOut.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				System.out.println("zoomOut");
+				zoomLevel += 0.5;
+				Dimension m_content_dim = m_content.getSize();
+				Dimension dim = new Dimension(m_content.getWidth() - 20, (int) (m_content_dim.getHeight() / zoomLevel));
+				repaintPanels(dim);
+				m_content.repaint();
+				scroll.updateUI();
+			}});
+		tools.add(zoomOut);
+		
+		JButton zoomIn = new JButton();
+		zoomIn.setIcon(new ImageIcon("etc/images/zoomIn.png"));
+		zoomIn.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				System.out.println("ZoomIn");
+				zoomLevel -= 0.5;
+				Dimension m_content_dim = m_content.getSize();
+				Dimension dim = new Dimension(m_content.getWidth() - 20, (int) (m_content_dim.getHeight() / zoomLevel));
+				repaintPanels(dim);
+				m_content.repaint();
+				scroll.updateUI();
+			}});
+		tools.add(zoomIn);
+		
+		JButton zoomFit = new JButton();
+		zoomFit.setIcon(new ImageIcon("etc/images/fitToPage.png"));
+		zoomFit.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				System.out.println("FitToPage");
+				zoomLevel = 3.0f;
+				Dimension m_content_dim = m_content.getSize();
+				Dimension dim = new Dimension(m_content.getWidth() - 20, (int) (m_content_dim.getHeight() / zoomLevel));
+				repaintPanels(dim);
+				m_content.repaint();
+				scroll.updateUI();
+			}});
+		tools.add(zoomFit);
+		
+		
+		m_content.add(tools, BorderLayout.NORTH);
 		m_content.add(scroll, BorderLayout.CENTER);
 		
 		m_content.addComponentListener(new ComponentAdapter() {
@@ -177,7 +235,7 @@ public class WaveformPlugin extends APlugin {
 			public void componentResized(ComponentEvent e) {
 				super.componentResized(e);
 				Dimension m_content_dim = m_content.getSize();
-				Dimension dim = new Dimension(m_content.getWidth() - 20, (int) (m_content_dim.getHeight() / 3));
+				Dimension dim = new Dimension(m_content.getWidth() - 20, (int) (m_content_dim.getHeight() / zoomLevel));
 				repaintPanels(dim);
 			}
 		});
@@ -423,7 +481,7 @@ public class WaveformPlugin extends APlugin {
 		}
 		
 		public void paintComponent( Graphics g ) {
-		
+					
 			int mv_cell_count = 10;
 			int secs_cell_count = this.secs * 10;
 			
@@ -446,8 +504,8 @@ public class WaveformPlugin extends APlugin {
 			final double cellheight = dim.getHeight() / mv_cell_count;
 			final double cellwidth = dim.getWidth() / secs_cell_count;
 			
-			// calculate the scaling which is dependent to the width
-			this.scalingWidth =  (float) (cellwidth / (data.length / secs_cell_count ));
+			// calculate the scaling which is dependent to the width	
+			this.scalingWidth =  (float) (cellwidth / (data.length / secs_cell_count ));			
 			
 			// set line color
 			g2.setColor(new Color(231, 84, 72));
