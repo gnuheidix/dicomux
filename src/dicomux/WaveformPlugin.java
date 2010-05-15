@@ -115,12 +115,25 @@ public class WaveformPlugin extends APlugin {
 		if(channelDef == null) 
 			throw new Exception("Could not read ChannelDefinitionSequence");
 		
-		
-		String[] leads = new String[numberOfChannels];  
+		ChannelDefinition[] channelDefinitions = new ChannelDefinition[12];
 		for(int i = 0; i < channelDef.countItems(); i++) {
 			DicomObject object = channelDef.getDicomObject(i);
-			DicomElement tmpElement =  object.get(Tag.ChannelSourceSequence);
+					
+			DicomElement channelSensitivity = object.get(Tag.ChannelSensitivity);
+			if(channelSensitivity == null)
+				throw new Exception("Could not read ChannelSensitivity");
 			
+			String tmp_value = channelSensitivity.getValueAsString(new SpecificCharacterSet("UTF-8"), 50);
+			double sensitivity = Double.parseDouble(tmp_value);
+			
+			DicomElement channelSensitivityCorrection = object.get(Tag.ChannelSensitivityCorrectionFactor);
+			if(channelSensitivity == null)
+				throw new Exception("Could not read ChannelSensitivityCorrectionFactor");
+			
+			tmp_value = channelSensitivityCorrection.getValueAsString(new SpecificCharacterSet("UTF-8"), 50);
+			int sensitivityCorrection = Integer.parseInt(tmp_value);
+			
+			DicomElement tmpElement =  object.get(Tag.ChannelSourceSequence);
 			if(tmpElement == null)
 				throw new Exception("Could not read ChannelSourceSequence");
 			
@@ -132,8 +145,9 @@ public class WaveformPlugin extends APlugin {
 			if(meaning == null) 
 				throw new Exception("Could not read Code Meaning");
 			
-			String lead = meaning.getValueAsString(new SpecificCharacterSet("UTF-8"), 50);
-			leads[i] = lead;	
+			String name = meaning.getValueAsString(new SpecificCharacterSet("UTF-8"), 50);
+			
+			channelDefinitions[i] = new ChannelDefinition(name, sensitivity, sensitivityCorrection); 
 		}
 		
 		
@@ -145,7 +159,7 @@ public class WaveformPlugin extends APlugin {
 		channelpane.setLayout(layout);
 		
 		for(int i = 0; i < numberOfChannels; i++) {
-			ChannelPanel chPannel = new ChannelPanel(data[i], 765, 92, seconds, leads[i]);
+			ChannelPanel chPannel = new ChannelPanel(data[i], 765, 92, seconds, channelDefinitions[i]);
 			channelpane.add(chPannel);
 			channelpane.add(Box.createRigidArea(new Dimension(0,2)));
 			// add panel to vector
@@ -163,7 +177,7 @@ public class WaveformPlugin extends APlugin {
 			public void componentResized(ComponentEvent e) {
 				super.componentResized(e);
 				Dimension m_content_dim = m_content.getSize();
-				Dimension dim = new Dimension(m_content.getWidth() - 20, (int) (m_content_dim.getHeight() / 4));
+				Dimension dim = new Dimension(m_content.getWidth() - 20, (int) (m_content_dim.getHeight() / 3));
 				repaintPanels(dim);
 			}
 		});
@@ -194,7 +208,7 @@ public class WaveformPlugin extends APlugin {
 		private double height;
 		private double width;
 		private int[] data;
-		private String lead;
+		private ChannelDefinition definition;
 		private JPanel info;
 		private int max;
 		private int min;
@@ -203,7 +217,7 @@ public class WaveformPlugin extends APlugin {
 		private DrawingPanel graph;
 		private final int infowidth = 120;
 
-		public ChannelPanel(int[] values, int width, int height, int secs, String lead) {
+		public ChannelPanel(int[] values, int width, int height, int secs, ChannelDefinition definition) {
 			this.data = values;
 			
 			this.mv_pos_label = new JLabel();
@@ -219,10 +233,13 @@ public class WaveformPlugin extends APlugin {
 					this.max = this.data[i];
 			}
 			
+			this.min = this.min * (int) definition.getSensitity() * definition.getSensitivityCorrection();
+			this.max = this.max * (int) definition.getSensitity() * definition.getSensitivityCorrection();
+			
 			this.setPreferredSize(new Dimension(width, height));
 			this.setSize(new Dimension(width, height));
 			this.secs = secs;
-			this.lead = lead;
+			this.definition = definition;
 						
 			Dimension dim = this.getPreferredSize();
 			this.height = dim.getHeight();
@@ -248,7 +265,7 @@ public class WaveformPlugin extends APlugin {
 			c1.ipady = 5;
 			c1.anchor = GridBagConstraints.LINE_START;
 			
-			JLabel leadname = new JLabel(this.lead);
+			JLabel leadname = new JLabel(this.definition.getName());
 			info.add(leadname, c1);
 			
 			GridBagConstraints c2 = new GridBagConstraints();
@@ -382,6 +399,10 @@ public class WaveformPlugin extends APlugin {
 			this.mv_pos_label.setText(form.format(mv));
 		}
 		
+		public ChannelDefinition getDefinition() {
+			return this.definition;
+		}
+		
 	}
 	
 
@@ -403,8 +424,11 @@ public class WaveformPlugin extends APlugin {
 		
 		public void paintComponent( Graphics g ) {
 		
-			int mv_cell_count = 6;
+			int mv_cell_count = 10;
 			int secs_cell_count = this.secs * 10;
+			
+			final double valueScaling = this.upper.getDefinition().getSensitity() *
+								this.upper.getDefinition().getSensitivityCorrection();
 			
 			super.paintComponent(g);
 			Graphics2D g2 = (Graphics2D) g;
@@ -462,8 +486,8 @@ public class WaveformPlugin extends APlugin {
 			for(int i  = 0; i < (this.data.length - 1); i++) {
 				int a = i;
 				int b = i + 1;
-				Line2D line = new Line2D.Double(this.scalingWidth * a, (dim.height /2 - ( (float)(this.data[a] / (float) 100) * cellheight) ), 
-						this.scalingWidth * b, ( dim.height /2 - ( (float)(this.data[b] / (float) 100) * cellheight ) ));
+				Line2D line = new Line2D.Double(this.scalingWidth * a, (dim.height /2 - valueScaling * ( (float)(this.data[a] / (float) 1000) * cellheight) ), 
+						this.scalingWidth * b, ( dim.height /2 - valueScaling * ( (float)(this.data[b] / (float) 1000) * cellheight ) ));
 				g2.draw(line);
 			 }
 			
@@ -473,7 +497,7 @@ public class WaveformPlugin extends APlugin {
 					public void mouseMoved(MouseEvent e) {
 						
 						double sec = e.getPoint().getX() / cellwidth * 0.1;
-						double mv = ((dim.getHeight() / 2) - e.getPoint().getY()) / cellheight * 100;
+						double mv = ((dim.getHeight() / 2) - e.getPoint().getY()) / cellheight;
 						
 						upper.setPosition(mv, sec);
 					}
@@ -482,6 +506,35 @@ public class WaveformPlugin extends APlugin {
 				
 			
 		}	
+		
+	}
+	
+	private class ChannelDefinition {
+		
+		private String name;
+		private double sensitivity;
+		private int sensitivityCorrection;
+					
+		public ChannelDefinition(String name, double sensitity,
+				int sensitivityCorrection) {
+			this.name = name;
+			this.sensitivity = sensitity;
+			this.sensitivityCorrection = sensitivityCorrection;
+		}
+		
+		public String getName() {
+			return name;
+		}
+
+		public double getSensitity() {
+			return sensitivity;
+		}
+
+		public int getSensitivityCorrection() {
+			return sensitivityCorrection;
+		}
+		
+		
 		
 	}
 	
