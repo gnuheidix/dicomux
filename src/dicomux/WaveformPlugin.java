@@ -80,6 +80,7 @@ public class WaveformPlugin extends APlugin {
 		if(waveformData == null)
 			throw new Exception("Could not read WaveformData");
 		
+		// read the sampling frequency, used to calculate the seconds 
 		DicomElement samplingFrequency = dcm.get(Tag.SamplingFrequency);
 		if(samplingFrequency == null)
 			throw new Exception("Could not read SamplingFrequency");
@@ -93,6 +94,7 @@ public class WaveformPlugin extends APlugin {
 			
 		int numberOfSamples = samples.getInt(true);
 		
+		// calculate the seconds		
 		int seconds = (int) (numberOfSamples / frequency);
 		
 		// read number of channels
@@ -102,6 +104,9 @@ public class WaveformPlugin extends APlugin {
 			
 		int numberOfChannels = channels.getInt(true);
 		
+		// write the sample data into a 2-dimensional array
+		// first dimension: channel
+		// second dimension: samples
 		int[][] data = new int[numberOfChannels][numberOfSamples];
 		if(bitsAllocated.getInt(true) == 16) {
 			short[] tmp = waveformData.getShorts(true);	
@@ -119,66 +124,75 @@ public class WaveformPlugin extends APlugin {
 		else
 			throw new Exception("bitsAllocated is an unexpected value, value: " + bitsAllocated.getInt(true));
 		
+		// read the ChannelDefinitionSequence for additional info about the channels
 		DicomElement channelDef = dcm.get(Tag.ChannelDefinitionSequence);
 		if(channelDef == null) 
 			throw new Exception("Could not read ChannelDefinitionSequence");
 		
+		// iterate over the definitions of the channels
 		ChannelDefinition[] channelDefinitions = new ChannelDefinition[12];
 		for(int i = 0; i < channelDef.countItems(); i++) {
 			DicomObject object = channelDef.getDicomObject(i);
-					
+			
+			// read ChannelSensitivity used to calculate the real sample value
+			// ChannelSensitivity is the unit of each waveform sample
 			DicomElement channelSensitivity = object.get(Tag.ChannelSensitivity);
 			if(channelSensitivity == null)
 				throw new Exception("Could not read ChannelSensitivity");
-			
+			// unfortunately had to go the complicated way and read the value as string
 			String tmp_value = channelSensitivity.getValueAsString(new SpecificCharacterSet("UTF-8"), 50);
 			double sensitivity = Double.parseDouble(tmp_value);
 			
+			// read ChannelSensitivityCorrectionFactor used to calculate the real sample value
+			// ChannelSensitivityCorrectionFactor is a form of calibration of the values
 			DicomElement channelSensitivityCorrection = object.get(Tag.ChannelSensitivityCorrectionFactor);
 			if(channelSensitivity == null)
 				throw new Exception("Could not read ChannelSensitivityCorrectionFactor");
-			
+			// and again we are going the long way
 			tmp_value = channelSensitivityCorrection.getValueAsString(new SpecificCharacterSet("UTF-8"), 50);
 			int sensitivityCorrection = Integer.parseInt(tmp_value);
 			
+			// read channel source sequence which contains the name of the channel (lead)
 			DicomElement tmpElement =  object.get(Tag.ChannelSourceSequence);
 			if(tmpElement == null)
 				throw new Exception("Could not read ChannelSourceSequence");
-			
+			// read the DicomObject which contains to get the needed DicomEelements
 			DicomObject channelSS =  tmpElement.getDicomObject();
 			if(channelSS == null) 
 				throw new Exception("Could not read ChannelSourceSequence DicomObject");
-			
+			// read The name of the channel
 			DicomElement meaning = channelSS.get(Tag.CodeMeaning);
 			if(meaning == null) 
 				throw new Exception("Could not read Code Meaning");
 			
 			String name = meaning.getValueAsString(new SpecificCharacterSet("UTF-8"), 50);
-			
+			// safe name, sensitivity and sensitivityCorrection in a new ChannelDefinition-Object
 			channelDefinitions[i] = new ChannelDefinition(name, sensitivity, sensitivityCorrection); 
 		}
 		
-		
-		
+		// this panel will hold all channels and their drawings of the waveform
 		JPanel channelpane = new JPanel();
 		channelpane.setBackground(Color.BLACK);
-		BoxLayout layout = new BoxLayout(channelpane, BoxLayout.PAGE_AXIS);
 		
+		// using a BoxLayout, top-to-bottom  
+		BoxLayout layout = new BoxLayout(channelpane, BoxLayout.PAGE_AXIS);	
 		channelpane.setLayout(layout);
 		
+		// creating the Panels for each channel 
 		for(int i = 0; i < numberOfChannels; i++) {
 			ChannelPanel chPannel = new ChannelPanel(data[i], 765, 92, seconds, channelDefinitions[i]);
 			channelpane.add(chPannel);
 			channelpane.add(Box.createRigidArea(new Dimension(0,2)));
-			// add panel to vector
+			// add panel to vector, used to refresh all panels (see repaintPanels)
 			this.pannels.add(chPannel);
 		}		
 		
+		// in most cases we have to many channels so we use a scrollpane
 		final JScrollPane scroll = new JScrollPane(channelpane);
 		scroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		scroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
 		
-		
+		// Panel which includes the Buttons for zooming 
 		JPanel tools = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 5));
 		
 		JButton zoomOut = new JButton();
@@ -230,11 +244,15 @@ public class WaveformPlugin extends APlugin {
 		m_content.add(tools, BorderLayout.NORTH);
 		m_content.add(scroll, BorderLayout.CENTER);
 		
+		// this gets called when the application is resized
 		m_content.addComponentListener(new ComponentAdapter() {
 			@Override
 			public void componentResized(ComponentEvent e) {
 				super.componentResized(e);
+				// get new size of the main panel
 				Dimension m_content_dim = m_content.getSize();
+				// we take 20 px for the scrollbar
+				// height is divided by zoomLevel so the channels will not be too high
 				Dimension dim = new Dimension(m_content.getWidth() - 20, (int) (m_content_dim.getHeight() / zoomLevel));
 				repaintPanels(dim);
 			}
@@ -249,6 +267,11 @@ public class WaveformPlugin extends APlugin {
 		
 	}
 	
+	/**
+	 * Iterate over all ChannelPanels, set their size to the given Dimension and repaints them
+	 * 
+	 * @param dim The new Dimension the ChannelPannels will use
+	 */
 	private void repaintPanels(Dimension dim) {
 		if(!this.pannels.isEmpty()) {
 			for (ChannelPanel p : this.pannels) {
@@ -259,20 +282,64 @@ public class WaveformPlugin extends APlugin {
 		}
 	}
 	
+	/**
+	 * This class represents the waveform channel.
+	 * This panel contains the drawn graph and an info panel which shows the minimum and maximum value
+	 * as well as the current position of the cursor on the graph.
+	 * 
+	 * @author norbert
+	 *
+	 */
 	private class ChannelPanel extends JPanel {
 		
 		private static final long serialVersionUID = 2025755356632083060L;
+		/**
+		 *  The number of seconds of the recorded waveform
+		 */
 		private int secs;
+		/**
+		 * The height of the panel
+		 */
 		private double height;
+		/**
+		 * The width of the panel
+		 */
 		private double width;
+		/**
+		 * The waveform sample data for this channel
+		 */
 		private int[] data;
+		/**
+		 * The waveform channel definition for this channel
+		 */
 		private ChannelDefinition definition;
+		/**
+		 * the info panel
+		 */
 		private JPanel info;
+		/**
+		 * the highest sample value
+		 */
 		private int max;
+		/**
+		 * the lowest sample value
+		 */
 		private int min;
+		/**
+		 * Label for showing the y-position in the graph
+		 */
 		private JLabel mv_pos_label;
+		/**
+		 * Label for showing the x-position in the graph
+		 */
 		private JLabel secs_pos_label;
+		/**
+		 * This panel will hold the drawn graph
+		 */
 		private DrawingPanel graph;
+		/**
+		 * the width of the info panel
+		 */
 		private final int infowidth = 120;
 
 		public ChannelPanel(int[] values, int width, int height, int secs, ChannelDefinition definition) {
@@ -281,6 +348,7 @@ public class WaveformPlugin extends APlugin {
 			this.mv_pos_label = new JLabel();
 			this.secs_pos_label = new JLabel();
 			
+			// find min and max value
 			this.min = this.data[0];
 			this.max = this.data[0];
 			
@@ -290,7 +358,7 @@ public class WaveformPlugin extends APlugin {
 				if(this.max < this.data[i])
 					this.max = this.data[i];
 			}
-			
+			// calculate the real min and max values
 			this.min = this.min * (int) definition.getSensitity() * definition.getSensitivityCorrection();
 			this.max = this.max * (int) definition.getSensitity() * definition.getSensitivityCorrection();
 			
@@ -306,11 +374,12 @@ public class WaveformPlugin extends APlugin {
 			BoxLayout layout = new BoxLayout(this, BoxLayout.LINE_AXIS);
 			this.setLayout(layout);
 			
+			// create info panel
 			this.info = new JPanel();
 			GridBagLayout infolayout = new GridBagLayout();
 			info.setLayout(infolayout);
 			info.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
-			
+			// set the size of the info panel
 			info.setPreferredSize(new Dimension(this.infowidth,(int)this.height));
 			info.setSize(new Dimension(this.infowidth,(int)this.height));
 			info.setMaximumSize(new Dimension(this.infowidth, Short.MAX_VALUE));
@@ -416,10 +485,9 @@ public class WaveformPlugin extends APlugin {
 			c10.anchor = GridBagConstraints.LINE_END;
 			
 			info.add(this.secs_pos_label, c10);
-			
-			
+				
 			this.add(info, BorderLayout.WEST);
-			
+			// create graph
 			this.graph = new DrawingPanel(this.data,(int) (this.width - this.infowidth), (int) this.height, this.secs, this);
 			dim = new Dimension((int) (this.width - this.infowidth), (int) this.height);
 			graph.setPreferredSize(dim);
@@ -428,31 +496,39 @@ public class WaveformPlugin extends APlugin {
 			this.add(graph, BorderLayout.EAST);
 		}
 		
+		/**
+		 * Used to repaint the panel, using the possibly changed size
+		 */
 		public void paintComponent( Graphics g ) {
 			super.paintComponent(g);
-			
+			// get current size
 			Dimension dim = this.getPreferredSize();
 			this.height = dim.getHeight();
 			this.width = dim.getWidth();
-			
+			// set info to new size
 			info.setPreferredSize(new Dimension(this.infowidth,(int)this.height));
 			info.setSize(new Dimension(this.infowidth,(int)this.height));
 			info.setMaximumSize(new Dimension(this.infowidth, Short.MAX_VALUE));
 			info.repaint();
-			
+			// set graph to new size
 			dim = new Dimension((int) (this.width - this.infowidth), (int) this.height);
 			graph.setPreferredSize(dim);
 			graph.setSize(dim);
 			graph.repaint();
-			
 		}
 		
+		/**
+		 * Set the position values in the info panel
+		 * 
+		 * @param mv  The y-position in mV
+		 * @param sec The y-position in seconds
+		 */
 		public void setPosition(double mv, double sec) {
 		
+			// format the given seconds to use only two decimal place
 			DecimalFormat form = new DecimalFormat("#.##");
-
 			this.secs_pos_label.setText(form.format(sec));
-			
+			// do the same for the mV value
 			form = new DecimalFormat("####.##");
 			this.mv_pos_label.setText(form.format(mv));
 		}
@@ -463,7 +539,12 @@ public class WaveformPlugin extends APlugin {
 		
 	}
 	
-
+	/**
+	 * This class contains the drawing of the waveform
+	 * 
+	 * @author norbert
+	 *
+	 */
 	private class DrawingPanel extends JPanel {
 		
 		private static final long serialVersionUID = 856943381513072262L;
@@ -481,15 +562,16 @@ public class WaveformPlugin extends APlugin {
 		}
 		
 		public void paintComponent( Graphics g ) {
+			
+			super.paintComponent(g);
+			Graphics2D g2 = (Graphics2D) g;
 					
 			int mv_cell_count = 10;
 			int secs_cell_count = this.secs * 10;
 			
+			// calculate scaling of the sample values
 			final double valueScaling = this.upper.getDefinition().getSensitity() *
 								this.upper.getDefinition().getSensitivityCorrection();
-			
-			super.paintComponent(g);
-			Graphics2D g2 = (Graphics2D) g;
 			
 			//set background color to white
 			this.setBackground(Color.WHITE);
@@ -505,12 +587,14 @@ public class WaveformPlugin extends APlugin {
 			final double cellwidth = dim.getWidth() / secs_cell_count;
 			
 			// calculate the scaling which is dependent to the width	
+			// here is our problem with the zooming
 			this.scalingWidth =  (float) (cellwidth / (data.length / secs_cell_count ));			
 			
 			// set line color
 			g2.setColor(new Color(231, 84, 72));
 			// draw horizontal lines
 			for(int i = 0; i < mv_cell_count; i++) {
+				// draw every second line bigger
 				if(i % (mv_cell_count / 2) == 0)
 				{
 					g2.setStroke(new BasicStroke(2.0f));
@@ -526,6 +610,7 @@ public class WaveformPlugin extends APlugin {
 			
 			// draw vertical lines
 			for(int i = 0; i < secs_cell_count; i++ ) {
+				// draw every 10th line which represents a full second bigger 
 				if(i % 10 == 0)
 				{
 					g2.setStroke(new BasicStroke(2.0f));
@@ -544,11 +629,17 @@ public class WaveformPlugin extends APlugin {
 			for(int i  = 0; i < (this.data.length - 1); i++) {
 				int a = i;
 				int b = i + 1;
-				Line2D line = new Line2D.Double(this.scalingWidth * a, (dim.height /2 - valueScaling * ( (float)(this.data[a] / (float) 1000) * cellheight) ), 
-						this.scalingWidth * b, ( dim.height /2 - valueScaling * ( (float)(this.data[b] / (float) 1000) * cellheight ) ));
+				// draw a line between two points
+				// dim.height / 2 is our base line
+				Line2D line = new Line2D.Double(
+						this.scalingWidth * a, 
+						(dim.height /2 - valueScaling * ( (float)(this.data[a] / (float) 1000) * cellheight) ), 
+						this.scalingWidth * b, 
+						( dim.height /2 - valueScaling * ( (float)(this.data[b] / (float) 1000) * cellheight ) ));
 				g2.draw(line);
 			 }
 			
+			// used to get the current position of the mouse pointer into the information panel
 			this.addMouseMotionListener( new MouseMotionAdapter() {
 						
 					@Override
@@ -567,6 +658,7 @@ public class WaveformPlugin extends APlugin {
 		
 	}
 	
+	// used to save information about a channel
 	private class ChannelDefinition {
 		
 		private String name;
