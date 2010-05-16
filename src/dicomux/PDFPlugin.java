@@ -7,6 +7,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
@@ -15,6 +17,7 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTextField;
 
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
@@ -28,17 +31,17 @@ import org.jpedal.objects.PdfPageData;
  *
  */
 public class PDFPlugin extends APlugin {
+	
 	private Dimension contend_dim;
 	private int pdf_page;
 	private JLabel page_lable;
+	JTextField scaleTextField ;
 	private Locale language;
 	private static ResourceBundle m_languageBundle; 
-	/**
-	 * base name of the language files which are located in etc<br/>
-	 * this constant will be used by m_languageBundle
-	 */
 	private final String m_langBaseName = "language";
 	private final JScrollPane currentScroll;
+	
+	private final int prefered_scale = 76;
 	
 	@Override
 	public String getName() {
@@ -57,11 +60,13 @@ public class PDFPlugin extends APlugin {
 		
 		m_languageBundle = ResourceBundle.getBundle(m_langBaseName,language );
 		currentScroll = new JScrollPane();
+		scaleTextField = new JTextField(6);
 	}
 	
 	// TODO: check for crap; add zoom and page select buttons;
 	@Override
 	public void setData(DicomObject dcm) throws Exception{
+		
 		pdfDecoder = new PdfDecoder(true);
 		contend_dim = new Dimension();
 		pdf_page = 1;
@@ -72,9 +77,6 @@ public class PDFPlugin extends APlugin {
 		try {
 			// open PDF file
 			pdfDecoder.openPdfArray(dcm.get(Tag.EncapsulatedDocument).getBytes());
-			
-			//for testing
-			//pdfDecoder.openPdfFile("test/multi.pdf");
 			// decode first page
 			pdfDecoder.decodePage(pdf_page);
 		} catch (Exception e) {
@@ -82,8 +84,8 @@ public class PDFPlugin extends APlugin {
 			e.printStackTrace();
 		}
 		// set scaling to 100%
-//		pdfDecoder.setPageParameters((float)0.77,pdf_page);
-		pdfDecoder.setPageParameters(2,pdf_page);		
+		pdfDecoder.setPageParameters((prefered_scale/100),pdf_page);	
+		scaleTextField.setText(new Integer(prefered_scale).toString() + "%");
 		
 		m_content.addComponentListener(new ComponentAdapter() {
 			@Override
@@ -127,8 +129,6 @@ public class PDFPlugin extends APlugin {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				zoomOut((float)0.1,pdf_page);
-				m_content.repaint();
-				currentScroll.updateUI();
 			}});
 		tools.add(zoomOut);
 
@@ -139,8 +139,6 @@ public class PDFPlugin extends APlugin {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				zoomIn((float)0.1,pdf_page);
-				m_content.repaint();
-				currentScroll.updateUI();
 			}});
 		tools.add(zoomIn);
 		
@@ -157,6 +155,31 @@ public class PDFPlugin extends APlugin {
 				currentScroll.updateUI();
 			}});
 		tools.add(zoomFit);
+		
+		//Scale TextField
+		scaleTextField.addKeyListener(new KeyListener() {
+			@Override
+			public void keyTyped(KeyEvent e) {	}
+			@Override
+			public void keyReleased(KeyEvent e) {
+				if(e.getKeyCode() == KeyEvent.VK_ENTER)
+				{
+					String scale = scaleTextField.getText();
+					scale = scale.replace("%", "");
+					int new_scale;
+					try{
+						new_scale = Integer.parseInt(scale);
+					}
+					catch(NumberFormatException exc){
+						new_scale = prefered_scale;
+					}
+					setScale(new_scale);
+				}
+			}
+			@Override
+			public void keyPressed(KeyEvent e) {}
+		});
+
 		
 		//prev Page
 		JButton prevPage = new JButton();
@@ -185,6 +208,7 @@ public class PDFPlugin extends APlugin {
 				m_content.repaint();
 			}});
 		tools_navigation.add(prevPage);
+		
 		
 		// Lable PageOf
 		page_lable = new JLabel("Page " + pdf_page + " of " + pdfDecoder.getPageCount() );
@@ -217,6 +241,8 @@ public class PDFPlugin extends APlugin {
 			}});
 		tools_navigation.add(nextPage);
 		
+		tools.add(scaleTextField);
+		
 		if(pdfDecoder.getPageCount() > 1)
 		tools.add(tools_navigation);
 		
@@ -247,11 +273,13 @@ public class PDFPlugin extends APlugin {
 		if(scale_x < scale_y)
 		{
 			pdfDecoder.setPageParameters(scale_x,pdf_page);
+			scaleTextField.setText(new Integer((int) (scale_x*100)).toString() + "%");
 			System.out.println("scale_x after"+ scale_x);
 		}
 		else
 		{
 			pdfDecoder.setPageParameters(scale_y,pdf_page);
+			scaleTextField.setText(new Integer((int) (scale_y*100)).toString() + "%");
 			System.out.println("scale_y after"+ scale_y);
 		}
 		
@@ -261,12 +289,27 @@ public class PDFPlugin extends APlugin {
 	{
 		//pdfDecoder.setSize(pdfDecoder.getWidth()+inc, pdfDecoder.getHeight()+inc);
 		pdfDecoder.setPageParameters(pdfDecoder.getScaling()+inc,pdf_page);
+		scaleTextField.setText(new Integer((int) (pdfDecoder.getScaling()*100)).toString() + "%");
+		m_content.repaint();
+		currentScroll.updateUI();
 	}
 
 	private void zoomOut(float dec,int page)
 	{
 		//pdfDecoder.setSize(pdfDecoder.getWidth()-dec, pdfDecoder.getHeight()-dec);
 		pdfDecoder.setPageParameters(pdfDecoder.getScaling()- dec,pdf_page);
+		scaleTextField.setText(new Integer((int) (pdfDecoder.getScaling()*100)).toString() + "%");
+		m_content.repaint();
+		currentScroll.updateUI();
+	}
+	
+	private void setScale(int scaleInPercent)
+	{
+		float scale = (float)((float)scaleInPercent/(float)100);
+		pdfDecoder.setPageParameters(scale,pdf_page);
+		scaleTextField.setText(new Integer((int) (pdfDecoder.getScaling()*100)).toString() + "%");
+		m_content.repaint();
+		currentScroll.updateUI();
 	}
 	
 	// TODO: implement
