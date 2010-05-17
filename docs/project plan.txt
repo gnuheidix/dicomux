@@ -232,4 +232,29 @@ Schedule
 * End: May/16th
 
 Review meeting
+* The pdf plug-in is now able to handle hide the page switchers if only one page exists. Further more, the fit to application button works now. (cheap hack)
+* The waveform render engine has been included in Dicomux. It's capable of rendering 3,6,9,12,15 lead ECG.
+* The plug-in mechanism has been improved. Especially the automatic plug-in selection has been reenigneered.
 
+########### Sprint #6 ###########
+
+Sprint meeting
+* Some work has been done on the waveform plug-in. This has to be continued. (display formats)
+* All functions of the PDF plug-in need to be improved.
+** code cleanup
+* The localization has to be improved for the whole application.
+* It has to be check how we can integrate the application. Maybe Java Webstart would be nice.
+* Dicomux has to learn how to open dicom directories.
+
+Working packages
+* continue work on the waveform render plug-in (Norbert)
+* design directory mechanism and implement proof of concept (Tobi)
+* code cleanup of the PDF plug-in (Tobi)
+* improve localization (Heidi)
+* design integration (Heidi)
+
+Schedule
+* Begin: May/17th
+* End: May/23rd
+
+Review meeting

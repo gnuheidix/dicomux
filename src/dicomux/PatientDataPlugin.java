@@ -2,6 +2,7 @@ package dicomux;
 
 import java.awt.BorderLayout;
 import java.awt.GridLayout;
+import java.util.Date;
 import java.util.Locale;
 
 import javax.swing.JLabel;
@@ -33,12 +34,24 @@ public class PatientDataPlugin extends APlugin {
 	@Override
 	public void setData(DicomObject dcm) throws Exception {
 		JPanel content = new JPanel(new GridLayout(3, 2, 5, 5));
-		content.add(new JLabel("Patient Name:"));
-		content.add(new JLabel(dcm.getString(Tag.PatientName)));
-		content.add(new JLabel("Patient Sex:"));
-		content.add(new JLabel(dcm.getString(Tag.PatientSex)));
-		content.add(new JLabel("Patient Birth Date:"));
-		content.add(new JLabel(dcm.getDate(Tag.PatientBirthDate).toString()));
+		
+		String tmp = dcm.getString(Tag.PatientName);
+		if (tmp != null) {
+			content.add(new JLabel("Patient Name:"));
+			content.add(new JLabel(tmp));
+		}
+		
+		tmp = dcm.getString(Tag.PatientSex);
+		if (tmp != null) {
+			content.add(new JLabel("Patient Sex:"));
+			content.add(new JLabel(tmp));
+		}
+		
+		Date tmpDate = dcm.getDate(Tag.PatientBirthDate);
+		if (tmp != null) {
+			content.add(new JLabel("Patient Birth Date:"));
+			content.add(new JLabel(tmp.toString()));
+		}
 		
 		m_content = new JPanel(new BorderLayout(5, 5));
 		m_content.add(content, BorderLayout.NORTH);
