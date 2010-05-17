@@ -3,12 +3,17 @@ package dicomux;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionAdapter;
+import java.awt.event.MouseMotionListener;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
@@ -40,8 +45,11 @@ public class PDFPlugin extends APlugin {
 	private static ResourceBundle m_languageBundle; 
 	private final String m_langBaseName = "language";
 	private final JScrollPane currentScroll;
-	
 	private final int prefered_scale = 76;
+	
+	// for zooming with mouse
+	private int mpsX,mpsY;
+	private int mpeX,mpeY;
 	
 	@Override
 	public String getName() {
@@ -86,7 +94,7 @@ public class PDFPlugin extends APlugin {
 		// set scaling to 100%
 		pdfDecoder.setPageParameters((prefered_scale/100),pdf_page);	
 		scaleTextField.setText(new Integer(prefered_scale).toString() + "%");
-		
+
 		m_content.addComponentListener(new ComponentAdapter() {
 			@Override
 			public void componentResized(ComponentEvent e) {
@@ -98,26 +106,15 @@ public class PDFPlugin extends APlugin {
 				
 			}
 		});
-		
-		
-		// add to JScrollPane
-		//final JScrollPane currentScroll = new JScrollPane();
-		
+
 		currentScroll.getVerticalScrollBar().setUnitIncrement(40);
 		currentScroll.setViewportView(pdfDecoder);
-//		
 		currentScroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-		currentScroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-//		//currentScroll.setSize(200, 200);
-//		
+		currentScroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);	
 		JPanel tools = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 5));
 		JPanel tools_navigation = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 5));
-//		pdfDecoder.setSize(m_content.getSize());
 		currentScroll.add(pdfDecoder);
 		currentScroll.setViewportView(pdfDecoder);
-		
-		// get a new content pane and add the PDF scrollpane to it
-		//JPanel content = new JPanel(new BorderLayout(5, 5));
 
 		//add zoom buttons
 		
@@ -180,6 +177,36 @@ public class PDFPlugin extends APlugin {
 			public void keyPressed(KeyEvent e) {}
 		});
 
+		//pdfDecoder MouseListener
+		currentScroll.addMouseListener(new MouseListener() {
+			
+			@Override
+			public void mouseReleased(MouseEvent e) 
+			{
+				mpeX = e.getX();
+				mpeY = e.getY();		
+			}
+			@Override
+			public void mousePressed(MouseEvent e) 
+			{
+//				currentScroll.scrollRectToVisible(
+//						  new Rectangle(50, 50, 200, 200));
+//				m_content.repaint();
+//				currentScroll.updateUI();
+			}
+			@Override
+			public void mouseExited(MouseEvent e) {	}
+			@Override
+			public void mouseEntered(MouseEvent e) 
+			{
+			}
+			@Override
+			public void mouseClicked(MouseEvent e) 
+			{
+				mpsX = e.getX();
+				mpsY = e.getY();
+			}
+		});
 		
 		//prev Page
 		JButton prevPage = new JButton();
@@ -248,7 +275,7 @@ public class PDFPlugin extends APlugin {
 		
 		m_content.add(tools, BorderLayout.NORTH);
 		m_content.add(currentScroll, BorderLayout.CENTER);
-	
+
 	}
 
 	private void fitToPage()
