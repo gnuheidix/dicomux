@@ -141,10 +141,12 @@ public class View extends JFrame implements IView {
 	 * initializes all components of the view
 	 */
 	private void initializeApplication() {
+		// misc initialization
 		setTitle("Dicomux");
 		setPreferredSize(new Dimension(800, 600));
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 		setIconImage(new ImageIcon("etc/images/logo.png").getImage());
+		UIManager.put("FileChooser.readOnly", Boolean.TRUE);
 		
 		// extract own contentPane and set its layout manager
 		Container contentPane = getContentPane();
@@ -186,7 +188,6 @@ public class View extends JFrame implements IView {
 		setVisible(true);
 	}
 	
-	// TODO complete localization of JFileChooser
 	/**
 	 * initializes all language settings by checking the config file
 	 */
@@ -209,6 +210,16 @@ public class View extends JFrame implements IView {
 		m_languageBundle = ResourceBundle.getBundle(m_langBaseName, locale);
 		
 		// set all localization entries for JFileChooser
+		UIManager.put("FileChooser.openDialogTitleText", m_languageBundle.getString("openDialogTitleText"));
+		UIManager.put("FileChooser.saveDialogTitleText", m_languageBundle.getString("saveDialogTitleText"));
+		UIManager.put("FileChooser.saveInLabelText", m_languageBundle.getString("saveInLabelText"));
+		UIManager.put("FileChooser.fileNameHeaderText", m_languageBundle.getString("fileNameHeaderText"));
+		UIManager.put("FileChooser.fileSizeHeaderText", m_languageBundle.getString("fileSizeHeaderText"));
+		UIManager.put("FileChooser.fileTypeHeaderText", m_languageBundle.getString("fileTypeHeaderText"));
+		UIManager.put("FileChooser.fileDateHeaderText", m_languageBundle.getString("fileDateHeaderText"));
+		UIManager.put("FileChooser.fileAttrHeaderText", m_languageBundle.getString("fileAttrHeaderText"));
+		UIManager.put("FileChooser.directoryOpenButtonText", m_languageBundle.getString("directoryOpenButtonText"));
+		UIManager.put("FileChooser.directoryOpenButtonToolTipText", m_languageBundle.getString("directoryOpenButtonToolTipText"));
 		UIManager.put("FileChooser.acceptAllFileFilterText" , m_languageBundle.getString("acceptAllFileFilterText"));
 		UIManager.put("FileChooser.cancelButtonText" , m_languageBundle.getString("cancelButtonText"));
 		UIManager.put("FileChooser.cancelButtonToolTipText" , m_languageBundle.getString("cancelButtonToolTipText"));
