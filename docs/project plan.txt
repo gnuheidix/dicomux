@@ -255,6 +255,6 @@ Working packages
 
 Schedule
 * Begin: May/17th
-* End: May/23rd
+* End: May/31rd
 
 Review meeting
