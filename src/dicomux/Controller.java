@@ -48,6 +48,7 @@ public class Controller implements IController {
 		m_availblePlugins.add(new PDFPlugin());
 		m_availblePlugins.add(new PatientDataPlugin());
 		m_availblePlugins.add(new RawPlugin());
+		m_availblePlugins.add(new DirectoryPlugin());
 		
 		m_model.registerView(m_view);
 		m_view.registerModel(m_model);
@@ -169,7 +170,7 @@ public class Controller implements IController {
 	//TODO implement
 	@Override
 	public void openDicomDirectory(String path) {
-		
+		openDicomFile(path);
 	}
 	
 	@Override

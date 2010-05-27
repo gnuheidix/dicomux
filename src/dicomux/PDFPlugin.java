@@ -176,37 +176,6 @@ public class PDFPlugin extends APlugin {
 			@Override
 			public void keyPressed(KeyEvent e) {}
 		});
-
-		//pdfDecoder MouseListener
-		currentScroll.addMouseListener(new MouseListener() {
-			
-			@Override
-			public void mouseReleased(MouseEvent e) 
-			{
-				mpeX = e.getX();
-				mpeY = e.getY();		
-			}
-			@Override
-			public void mousePressed(MouseEvent e) 
-			{
-//				currentScroll.scrollRectToVisible(
-//						  new Rectangle(50, 50, 200, 200));
-//				m_content.repaint();
-//				currentScroll.updateUI();
-			}
-			@Override
-			public void mouseExited(MouseEvent e) {	}
-			@Override
-			public void mouseEntered(MouseEvent e) 
-			{
-			}
-			@Override
-			public void mouseClicked(MouseEvent e) 
-			{
-				mpsX = e.getX();
-				mpsY = e.getY();
-			}
-		});
 		
 		//prev Page
 		JButton prevPage = new JButton();
