@@ -2,17 +2,24 @@ package dicomux;
 
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
+import java.awt.Graphics2D;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.awt.image.BufferedImage;
 import java.io.BufferedWriter;
+import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Vector;
 import java.util.Map.Entry;
 
+import javax.imageio.ImageIO;
 import javax.swing.JComboBox;
 import javax.swing.JPanel;
 
@@ -20,13 +27,16 @@ import org.dcm4che2.data.DicomElement;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.SpecificCharacterSet;
 import org.dcm4che2.data.Tag;
+import org.dcm4che2.io.DicomInputStream;
+import org.dcm4che2.iod.composite.Image;
+import org.jpedal.examples.simpleviewer.utils.IconiseImage;
 
 
 public class DirectoryPlugin extends APlugin{
 	
 	public class el_map{
 		public el_map(String _id,dir_type _type,HashMap<String, String> _actualSeq) {
-			id= _id;
+			id = _id;
 			type = _type;
 			actualSeq = _actualSeq;
 		}
@@ -40,7 +50,12 @@ public class DirectoryPlugin extends APlugin{
 	HashMap<String, HashMap<String, String>> serie_map = new HashMap<String, HashMap<String, String> >();
 	HashMap<String, HashMap<String, String>> recource_map = new HashMap<String, HashMap<String, String> >();
 	
+	// Reference Container
 	HashMap<String,String> ref_key_ser = new HashMap<String, String>();
+	HashMap<Integer,String> ref_img_serie = new HashMap<Integer, String>();
+	HashMap<Integer,String> ref_img_study = new HashMap<Integer, String>();
+	HashMap<Integer,String> ref_img_patient = new HashMap<Integer, String>();
+	
 	
 	enum dir_type{patient,studie,serie,recource,invalid,initial};
 	
@@ -49,12 +64,15 @@ public class DirectoryPlugin extends APlugin{
 	final JComboBox serie_combo = new JComboBox(new Object[]{"series"});
 	final JComboBox recource_combo = new JComboBox(new Object[]{"recources"});
 	
-	//private String actual_patientID = "";
-	//private String actual_studyID = "";
+	private String actual_patientID = "";
+	private String actual_studyID = "";
 	private String actual_serieID = "";
-	//private String actual_recourceID = "";
-	
+	private String actual_recourceID = "";
 	private DicomObject dcm;
+	private String DirFilePath = "";
+	
+	private HashMap<Integer,byte[]> images = new HashMap<Integer,byte[]>();
+
 	
 	@Override
 	public String getName() {
@@ -65,7 +83,12 @@ public class DirectoryPlugin extends APlugin{
 	public void setData(DicomObject _dcm) throws Exception {
 		dcm = _dcm;
 		
-		extractAllDicomElements(dcm);
+		if(DirFilePath == ""){
+			//throw new Exception();
+		}
+		
+		extractAllDicomElements(dcm);	//GET ALL INFORMATION ABOUT PATIENT, STUDY,SERIE AND RECOURCES FROM THE DIRECTORY-FILE
+		getRecources();
 		setCombos(dir_type.initial);
 		addComboListener();
 		
@@ -81,6 +104,36 @@ public class DirectoryPlugin extends APlugin{
 		m_content.add(navigation,BorderLayout.NORTH);
 		m_content.add(recourcePanel,BorderLayout.CENTER);
 	
+	}
+	
+	private void getRecources()
+	{
+		Vector<String> recources = new Vector<String>();
+		  for (Entry<String, HashMap<String, String>> entry : recource_map.entrySet()) {
+			  File base =  new File(DirFilePath);
+			  String path = base.toString() + File.separator +entry.getValue().get(dcm.nameOf(Tag.ReferencedFileID));
+			  recources.add(path);
+		  }
+		  
+		  Iterator<String> itr = recources.iterator();
+		  while(itr.hasNext()){
+			  try{
+				String file = (String) itr.next();
+			  	File fileObject = new File(file);
+				DicomInputStream din = new DicomInputStream(fileObject);
+				DicomObject dicomObject = din.readDicomObject();
+				byte[] input = dicomObject.get(Tag.PixelData).getBytes();
+
+				images.put(dicomObject.hashCode(),input );
+				
+				ref_img_patient.put(dicomObject.hashCode(),dicomObject.get(Tag.PatientID).getValueAsString(new SpecificCharacterSet("UTF-8"), 200));
+				ref_img_serie.put(dicomObject.hashCode(), dicomObject.get(Tag.SeriesInstanceUID).getValueAsString(new SpecificCharacterSet("UTF-8"), 200));
+				ref_img_study.put(dicomObject.hashCode(), dicomObject.get(Tag.StudyInstanceUID).getValueAsString(new SpecificCharacterSet("UTF-8"), 200));
+			  }
+			  catch (Exception e) {
+				continue;
+			}
+		  }	
 	}
 	
 	private void addComboListener()
@@ -118,27 +171,22 @@ public class DirectoryPlugin extends APlugin{
 		  {
 			  patient_combo.removeAllItems();
 			  	//TODO: find out reference key between patient and study
-				Map<String, HashMap<String, String>> pat_data = (HashMap<String, HashMap<String, String>>) patient_map; 
-				  for (Entry<String, HashMap<String, String>> entry : pat_data.entrySet()) {
+				  for (Entry<String, HashMap<String, String>> entry : patient_map.entrySet()) {
 					  patient_combo.addItem(entry.getValue().get(dcm.nameOf(Tag.PatientName)));
-
 				   }
 		  }
 		  if(level.equals(dir_type.initial)||level.equals(dir_type.patient))
 		  {
 			  studie_combo.removeAllItems();
 				//TODO: find out reference key between study and serie
-				Map<String, HashMap<String, String>> stu_data = (HashMap<String, HashMap<String, String>>) studie_map; 
-				 for (Entry<String, HashMap<String, String>> entry : stu_data.entrySet()) {
+				 for (Entry<String, HashMap<String, String>> entry : studie_map.entrySet()) {
 					  studie_combo.addItem(entry.getValue().get(dcm.nameOf(Tag.StudyDescription)));
-
 				   }
 		  }
 		  if(level.equals(dir_type.initial)||level.equals(dir_type.patient)||level.equals(dir_type.studie))
 		  {
 			  serie_combo.removeAllItems();
-				 Map<String, HashMap<String, String>> ser_data = (HashMap<String, HashMap<String, String>>) serie_map; 
-				  for (Entry<String, HashMap<String, String>> entry : ser_data.entrySet()) {
+				  for (Entry<String, HashMap<String, String>> entry : serie_map.entrySet()) {
 					  serie_combo.addItem(entry.getValue().get(dcm.nameOf(Tag.SeriesDescription)));
 					  ref_key_ser.put(entry.getValue().get(dcm.nameOf(Tag.SeriesDescription)), entry.getValue().get(dcm.nameOf(Tag.SeriesInstanceUID)));
 				   }
@@ -148,19 +196,15 @@ public class DirectoryPlugin extends APlugin{
 		  {
 			  recource_combo.removeAllItems();
 				 int imageCount = 1;
-				 Map<String, HashMap<String, String>> rec_data = (HashMap<String, HashMap<String, String>>) recource_map; 
-				  for (Entry<String, HashMap<String, String>> entry : rec_data.entrySet()) {
-					  String _id = entry.getValue().get(dcm.nameOf(Tag.ReferencedSOPInstanceUIDInFile));
-					
-					// if(_id.equals(actual_serieID))
-					 {
-//						 recource_combo.addItem(entry.getValue().get(dcm.nameOf(Tag.OffsetOfTheNextDirectoryRecord)));
-						 recource_combo.addItem("Image " + imageCount);
-						 imageCount++;
-					 }
-				   }
+				 Iterator it = images.keySet().iterator(); 
+				 
+				 while(it.hasNext()) { 
+					 Object key = it.next();
+					 Object val = images.get(key); 
+					 recource_combo.addItem("Image " + imageCount);
+					 imageCount++;
+					 } 
 		  }
-
 	}
 	
 	/**
@@ -234,6 +278,10 @@ public class DirectoryPlugin extends APlugin{
 		}
 		
 		return  new el_map(id,_type,actualSeq);
+	}
+	
+	public void setDirFilePath(String path){
+		DirFilePath = path;
 	}
 
 	@Override
