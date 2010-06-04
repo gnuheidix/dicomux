@@ -255,6 +255,30 @@ Working packages
 
 Schedule
 * Begin: May/17th
-* End: May/31rd
+* End: May/30th
+
+Review meeting
+* The waveform plug-in has been improved.
+* The localization has been improved. (especially the JFileChooser)
+* The code of the PDF plug-in still needs to be cleaned up.
+* The directory mechanism has been designed and a proof of concept has been implemented.
+** This functionality will be improved after this period.
+* The integration still needs to be designed.
+
+########### Sprint #7 ###########
+
+Sprint meeting
+* Some work has been done on the waveform plug-in. This has to be continued. (display formats)
+* The code has to be code cleaned up.
+* The integration has to be designed. (A jar would be nice)
+
+Working packages
+* continue work on the waveform render plug-in (Norbert)
+* code clean up (Tobi, Heidi)
+* design integration (Heidi, Tobi)
+
+Schedule
+* Begin: May/31st
+* End: June/6th
 
 Review meeting
