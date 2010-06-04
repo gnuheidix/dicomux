@@ -1,7 +1,9 @@
 package dicomux;
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
@@ -20,15 +22,22 @@ import java.util.Vector;
 import java.util.Map.Entry;
 
 import javax.imageio.ImageIO;
+import javax.imageio.ImageReader;
+import javax.imageio.stream.ImageInputStream;
+import javax.swing.ImageIcon;
 import javax.swing.JComboBox;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 
 import org.dcm4che2.data.DicomElement;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.SpecificCharacterSet;
 import org.dcm4che2.data.Tag;
+import org.dcm4che2.imageio.plugins.dcm.DicomImageReadParam;
 import org.dcm4che2.io.DicomInputStream;
 import org.dcm4che2.iod.composite.Image;
+import org.dcm4che2.tool.jpg2dcm.Jpg2Dcm;
 import org.jpedal.examples.simpleviewer.utils.IconiseImage;
 
 
@@ -71,8 +80,8 @@ public class DirectoryPlugin extends APlugin{
 	private DicomObject dcm;
 	private String DirFilePath = "";
 	
-	private HashMap<Integer,byte[]> images = new HashMap<Integer,byte[]>();
-
+	private HashMap<Integer,BufferedImage> images = new HashMap<Integer,BufferedImage>();
+	JPanel recourcePanel = new JPanel();
 	
 	@Override
 	public String getName() {
@@ -98,12 +107,28 @@ public class DirectoryPlugin extends APlugin{
 		navigation.add(serie_combo);
 		navigation.add(recource_combo);
 		
-		JPanel recourcePanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 5));
+
 
 		m_content = new JPanel(new BorderLayout(5, 5));
 		m_content.add(navigation,BorderLayout.NORTH);
 		m_content.add(recourcePanel,BorderLayout.CENTER);
 	
+		drawImage();
+	}
+	
+	private void drawImage()
+	{
+		
+		BufferedImage img = images.get(recource_combo.getSelectedItem());
+		if(img != null){
+
+		recourcePanel.removeAll();
+		recourcePanel.add(new JLabel(new ImageIcon(img)));
+		m_content.repaint();
+		recourcePanel.updateUI();
+//		recourcePanel.add(new JLabel("Test"));
+		}
+
 	}
 	
 	private void getRecources()
@@ -120,24 +145,38 @@ public class DirectoryPlugin extends APlugin{
 			  try{
 				String file = (String) itr.next();
 			  	File fileObject = new File(file);
+			  	
 				DicomInputStream din = new DicomInputStream(fileObject);
 				DicomObject dicomObject = din.readDicomObject();
-				byte[] input = dicomObject.get(Tag.PixelData).getBytes();
+//				byte[] input = dicomObject.get(Tag.PixelData).getBytes();
+				
+				BufferedImage jpg = null;
+				Iterator<ImageReader> iter = ImageIO.getImageReadersByFormatName("DICOM");
+				ImageReader reader = (ImageReader) iter.next();
+				DicomImageReadParam param = (DicomImageReadParam) reader.getDefaultReadParam();
 
-				images.put(dicomObject.hashCode(),input );
+				ImageInputStream iis = ImageIO.createImageInputStream(fileObject);
+				reader.setInput(iis,false);
+				jpg = reader.read(0,param);
+				iis.close();
+				
+				images.put(dicomObject.hashCode(),jpg );
 				
 				ref_img_patient.put(dicomObject.hashCode(),dicomObject.get(Tag.PatientID).getValueAsString(new SpecificCharacterSet("UTF-8"), 200));
 				ref_img_serie.put(dicomObject.hashCode(), dicomObject.get(Tag.SeriesInstanceUID).getValueAsString(new SpecificCharacterSet("UTF-8"), 200));
 				ref_img_study.put(dicomObject.hashCode(), dicomObject.get(Tag.StudyInstanceUID).getValueAsString(new SpecificCharacterSet("UTF-8"), 200));
 			  }
 			  catch (Exception e) {
+				  System.out.println(e.getMessage());
 				continue;
 			}
 		  }	
 	}
+
 	
 	private void addComboListener()
 	{
+		/*
 		patient_combo.addItemListener(new ItemListener(){
 		      public void itemStateChanged(ItemEvent ie){
 		    	  	//TODO: actual_patientID = ???
@@ -157,19 +196,25 @@ public class DirectoryPlugin extends APlugin{
 		  			setCombos(dir_type.serie);
 			      }
 			    });
+			    */
 		recource_combo.addItemListener(new ItemListener(){
 		      public void itemStateChanged(ItemEvent ie){
 		    	  	//TODO: actual_patientID = ???
-		  			setCombos(dir_type.recource);
+		  			//setCombos(dir_type.recource);
+		  			drawImage();
 			      }
 			    });
 	}
 	
 	private void setCombos(dir_type level)
 	{
+
+		drawImage();
+		
 		  if(level.equals(dir_type.initial))
 		  {
 			  patient_combo.removeAllItems();
+			  patient_combo.addItem("all");
 			  	//TODO: find out reference key between patient and study
 				  for (Entry<String, HashMap<String, String>> entry : patient_map.entrySet()) {
 					  patient_combo.addItem(entry.getValue().get(dcm.nameOf(Tag.PatientName)));
@@ -179,6 +224,7 @@ public class DirectoryPlugin extends APlugin{
 		  {
 			  studie_combo.removeAllItems();
 				//TODO: find out reference key between study and serie
+			  	studie_combo.addItem("all");
 				 for (Entry<String, HashMap<String, String>> entry : studie_map.entrySet()) {
 					  studie_combo.addItem(entry.getValue().get(dcm.nameOf(Tag.StudyDescription)));
 				   }
@@ -186,13 +232,14 @@ public class DirectoryPlugin extends APlugin{
 		  if(level.equals(dir_type.initial)||level.equals(dir_type.patient)||level.equals(dir_type.studie))
 		  {
 			  serie_combo.removeAllItems();
+			  serie_combo.addItem("all");
 				  for (Entry<String, HashMap<String, String>> entry : serie_map.entrySet()) {
 					  serie_combo.addItem(entry.getValue().get(dcm.nameOf(Tag.SeriesDescription)));
 					  ref_key_ser.put(entry.getValue().get(dcm.nameOf(Tag.SeriesDescription)), entry.getValue().get(dcm.nameOf(Tag.SeriesInstanceUID)));
 				   }
 		  }
 
-		  if(level.equals(dir_type.initial)||level.equals(dir_type.patient)||level.equals(dir_type.studie)||level.equals(dir_type.serie))
+		  if( level.equals(dir_type.initial)||level.equals(dir_type.patient)||level.equals(dir_type.studie)||level.equals(dir_type.serie))
 		  {
 			  recource_combo.removeAllItems();
 				 int imageCount = 1;
@@ -201,7 +248,7 @@ public class DirectoryPlugin extends APlugin{
 				 while(it.hasNext()) { 
 					 Object key = it.next();
 					 Object val = images.get(key); 
-					 recource_combo.addItem("Image " + imageCount);
+					 recource_combo.addItem(key);
 					 imageCount++;
 					 } 
 		  }
