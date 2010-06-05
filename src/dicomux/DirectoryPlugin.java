@@ -1,23 +1,15 @@
 package dicomux;
 
 import java.awt.BorderLayout;
-import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
+import java.awt.Font;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
-import java.io.BufferedWriter;
-import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Vector;
 import java.util.Map.Entry;
 
@@ -29,6 +21,7 @@ import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTable;
 
 import org.dcm4che2.data.DicomElement;
 import org.dcm4che2.data.DicomObject;
@@ -36,9 +29,6 @@ import org.dcm4che2.data.SpecificCharacterSet;
 import org.dcm4che2.data.Tag;
 import org.dcm4che2.imageio.plugins.dcm.DicomImageReadParam;
 import org.dcm4che2.io.DicomInputStream;
-import org.dcm4che2.iod.composite.Image;
-import org.dcm4che2.tool.jpg2dcm.Jpg2Dcm;
-import org.jpedal.examples.simpleviewer.utils.IconiseImage;
 
 
 public class DirectoryPlugin extends APlugin{
@@ -61,10 +51,12 @@ public class DirectoryPlugin extends APlugin{
 	
 	// Reference Container
 	HashMap<String,String> ref_key_ser = new HashMap<String, String>();
+	HashMap<String,String> ref_key_pat = new HashMap<String, String>();
+	HashMap<String,String> ref_key_stu = new HashMap<String, String>();
+	
 	HashMap<Integer,String> ref_img_serie = new HashMap<Integer, String>();
 	HashMap<Integer,String> ref_img_study = new HashMap<Integer, String>();
 	HashMap<Integer,String> ref_img_patient = new HashMap<Integer, String>();
-	
 	
 	enum dir_type{patient,studie,serie,recource,invalid,initial};
 	
@@ -72,16 +64,12 @@ public class DirectoryPlugin extends APlugin{
 	final JComboBox studie_combo = new JComboBox(new Object[]{"studies"});
 	final JComboBox serie_combo = new JComboBox(new Object[]{"series"});
 	final JComboBox recource_combo = new JComboBox(new Object[]{"recources"});
-	
-	private String actual_patientID = "";
-	private String actual_studyID = "";
-	private String actual_serieID = "";
-	private String actual_recourceID = "";
+
 	private DicomObject dcm;
 	private String DirFilePath = "";
 	
 	private HashMap<Integer,BufferedImage> images = new HashMap<Integer,BufferedImage>();
-	JPanel recourcePanel = new JPanel();
+	JPanel recourcePanel = new JPanel(new BorderLayout(5, 5));
 	
 	@Override
 	public String getName() {
@@ -91,44 +79,75 @@ public class DirectoryPlugin extends APlugin{
 	@Override
 	public void setData(DicomObject _dcm) throws Exception {
 		dcm = _dcm;
-		
 		if(DirFilePath == ""){
-			//throw new Exception();
-		}
-		
+			throw new Exception();
+		}	
 		extractAllDicomElements(dcm);	//GET ALL INFORMATION ABOUT PATIENT, STUDY,SERIE AND RECOURCES FROM THE DIRECTORY-FILE
 		getRecources();
 		setCombos(dir_type.initial);
-		addComboListener();
-		
+		addComboListener();	
 		JPanel navigation = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 5));
 		navigation.add(patient_combo);
 		navigation.add(studie_combo);
 		navigation.add(serie_combo);
 		navigation.add(recource_combo);
-		
-
-
 		m_content = new JPanel(new BorderLayout(5, 5));
 		m_content.add(navigation,BorderLayout.NORTH);
 		m_content.add(recourcePanel,BorderLayout.CENTER);
-	
-		drawImage();
+		//drawImage();
+		writeInformation(serie_combo.getSelectedItem().toString(), dir_type.serie);
 	}
 	
 	private void drawImage()
-	{
-		
+	{	
 		BufferedImage img = images.get(recource_combo.getSelectedItem());
-		if(img != null){
-
 		recourcePanel.removeAll();
+		if(img != null){
 		recourcePanel.add(new JLabel(new ImageIcon(img)));
 		m_content.repaint();
 		recourcePanel.updateUI();
-//		recourcePanel.add(new JLabel("Test"));
 		}
 
+	}
+	
+	private void writeInformation(String key,dir_type type)
+	{
+		recourcePanel.removeAll();
+		HashMap<String, String> information = null;
+		JLabel lable = new JLabel();
+		lable.setFont(new Font("Information",0, 30));
+		if(ref_key_pat.containsKey(key) || ref_key_stu.containsKey(key) || ref_key_ser.containsKey(key)){
+			switch(type){
+			case patient:	information = new HashMap<String, String>(patient_map.get(ref_key_pat.get(key)));
+							lable.setText("Patient information");
+				break;
+			case studie:	information = new HashMap<String, String>(studie_map.get(ref_key_stu.get(key)));
+							lable.setText("Study information");
+				break;
+			case serie:		information = new HashMap<String, String>(serie_map.get(ref_key_ser.get(key)));
+							lable.setText("Serie information");
+				break;
+			}
+		}
+		if(information != null){
+			String col[] = {"Tag","Value"};
+			String[][] values = new String[information.size()][2];
+			int counter = 0;
+			for (Entry<String, String> entry : information.entrySet()) {
+				values[counter][0] = entry.getKey();
+				values[counter][1] = entry.getValue();
+				counter++;
+			}
+			
+			JTable table = new JTable(values,col);
+			JScrollPane scroll = new JScrollPane(table);
+			table.setSize(800,600);
+		    table.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+		    recourcePanel.add(lable,BorderLayout.NORTH);
+		    recourcePanel.add(scroll,BorderLayout.CENTER);
+		}
+		m_content.repaint();
+		recourcePanel.updateUI();
 	}
 	
 	private void getRecources()
@@ -139,7 +158,6 @@ public class DirectoryPlugin extends APlugin{
 			  String path = base.toString() + File.separator +entry.getValue().get(dcm.nameOf(Tag.ReferencedFileID));
 			  recources.add(path);
 		  }
-		  
 		  Iterator<String> itr = recources.iterator();
 		  while(itr.hasNext()){
 			  try{
@@ -162,9 +180,9 @@ public class DirectoryPlugin extends APlugin{
 				
 				images.put(dicomObject.hashCode(),jpg );
 				
-				ref_img_patient.put(dicomObject.hashCode(),dicomObject.get(Tag.PatientID).getValueAsString(new SpecificCharacterSet("UTF-8"), 200));
-				ref_img_serie.put(dicomObject.hashCode(), dicomObject.get(Tag.SeriesInstanceUID).getValueAsString(new SpecificCharacterSet("UTF-8"), 200));
-				ref_img_study.put(dicomObject.hashCode(), dicomObject.get(Tag.StudyInstanceUID).getValueAsString(new SpecificCharacterSet("UTF-8"), 200));
+				ref_img_patient.put(dicomObject.hashCode(),dicomObject.get(Tag.PatientID).getValueAsString(new SpecificCharacterSet("UTF-8"), 100));
+				ref_img_serie.put(dicomObject.hashCode(), dicomObject.get(Tag.SeriesInstanceUID).getValueAsString(new SpecificCharacterSet("UTF-8"), 100));
+				ref_img_study.put(dicomObject.hashCode(), dicomObject.get(Tag.StudyInstanceUID).getValueAsString(new SpecificCharacterSet("UTF-8"), 100));
 			  }
 			  catch (Exception e) {
 				  System.out.println(e.getMessage());
@@ -172,38 +190,46 @@ public class DirectoryPlugin extends APlugin{
 			}
 		  }	
 	}
-
 	
 	private void addComboListener()
 	{
-		/*
-		patient_combo.addItemListener(new ItemListener(){
-		      public void itemStateChanged(ItemEvent ie){
-		    	  	//TODO: actual_patientID = ???
-		  			setCombos(dir_type.patient);
-			      }
-			    });
-		studie_combo.addItemListener(new ItemListener(){
-		      public void itemStateChanged(ItemEvent ie){
-		    	  	//TODO: actual_studyID = ???
-		  			setCombos(dir_type.studie);
-			      }
-			    });
-		serie_combo.addItemListener(new ItemListener(){
-		      public void itemStateChanged(ItemEvent ie){
-		    	  //dcm.nameOf(Tag.SeriesInstanceUID)
-		    	  	actual_serieID = ref_key_ser.get((String)serie_combo.getSelectedItem());
-		  			setCombos(dir_type.serie);
-			      }
-			    });
-			    */
-		recource_combo.addItemListener(new ItemListener(){
-		      public void itemStateChanged(ItemEvent ie){
-		    	  	//TODO: actual_patientID = ???
-		  			//setCombos(dir_type.recource);
-		  			drawImage();
-			      }
-			    });
+		
+		patient_combo.addActionListener(new ActionListener() {		
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				setCombos(dir_type.patient);
+	  			serie_combo.setVisible(false);
+	  			recource_combo.setVisible(false);
+	  			writeInformation(patient_combo.getSelectedItem().toString(),dir_type.patient);
+			}
+		});
+		studie_combo.addActionListener(new ActionListener() {  
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				setCombos(dir_type.studie);
+	  			serie_combo.setVisible(true);
+	  			recource_combo.setVisible(false);				
+	  			writeInformation(studie_combo.getSelectedItem().toString(),dir_type.studie);
+			}});
+		serie_combo.addActionListener(new ActionListener(){
+			@Override
+			public void actionPerformed(ActionEvent e) {
+	  			setCombos(dir_type.serie);
+	  			recource_combo.setVisible(true);
+	  			writeInformation(serie_combo.getSelectedItem().toString(),dir_type.serie);
+			}});
+			    
+		recource_combo.addActionListener(new ActionListener(){
+			@Override
+			public void actionPerformed(ActionEvent e) {
+					if(recource_combo.getSelectedItem() == "select"){
+						writeInformation(serie_combo.getSelectedItem().toString(),dir_type.serie);
+					}
+					else{
+						drawImage();
+					}
+				}
+			});
 	}
 	
 	private void setCombos(dir_type level)
@@ -214,43 +240,50 @@ public class DirectoryPlugin extends APlugin{
 		  if(level.equals(dir_type.initial))
 		  {
 			  patient_combo.removeAllItems();
-			  patient_combo.addItem("all");
+			  //patient_combo.addItem("all");
 			  	//TODO: find out reference key between patient and study
 				  for (Entry<String, HashMap<String, String>> entry : patient_map.entrySet()) {
 					  patient_combo.addItem(entry.getValue().get(dcm.nameOf(Tag.PatientName)));
+					  ref_key_pat.put(entry.getValue().get(dcm.nameOf(Tag.PatientName)), entry.getValue().get(dcm.nameOf(Tag.PatientID)));
+						
 				   }
-		  }
-		  if(level.equals(dir_type.initial)||level.equals(dir_type.patient))
-		  {
 			  studie_combo.removeAllItems();
 				//TODO: find out reference key between study and serie
-			  	studie_combo.addItem("all");
+			  int counter = 0;
+			  	//studie_combo.addItem("all");
 				 for (Entry<String, HashMap<String, String>> entry : studie_map.entrySet()) {
-					  studie_combo.addItem(entry.getValue().get(dcm.nameOf(Tag.StudyDescription)));
+					  studie_combo.addItem(counter +" " + entry.getValue().get(dcm.nameOf(Tag.StudyDescription)));
+					  ref_key_stu.put(counter +" " + entry.getValue().get(dcm.nameOf(Tag.StudyDescription)), entry.getValue().get(dcm.nameOf(Tag.StudyInstanceUID)));
+					  counter ++;
 				   }
-		  }
-		  if(level.equals(dir_type.initial)||level.equals(dir_type.patient)||level.equals(dir_type.studie))
-		  {
-			  serie_combo.removeAllItems();
-			  serie_combo.addItem("all");
+			 serie_combo.removeAllItems();
+			  //serie_combo.addItem("all");
+			  int counter2 = 0;
+			  //serie_combo.addItem("all");
 				  for (Entry<String, HashMap<String, String>> entry : serie_map.entrySet()) {
-					  serie_combo.addItem(entry.getValue().get(dcm.nameOf(Tag.SeriesDescription)));
-					  ref_key_ser.put(entry.getValue().get(dcm.nameOf(Tag.SeriesDescription)), entry.getValue().get(dcm.nameOf(Tag.SeriesInstanceUID)));
-				   }
+					  serie_combo.addItem(counter2 +" " + entry.getValue().get(dcm.nameOf(Tag.SeriesDescription)));
+					  ref_key_ser.put(counter2 +" " + entry.getValue().get(dcm.nameOf(Tag.SeriesDescription)), entry.getValue().get(dcm.nameOf(Tag.SeriesInstanceUID)));
+					  counter2 ++;
+				  }
 		  }
+		  //if(level.equals(dir_type.initial)||level.equals(dir_type.patient)){  }
+		  //if(level.equals(dir_type.initial)||level.equals(dir_type.patient)||level.equals(dir_type.studie)){}
 
-		  if( level.equals(dir_type.initial)||level.equals(dir_type.patient)||level.equals(dir_type.studie)||level.equals(dir_type.serie))
+		  if(!level.equals(dir_type.recource))
 		  {
 			  recource_combo.removeAllItems();
 				 int imageCount = 1;
-				 Iterator it = images.keySet().iterator(); 
-				 
-				 while(it.hasNext()) { 
-					 Object key = it.next();
-					 Object val = images.get(key); 
-					 recource_combo.addItem(key);
-					 imageCount++;
-					 } 
+				 Iterator<Integer> it = images.keySet().iterator(); 	 
+				 String selected_serieUID = ref_key_ser.get(serie_combo.getSelectedItem());
+				 recource_combo.addItem("select");
+					 while(it.hasNext()) { 
+						 Object key = it.next();
+						 //Object val = images.get(key);  
+						 if(ref_img_serie.get(key) != null && ref_img_serie.get(key).equals(selected_serieUID)){
+							 recource_combo.addItem(key);
+							 imageCount++;
+						 }
+				}
 		  }
 	}
 	
@@ -288,25 +321,24 @@ public class DirectoryPlugin extends APlugin{
 					}
 				}
 			}
-			else { // the DicomElement doesn't contain more DicomObjects
-				
+			else { 
+				// the DicomElement doesn't contain more DicomObjects
 				int tagId = element.tag();
 				int elementLength = element.length();
 
 				if (elementLength > 0){
-					actualSeq.put(dcm.nameOf(element.tag()), element.getValueAsString(new SpecificCharacterSet("UTF-8"), 50));
+					actualSeq.put(dcm.nameOf(element.tag()), element.getValueAsString(new SpecificCharacterSet("UTF-8"), 100));
 				
 					if(	dcm.nameOf(tagId) == dcm.nameOf(Tag.PatientID) ||
 						dcm.nameOf(tagId) == dcm.nameOf(Tag.StudyInstanceUID) ||
 						dcm.nameOf(tagId) == dcm.nameOf(Tag.SeriesInstanceUID) ||
 						dcm.nameOf(tagId) == dcm.nameOf(Tag.ReferencedSOPInstanceUIDInFile)){
 						
-						id = element.getValueAsString(new SpecificCharacterSet("UTF-8"), 70);
+						id = element.getValueAsString(new SpecificCharacterSet("UTF-8"), 100);
 					}
-	
 					else if(dcm.nameOf(tagId) == dcm.nameOf(Tag.DirectoryRecordType))
 					{			
-						String tmp = element.getValueAsString(new SpecificCharacterSet("UTF-8"), 50);
+						String tmp = element.getValueAsString(new SpecificCharacterSet("UTF-8"), 100);
 						if(tmp.equals("PATIENT")){
 							_type = dir_type.patient;
 						}
@@ -323,7 +355,6 @@ public class DirectoryPlugin extends APlugin{
 				}
 			}
 		}
-		
 		return  new el_map(id,_type,actualSeq);
 	}
 	
