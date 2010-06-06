@@ -538,8 +538,7 @@ public class View extends JFrame implements IView {
 			JPanel control = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0), false);
 			JFileChooser filechooser = new JFileChooser(m_lastSelectedFilePath);
 			filechooser.setDialogType(JFileChooser.OPEN_DIALOG);
-			// TODO: DateiName and DateiTyp not in actual Language ??
-			filechooser.setLocale(m_languageBundle.getLocale());		// Set the actual language to the file chooser!
+			filechooser.setLocale(m_languageBundle.getLocale());		// Set the current language to the file chooser!
 			filechooser.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
@@ -573,8 +572,7 @@ public class View extends JFrame implements IView {
 			JFileChooser filechooser = new JFileChooser();
 			filechooser.setDialogType(JFileChooser.OPEN_DIALOG);
 			filechooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-			// TODO: DateiName and DateiTyp not in actual Language ??
-			filechooser.setLocale(m_languageBundle.getLocale());		// Set the actual language to the file chooser!
+			filechooser.setLocale(m_languageBundle.getLocale());		// Set the current language to the file chooser!
 			filechooser.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
@@ -783,19 +781,3 @@ public class View extends JFrame implements IView {
 		}
 	}
 }
-
-//		/**
-//		 * convenience method for opening ImageIcons // copied from http://java.sun.com/docs/books/tutorial/uiswing/components/icon.html
-//		 * @param path path to the icon file
-//		 * @param description description of the file
-//		 * @return the ImageIcon of the opened file or null
-//		 */
-//		protected static ImageIcon createImageIcon(String path, String description) {
-//			java.net.URL imgURL = getClass().getResource(path);
-//			if (imgURL != null)
-//				return new ImageIcon(imgURL, description);
-//			else {
-//				System.err.println(m_languageBundle.getString("key_err_loadFile") + path);
-//				return null;
-//			}
-//		}
