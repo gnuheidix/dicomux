@@ -115,6 +115,7 @@ public class Controller implements IController {
 			File fileObject = new File(path);
 			DicomInputStream din = new DicomInputStream(fileObject);
 			DicomObject dicomObject = din.readDicomObject();
+			din.close();
 			
 			// look for a suitable plug-in for the opened DicomObject
 			APlugin chosenPlugin = null;
@@ -159,8 +160,6 @@ public class Controller implements IController {
 			e.printStackTrace();
 			return;
 		}
-		
-//		dicomObject.getString(Tag.MIMETypeOfEncapsulatedDocument).equalsIgnoreCase("application/pdf"))
 	}
 	
 	@Override
@@ -182,6 +181,7 @@ public class Controller implements IController {
 					File fileObject = new File(dir+File.separator+file);
 					DicomInputStream din = new DicomInputStream(fileObject);
 					DicomObject dicomObject = din.readDicomObject();
+					din.close();
 					
 					// TODO: Do we have more Plugins in DirectoryMode ??
 					DirectoryPlugin chosenPlugin = new DirectoryPlugin();
@@ -223,13 +223,17 @@ public class Controller implements IController {
 	
 	@Override
 	public void setLanguage(Locale locale) {
-		for (int i = 0; i < m_model.getWorkspaceCount(); ++i) {
-			TabObject selectedWorkspace = m_model.getWorkspace(i);
-			APlugin selectedPlugin = selectedWorkspace.getPlugin();
-			if (selectedPlugin != null) {
-				selectedPlugin.setLanguage(locale);
+		if (locale != null) {
+			m_view.setLanguage(locale);
+			for (int i = 0; i < m_model.getWorkspaceCount(); ++i) {
+				TabObject selectedWorkspace = m_model.getWorkspace(i);
+				APlugin selectedPlugin = selectedWorkspace.getPlugin();
+				if (selectedPlugin != null) {
+					selectedPlugin.setLanguage(locale);
 			}
 		}
+	}
+
 	}
 	
 	@Override

@@ -127,6 +127,7 @@ public class RawPlugin extends APlugin {
 		return detailCard;
 	}
 	
+	// TODO implement with ResourceBundles
 	@Override
 	public void setLanguage(Locale locale) {
 		if (locale != null) {
