@@ -3,17 +3,12 @@ package dicomux;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionAdapter;
-import java.awt.event.MouseMotionListener;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
@@ -37,8 +32,8 @@ import org.jpedal.objects.PdfPageData;
  */
 public class PDFPlugin extends APlugin {
 	
-	private Dimension contend_dim;
-	private int pdf_page;
+	private Dimension contend_dim = new Dimension();;
+	private int pdf_page = 1;
 	private JLabel page_lable;
 	JTextField scaleTextField ;
 	private Locale language;
@@ -46,19 +41,24 @@ public class PDFPlugin extends APlugin {
 	private final String m_langBaseName = "language";
 	private final JScrollPane currentScroll;
 	private final int prefered_scale = 76;
+	private PdfDecoder pdfDecoder = new PdfDecoder(true);
 	
 	// for zooming with mouse
 	private int mpsX,mpsY;
 	private int mpeX,mpeY;
 	
+	private JButton zoomOut = new JButton();
+	private JButton zoomIn = new JButton();
+	private JButton zoomFit = new JButton();
+	private JButton prevPage = new JButton();
+	private JButton nextPage = new JButton();
+	
 	@Override
 	public String getName() {
 		return "Encapsulated PDF";
 	}
-	private PdfDecoder pdfDecoder;
 	
-	public PDFPlugin() throws Exception
-	{
+	public PDFPlugin() throws Exception{
 		super();
 		m_keyTag.addKey(Tag.MIMETypeOfEncapsulatedDocument, "application/pdf");
 		m_keyTag.addKey(Tag.EncapsulatedDocument, null);
@@ -69,32 +69,63 @@ public class PDFPlugin extends APlugin {
 		m_languageBundle = ResourceBundle.getBundle(m_langBaseName,language );
 		currentScroll = new JScrollPane();
 		scaleTextField = new JTextField(6);
+		// get a new content pane and add the PDF scrollpane to it
+		m_content = new JPanel(new BorderLayout(5, 5));
+		// Lable PageOf
+		page_lable = new JLabel("Page " + pdf_page + " of " + pdfDecoder.getPageCount() );
 	}
 	
 	// TODO: check for crap; add zoom and page select buttons;
 	@Override
-	public void setData(DicomObject dcm) throws Exception{
-		
-		pdfDecoder = new PdfDecoder(true);
-		contend_dim = new Dimension();
-		pdf_page = 1;
-		
-		// get a new content pane and add the PDF scrollpane to it
-		m_content = new JPanel(new BorderLayout(5, 5));
-		
+	public void setData(DicomObject dcm) throws Exception{	
 		try {
 			// open PDF file
 			pdfDecoder.openPdfArray(dcm.get(Tag.EncapsulatedDocument).getBytes());
 			// decode first page
 			pdfDecoder.decodePage(pdf_page);
-		} catch (Exception e) {
+			// set scaling to 100%
+			pdfDecoder.setPageParameters((prefered_scale/100),pdf_page);	
+			scaleTextField.setText(new Integer(prefered_scale).toString() + "%");
+			currentScroll.getVerticalScrollBar().setUnitIncrement(40);
+			currentScroll.setViewportView(pdfDecoder);
+			currentScroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+			currentScroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);	
+			JPanel tools = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 5));
+			JPanel tools_navigation = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 5));
+			currentScroll.add(pdfDecoder);
+			currentScroll.setViewportView(pdfDecoder);
+		
+			tools.add(zoomOut);
+			tools.add(zoomIn);
+			tools.add(zoomFit);
+			tools_navigation.add(prevPage);
+			tools_navigation.add(page_lable);
+			
+			tools_navigation.add(nextPage);
+			tools.add(scaleTextField);
+			
+			nextPage.setIcon(new ImageIcon("etc/images/go-next.png"));
+			prevPage.setIcon(new ImageIcon("etc/images/go-previous.png"));	
+			zoomFit.setIcon(new ImageIcon("etc/images/fitToPage.png"));
+			zoomIn.setIcon(new ImageIcon("etc/images/zoomIn.png"));
+			zoomOut.setIcon(new ImageIcon("etc/images/zoomOut.png"));	
+			
+			if(pdfDecoder.getPageCount() > 1)
+			tools.add(tools_navigation);
+			
+			m_content.add(tools, BorderLayout.NORTH);
+			m_content.add(currentScroll, BorderLayout.CENTER);
+			
+			addToolbarListener();
+		}
+		catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		// set scaling to 100%
-		pdfDecoder.setPageParameters((prefered_scale/100),pdf_page);	
-		scaleTextField.setText(new Integer(prefered_scale).toString() + "%");
+	}
+	
 
+	private void addToolbarListener(){
 		m_content.addComponentListener(new ComponentAdapter() {
 			@Override
 			public void componentResized(ComponentEvent e) {
@@ -102,46 +133,17 @@ public class PDFPlugin extends APlugin {
 				System.out.println("PDF-Size "+pdfDecoder.getSize());
 				super.componentResized(e);
 				contend_dim = m_content.getSize();
-				//fitToPage();
-				
-			}
-		});
-
-		currentScroll.getVerticalScrollBar().setUnitIncrement(40);
-		currentScroll.setViewportView(pdfDecoder);
-		currentScroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-		currentScroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);	
-		JPanel tools = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 5));
-		JPanel tools_navigation = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 5));
-		currentScroll.add(pdfDecoder);
-		currentScroll.setViewportView(pdfDecoder);
-
-		//add zoom buttons
-		
-		// Zoom out
-//		JButton zoomOut = new JButton("-");
-		JButton zoomOut = new JButton();
-		zoomOut.setIcon(new ImageIcon("etc/images/zoomOut.png"));
+		}});
 		zoomOut.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				zoomOut((float)0.1,pdf_page);
-			}});
-		tools.add(zoomOut);
-
-		// Zoom In
-		JButton zoomIn = new JButton();
-		zoomIn.setIcon(new ImageIcon("etc/images/zoomIn.png"));
+		}});
 		zoomIn.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				zoomIn((float)0.1,pdf_page);
-			}});
-		tools.add(zoomIn);
-		
-		// Page fit
-		JButton zoomFit = new JButton();
-		zoomFit.setIcon(new ImageIcon("etc/images/fitToPage.png"));
+		}});
 		zoomFit.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
@@ -150,13 +152,10 @@ public class PDFPlugin extends APlugin {
 				fitToPage();
 				m_content.repaint();
 				currentScroll.updateUI();
-			}});
-		tools.add(zoomFit);
-		
-		//Scale TextField
+		}});
 		scaleTextField.addKeyListener(new KeyListener() {
 			@Override
-			public void keyTyped(KeyEvent e) {	}
+			public void keyTyped(KeyEvent e) {}
 			@Override
 			public void keyReleased(KeyEvent e) {
 				if(e.getKeyCode() == KeyEvent.VK_ENTER)
@@ -176,56 +175,34 @@ public class PDFPlugin extends APlugin {
 			@Override
 			public void keyPressed(KeyEvent e) {}
 		});
-		
-		//prev Page
-		JButton prevPage = new JButton();
-		prevPage.setIcon(new ImageIcon("etc/images/go-previous.png"));
 		prevPage.addActionListener(new ActionListener() {
 			@Override
-			public void actionPerformed(ActionEvent arg0) {
-				
-				if(pdf_page == 1)
-				{
+			public void actionPerformed(ActionEvent arg0) {		
+				if(pdf_page == 1){
 					pdf_page = pdfDecoder.getPageCount();
 				}
-				else
-				{
+				else{
 					pdf_page = pdf_page - 1;
-				}
-				
+				}	
 				try {
 					pdfDecoder.decodePage(pdf_page);
-					
 				} catch (Exception e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 				page_lable.setText("Page " + pdf_page + " of " + pdfDecoder.getPageCount());
 				m_content.repaint();
-			}});
-		tools_navigation.add(prevPage);
-		
-		
-		// Lable PageOf
-		page_lable = new JLabel("Page " + pdf_page + " of " + pdfDecoder.getPageCount() );
-		tools_navigation.add(page_lable);
-		
-		//next Page
-		JButton nextPage = new JButton();
-		nextPage.setIcon(new ImageIcon("etc/images/go-next.png"));
+		}});
 		nextPage.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				
-				if(pdf_page == pdfDecoder.getPageCount())
-				{
+				if(pdf_page == pdfDecoder.getPageCount()){
 					pdf_page = 1;
 				}
-				else
-				{
+				else{
 					pdf_page = pdf_page + 1;
-				}
-				
+				}	
 				try {
 					pdfDecoder.decodePage(pdf_page);
 				} catch (Exception e) {
@@ -234,17 +211,7 @@ public class PDFPlugin extends APlugin {
 				}
 				page_lable.setText("Page " + pdf_page + " of " + pdfDecoder.getPageCount());
 				m_content.repaint();
-			}});
-		tools_navigation.add(nextPage);
-		
-		tools.add(scaleTextField);
-		
-		if(pdfDecoder.getPageCount() > 1)
-		tools.add(tools_navigation);
-		
-		m_content.add(tools, BorderLayout.NORTH);
-		m_content.add(currentScroll, BorderLayout.CENTER);
-
+		}});
 	}
 
 	private void fitToPage()
@@ -277,8 +244,7 @@ public class PDFPlugin extends APlugin {
 			pdfDecoder.setPageParameters(scale_y,pdf_page);
 			scaleTextField.setText(new Integer((int) (scale_y*100)).toString() + "%");
 			System.out.println("scale_y after"+ scale_y);
-		}
-		
+		}	
 	}
 	
 	private void zoomIn(float inc,int page)
@@ -313,7 +279,5 @@ public class PDFPlugin extends APlugin {
 	public void setLanguage(Locale locale) {
 		language = locale;
 		// set the global language for all GUI Elements (load the ResourceBundle)
-		
-		
 	}
 }

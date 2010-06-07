@@ -33,7 +33,7 @@ import org.dcm4che2.io.DicomInputStream;
 
 public class DirectoryPlugin extends APlugin{
 	
-	public class el_map{
+	private class el_map{
 		public el_map(String _id,dir_type _type,HashMap<String, String> _actualSeq) {
 			id = _id;
 			type = _type;
@@ -82,6 +82,7 @@ public class DirectoryPlugin extends APlugin{
 		if(DirFilePath == ""){
 			throw new Exception();
 		}	
+	
 		extractAllDicomElements(dcm);	//GET ALL INFORMATION ABOUT PATIENT, STUDY,SERIE AND RECOURCES FROM THE DIRECTORY-FILE
 		getRecources();
 		setCombos(dir_type.initial);
@@ -96,6 +97,7 @@ public class DirectoryPlugin extends APlugin{
 		m_content.add(recourcePanel,BorderLayout.CENTER);
 		//drawImage();
 		writeInformation(serie_combo.getSelectedItem().toString(), dir_type.serie);
+
 	}
 	
 	private void drawImage()
