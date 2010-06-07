@@ -157,7 +157,7 @@ public class DirectoryPlugin extends APlugin{
 		Vector<String> recources = new Vector<String>();
 		  for (Entry<String, HashMap<String, String>> entry : recource_map.entrySet()) {
 			  File base =  new File(DirFilePath);
-			  String path = base.toString() + File.separator +entry.getValue().get(dcm.nameOf(Tag.ReferencedFileID));
+			  String path = base.toString() + File.separator + entry.getValue().get(dcm.nameOf(Tag.ReferencedFileID)).replace("\\", File.separator);
 			  recources.add(path);
 		  }
 		  Iterator<String> itr = recources.iterator();
