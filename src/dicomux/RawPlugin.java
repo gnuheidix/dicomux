@@ -38,9 +38,14 @@ public class RawPlugin extends APlugin {
 	private JTree m_tree;
 	
 	/**
-	 * the details button
+	 * the button for showing the DETAILS card
 	 */
-	private JButton m_detailsButton;
+	private JButton m_detailsButton = new JButton("m_detailsButton");
+	
+	/**
+	 * the button for showing the TREE-Card 
+	 */
+	private JButton m_closeDetailsButton = new JButton("m_closeDetailsButton");
 	
 	/**
 	 * the panel with the CardLayout for the main content
@@ -64,7 +69,17 @@ public class RawPlugin extends APlugin {
 	
 	@Override
 	public void setLanguage(Locale locale) {
-		// TODO implement
+		if (locale != null) {
+			String tmp = locale.getLanguage();
+			if(tmp == "de") {
+				m_detailsButton.setText("Details");
+				m_closeDetailsButton.setText("Zurück");
+			}
+			else if (tmp == "en") {
+				m_detailsButton.setText("view details");
+				m_closeDetailsButton.setText("back");
+			}
+		}
 	}
 	
 	@Override
@@ -83,7 +98,6 @@ public class RawPlugin extends APlugin {
 		JPanel treeCard = new JPanel(new BorderLayout(5, 5));
 		treeCard.add(new JScrollPane(m_tree), BorderLayout.CENTER);
 		
-		m_detailsButton = new JButton("Details");
 		m_detailsButton.setEnabled(false);
 		m_detailsButton.setVisible(true);
 		treeCard.add(m_detailsButton, BorderLayout.SOUTH);
@@ -95,15 +109,14 @@ public class RawPlugin extends APlugin {
 		m_detailsText.setLineWrap(true);
 		detailCard.add(new JScrollPane(m_detailsText), BorderLayout.CENTER);
 		
-		JButton closeDetails = new JButton("Zurück");
-		closeDetails.addActionListener(new ActionListener() {
+		m_closeDetailsButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				CardLayout cl = (CardLayout)(m_cards.getLayout());
 				cl.show(m_cards, "TREE");
 			}
 		});
-		detailCard.add(closeDetails, BorderLayout.SOUTH);
+		detailCard.add(m_closeDetailsButton, BorderLayout.SOUTH);
 		m_cards.add(detailCard, "DETAILS");
 		
 		m_content = new JPanel(new BorderLayout(5, 5));
@@ -114,16 +127,16 @@ public class RawPlugin extends APlugin {
 	 * sets the ActionListener of the m_details button
 	 * @param action
 	 */
-	private void setDetailsAction(final String data) {
+	private void setDetailsAction(final byte[] bytes) {
 		if (m_action != null) {
 			m_detailsButton.removeActionListener(m_action);
 		}
 		
-		if (data != null && !data.equals("")) {
+		if (bytes != null && bytes.length > 0) {
 			m_action = new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent arg0) {
-					m_detailsText.setText(data);
+					m_detailsText.setText(new String(bytes));
 					CardLayout cl = (CardLayout)(m_cards.getLayout());
 					cl.show(m_cards, "DETAILS");
 				}
@@ -169,8 +182,7 @@ public class RawPlugin extends APlugin {
 			else { // the DicomElement doesn't contain more DicomObjects and maybe data
 				retVal.add(new DefaultMutableTreeNode(
 							new TDO(nodeValue, element.getValueAsString(
-													new SpecificCharacterSet("UTF-8"), element.length())),
-							false));
+												new SpecificCharacterSet("UTF-8"), 20), element.getBytes()),false));
 			}
 		}
 		
@@ -185,6 +197,7 @@ public class RawPlugin extends APlugin {
 	private class TDO {
 		String m_description = "";
 		String m_data = null;
+		byte[] m_bytes = null;
 		
 		/**
 		 * @return the description
@@ -198,6 +211,25 @@ public class RawPlugin extends APlugin {
 		 */
 		public String getData() {
 			return m_data;
+		}
+		
+		/**
+		 * @return the data s byte array
+		 */
+		public byte[] getBytes() {
+			return m_bytes;
+		}
+		
+		/**
+		 * @param description
+		 * @param data
+		 * @param bytes
+		 */
+		public TDO(String description, String data, byte[] bytes) {
+			super();
+			this.m_description = description;
+			this.m_data = data;
+			this.m_bytes = bytes;
 		}
 		
 		/**
@@ -234,18 +266,18 @@ public class RawPlugin extends APlugin {
 					myRenderer.setBackground(selected ? m_defaultRenderer.getBackgroundSelectionColor() // set the correct background
 														: m_defaultRenderer.getBackgroundNonSelectionColor());
 					
-					String description = tdo.getDescription(); // extract TDO
-					String data = tdo.getData();
-					
 					if (selected)
-						setDetailsAction(data);
+						setDetailsAction(tdo.getBytes());
 					
 					JLabel descLabel = new JLabel(); // add the description to our renderer
 					descLabel.setFont(stdRenderer.getFont());
 					myRenderer.add(descLabel);
 					
+					String description = tdo.getDescription(); // extract TDO
+					String data = tdo.getData();
+					
 					if (data != null) { // build the complete description depending on the data length
-						int dataLength = data.length();
+						int dataLength = tdo.getBytes().length;
 						if (dataLength > 0) {
 							description += " [Length: " + dataLength + "] [Data: " + data + "]";
 						}

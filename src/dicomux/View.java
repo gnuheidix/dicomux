@@ -352,11 +352,14 @@ public class View extends JFrame implements IView {
 		ActionListener langAL = new ActionListener() { // the action listener for all language change actions
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
+				// build new Locale
+				Locale newLocale = new Locale(arg0.getActionCommand());
+				
 				// set the language in the view
-				setLanguage(new Locale(arg0.getActionCommand()));
+				setLanguage(newLocale);
 				
 				// inform the controller what happened
-				m_controller.setLanguage(getLanguage());
+				m_controller.setLanguage(newLocale);
 				
 				// reinitialize the view
 				initializeLanguage();
