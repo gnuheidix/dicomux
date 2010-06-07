@@ -43,6 +43,7 @@ public class WaveformPlugin extends APlugin {
 	
 	private Vector<ChannelPanel> pannels = new Vector<ChannelPanel>(12);
 	private double zoomLevel;
+	private int mv_cells;
 	
 	public WaveformPlugin() throws Exception {
 		super();
@@ -130,7 +131,7 @@ public class WaveformPlugin extends APlugin {
 			throw new Exception("Could not read ChannelDefinitionSequence");
 		
 		// iterate over the definitions of the channels
-		ChannelDefinition[] channelDefinitions = new ChannelDefinition[12];
+		ChannelDefinition[] channelDefinitions = new ChannelDefinition[numberOfChannels];
 		for(int i = 0; i < channelDef.countItems(); i++) {
 			DicomObject object = channelDef.getDicomObject(i);
 			
@@ -178,6 +179,9 @@ public class WaveformPlugin extends APlugin {
 		BoxLayout layout = new BoxLayout(channelpane, BoxLayout.PAGE_AXIS);	
 		channelpane.setLayout(layout);
 		
+		//get minmax
+		getMinMax(data, channelDefinitions);
+		
 		// creating the Panels for each channel 
 		for(int i = 0; i < numberOfChannels; i++) {
 			ChannelPanel chPannel = new ChannelPanel(data[i], 765, 92, seconds, channelDefinitions[i]);
@@ -200,7 +204,6 @@ public class WaveformPlugin extends APlugin {
 		zoomOut.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				System.out.println("zoomOut");
 				zoomLevel += 0.5;
 				Dimension m_content_dim = m_content.getSize();
 				Dimension dim = new Dimension(m_content.getWidth() - 20, (int) (m_content_dim.getHeight() / zoomLevel));
@@ -215,7 +218,6 @@ public class WaveformPlugin extends APlugin {
 		zoomIn.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				System.out.println("ZoomIn");
 				zoomLevel -= 0.5;
 				Dimension m_content_dim = m_content.getSize();
 				Dimension dim = new Dimension(m_content.getWidth() - 20, (int) (m_content_dim.getHeight() / zoomLevel));
@@ -230,7 +232,6 @@ public class WaveformPlugin extends APlugin {
 		zoomFit.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				System.out.println("FitToPage");
 				zoomLevel = 3.0f;
 				Dimension m_content_dim = m_content.getSize();
 				Dimension dim = new Dimension(m_content.getWidth() - 20, (int) (m_content_dim.getHeight() / zoomLevel));
@@ -282,6 +283,48 @@ public class WaveformPlugin extends APlugin {
 		}
 	}
 	
+	private void getMinMax(int data[][], ChannelDefinition definitions[]) {
+//		double valueScaling = this.upper.getDefinition().getSensitity() *
+//		this.upper.getDefinition().getSensitivityCorrection();
+						
+			for(int i = 0; i < data.length; i++) {
+				double min = 0;
+				double max = 0;
+				double scalingValue = definitions[i].getSensitity() * definitions[i].getSensitivityCorrection();
+				for(int j = 0; j < data[i].length; j++) {
+					if(min > data[i][j] * scalingValue)
+					{
+						min = data[i][j] * scalingValue;
+					}
+					if(max < data[i][j] * scalingValue)
+					{
+						max = data[i][j] * scalingValue;
+					}
+				}
+				definitions[i].setMaximum(max);
+				definitions[i].setMinimum(min);
+			}
+			
+			double max = Double.MIN_VALUE;
+			double min = Double.MAX_VALUE;
+			for(int i = 0; i < definitions.length; i++) {
+				if(min > definitions[i].getMinimum()){
+					min = definitions[i].getMinimum();
+				}
+				if(max < definitions[i].getMaximum()) {
+					max = definitions[i].getMaximum();
+				}
+			}
+			
+			double minmax = Math.max(Math.abs(max), Math.abs(min));
+			int mv_cells = (int) (minmax / 1000);
+			if((int) minmax % 1000 != 0) {
+				++mv_cells;
+			}
+			mv_cells *= 2;			
+			this.mv_cells = mv_cells;
+	}
+	
 	/**
 	 * This class represents the waveform channel.
 	 * This panel contains the drawn graph and an info panel which shows the minimum and maximum value
@@ -320,11 +363,11 @@ public class WaveformPlugin extends APlugin {
 		/**
 		 * the highest sample value
 		 */
-		private int max;
+		private double max;
 		/**
 		 * the lowest sample value
 		 */
-		private int min;
+		private double min;
 		/**
 		 * Label for showing the y-position in the graph
 		 */
@@ -340,7 +383,7 @@ public class WaveformPlugin extends APlugin {
 		/**
 		 * the width of the info panel
 		 */
-		private final int infowidth = 120;
+		private final int infowidth = 140;
 
 		public ChannelPanel(int[] values, int width, int height, int secs, ChannelDefinition definition) {
 			this.data = values;
@@ -348,19 +391,9 @@ public class WaveformPlugin extends APlugin {
 			this.mv_pos_label = new JLabel();
 			this.secs_pos_label = new JLabel();
 			
-			// find min and max value
-			this.min = this.data[0];
-			this.max = this.data[0];
-			
-			for(int i = 0; i < this.data.length; i++ ) {
-				if(this.min > this.data[i])
-					this.min = this.data[i];
-				if(this.max < this.data[i])
-					this.max = this.data[i];
-			}
-			// calculate the real min and max values
-			this.min = this.min * (int) definition.getSensitity() * definition.getSensitivityCorrection();
-			this.max = this.max * (int) definition.getSensitity() * definition.getSensitivityCorrection();
+			// get min and max value
+			this.min = definition.getMinimum();
+			this.max = definition.getMaximum();
 			
 			this.setPreferredSize(new Dimension(width, height));
 			this.setSize(new Dimension(width, height));
@@ -381,8 +414,6 @@ public class WaveformPlugin extends APlugin {
 			info.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 			// set the size of the info panel
 			info.setPreferredSize(new Dimension(this.infowidth,(int)this.height));
-			info.setSize(new Dimension(this.infowidth,(int)this.height));
-			info.setMaximumSize(new Dimension(this.infowidth, Short.MAX_VALUE));
 			
 			GridBagConstraints c1 = new GridBagConstraints();
 			c1.weightx = 0.5;
@@ -491,7 +522,6 @@ public class WaveformPlugin extends APlugin {
 			this.graph = new DrawingPanel(this.data,(int) (this.width - this.infowidth), (int) this.height, this.secs, this);
 			dim = new Dimension((int) (this.width - this.infowidth), (int) this.height);
 			graph.setPreferredSize(dim);
-			graph.setSize(dim);
 			
 			this.add(graph, BorderLayout.EAST);
 		}
@@ -564,9 +594,9 @@ public class WaveformPlugin extends APlugin {
 		public void paintComponent( Graphics g ) {
 			
 			super.paintComponent(g);
-			Graphics2D g2 = (Graphics2D) g;
+			final Graphics2D g2 = (Graphics2D) g;
 					
-			int mv_cell_count = 10;
+			int mv_cell_count = mv_cells;
 			int secs_cell_count = this.secs * 10;
 			
 			// calculate scaling of the sample values
@@ -649,6 +679,7 @@ public class WaveformPlugin extends APlugin {
 						double mv = ((dim.getHeight() / 2) - e.getPoint().getY()) / cellheight;
 						
 						upper.setPosition(mv, sec);
+						
 					}
 				}
 			);
@@ -664,12 +695,16 @@ public class WaveformPlugin extends APlugin {
 		private String name;
 		private double sensitivity;
 		private int sensitivityCorrection;
+		private double minimum;
+		private double maximum;
 					
 		public ChannelDefinition(String name, double sensitity,
 				int sensitivityCorrection) {
 			this.name = name;
 			this.sensitivity = sensitity;
 			this.sensitivityCorrection = sensitivityCorrection;
+			this.maximum = 0.0;
+			this.minimum = 0.0;
 		}
 		
 		public String getName() {
@@ -683,6 +718,23 @@ public class WaveformPlugin extends APlugin {
 		public int getSensitivityCorrection() {
 			return sensitivityCorrection;
 		}
+
+		public double getMinimum() {
+			return minimum;
+		}
+
+		public void setMinimum(double minimum) {
+			this.minimum = minimum;
+		}
+
+		public double getMaximum() {
+			return maximum;
+		}
+
+		public void setMaximum(double maximum) {
+			this.maximum = maximum;
+		}
+		
 		
 		
 		
