@@ -18,6 +18,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.net.URL;
 import java.util.Locale;
 import java.util.ResourceBundle;
 import java.util.Vector;
@@ -74,6 +75,11 @@ public class View extends JFrame implements IView {
 	private IModel m_model = null;
 	
 	/**
+	 * the instance of our dialogs class
+	 */
+	private StaticDialogs m_dialogs = new StaticDialogs();
+	
+	/**
 	 * the model which serves as event listener
 	 */
 	private static IController m_controller = null;
@@ -92,7 +98,7 @@ public class View extends JFrame implements IView {
 	/**
 	 * path to the language setting file
 	 */
-	private final String m_pathLanguageSetting = "etc/language.setting";
+	private final String m_pathLanguageSetting = System.getProperty("user.dir") + File.separator + "language.setting";//this.getClass().getResource("/language.setting").getPath(); //"etc/language.setting";
 	
 	/**
 	 * determins whether there is a refresh of the workspace in progress
@@ -145,7 +151,8 @@ public class View extends JFrame implements IView {
 		setTitle("Dicomux");
 		setPreferredSize(new Dimension(800, 600));
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
-		setIconImage(new ImageIcon("etc/images/logo.png").getImage());
+		// "etc/images/logo.png"
+		setIconImage(new ImageIcon(this.getClass().getResource("/logo.png").getPath()).getImage());
 		UIManager.put("FileChooser.readOnly", Boolean.TRUE);
 		
 		// extract own contentPane and set its layout manager
@@ -403,10 +410,9 @@ public class View extends JFrame implements IView {
 	 * @param locale the new language setting which should be stored
 	 */
 	private void setLanguage(Locale locale) {
-		String confFilePath = new String("etc/language.setting"); 
 		FileWriter fw;
 		try {
-			fw = new FileWriter(confFilePath);
+			fw = new FileWriter(m_pathLanguageSetting);
 			fw.write(locale.getLanguage());
 			fw.close();
 		} catch (IOException e) {
@@ -462,23 +468,23 @@ public class View extends JFrame implements IView {
 					// create a new tab with a certain content
 					switch (tmp.getTabState()) {
 					case WELCOME:
-						m_tabbedPane.add(StaticDialogs.makeWelcomeTab());
+						m_tabbedPane.add(m_dialogs.makeWelcomeTab());
 						name = m_languageBundle.getString("key_welcome");
 						break;
 					case FILE_OPEN:
-						m_tabbedPane.add(StaticDialogs.makeOpenFileTab());
+						m_tabbedPane.add(m_dialogs.makeOpenFileTab());
 						name = m_languageBundle.getString("key_open");
 						break;
 					case DIR_OPEN:
-						m_tabbedPane.add(StaticDialogs.makeOpenDirTab());
+						m_tabbedPane.add(m_dialogs.makeOpenDirTab());
 						name = m_languageBundle.getString("key_open");
 						break;
 					case ERROR_OPEN:
-						m_tabbedPane.add(StaticDialogs.makeErrorOpenTab(tmp.getName()));
+						m_tabbedPane.add(m_dialogs.makeErrorOpenTab(tmp.getName()));
 						name = m_languageBundle.getString("key_error");
 						break;
 					case ABOUT:
-						m_tabbedPane.add(StaticDialogs.makeAboutTab());
+						m_tabbedPane.add(m_dialogs.makeAboutTab());
 						name = m_languageBundle.getString("key_about");
 						break;
 					case PLUGIN_ACTIVE:
@@ -511,12 +517,12 @@ public class View extends JFrame implements IView {
 	 * @author heidi
 	 *
 	 */
-	private static class StaticDialogs {
+	private class StaticDialogs {
 		/**
 		 * convenience method for building an welcome tab
 		 * @return a JPanel
 		 */
-		protected static JComponent makeWelcomeTab() {
+		protected JComponent makeWelcomeTab() {
 			JPanel content = new JPanel(new BorderLayout(5 , 5), false);
 			JPanel contentHead = new JPanel(new BorderLayout(5, 0), false);
 			content.add(contentHead, BorderLayout.NORTH);
@@ -531,7 +537,7 @@ public class View extends JFrame implements IView {
 		 * convenience method for building an file open dialog tab
 		 * @return a JPanel
 		 */
-		protected static JComponent makeOpenFileTab() {
+		protected JComponent makeOpenFileTab() {
 			JPanel content = new JPanel(new BorderLayout(5 , 5), false);
 			JPanel contentHead = new JPanel(new BorderLayout(5, 0), false);
 			content.add(contentHead, BorderLayout.NORTH);
@@ -564,7 +570,7 @@ public class View extends JFrame implements IView {
 		 * convenience method for building an file open dialog tab
 		 * @return a JPanel
 		 */
-		protected static JComponent makeOpenDirTab() {
+		protected JComponent makeOpenDirTab() {
 			JPanel content = new JPanel(new BorderLayout(5 , 5), false);
 			JPanel contentHead = new JPanel(new BorderLayout(5, 0), false);
 			content.add(contentHead, BorderLayout.NORTH);
@@ -596,7 +602,7 @@ public class View extends JFrame implements IView {
 		 * convenience method for building an error open tab
 		 * @return a JPanel
 		 */
-		protected static JComponent makeErrorOpenTab(String msg) {
+		protected JComponent makeErrorOpenTab(String msg) {
 			JPanel content = new JPanel(new BorderLayout(5 , 5), false);
 			JPanel contentHead = new JPanel(new BorderLayout(5, 0), false);
 			content.add(contentHead, BorderLayout.NORTH);
@@ -612,7 +618,7 @@ public class View extends JFrame implements IView {
 		 * convenience method for building an about tab
 		 * @return a JPanel
 		 */
-		protected static JComponent makeAboutTab() {
+		protected JComponent makeAboutTab() {
 			JPanel content = new JPanel(new BorderLayout(5 , 5), false);
 			
 			JPanel contentHead = new JPanel(new BorderLayout(5, 0), false);
@@ -620,8 +626,8 @@ public class View extends JFrame implements IView {
 			content.add(contentHead, BorderLayout.CENTER);
 			
 			JPanel logos = new JPanel(new FlowLayout(FlowLayout.RIGHT, 5, 5));
-			logos.add(new JLabel(new ImageIcon("etc/images/logo_big.png")));
-			logos.add(new JLabel(new ImageIcon("etc/images/gplv3.png")));
+			logos.add(new JLabel(new ImageIcon(this.getClass().getResource("/logo_big.png").getPath())));
+			logos.add(new JLabel(new ImageIcon(this.getClass().getResource("/gplv3.png").getPath())));
 			content.add(logos, BorderLayout.SOUTH);
 			
 			return content;
@@ -632,7 +638,7 @@ public class View extends JFrame implements IView {
 		 * @param msg the message - this might be HTML
 		 * @return a JPanel with the message
 		 */
-		private static JComponent makeMessage(String msg) {
+		private JComponent makeMessage(String msg) {
 			JPanel retVal = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0),false);
 			JLabel filler = new JLabel(msg);
 			retVal.add(filler);
@@ -643,10 +649,10 @@ public class View extends JFrame implements IView {
 		 * convenience method for adding open buttons to a static dialog
 		 * @return a JPanel with open buttons
 		 */
-		private static JComponent makeOpenButtons() {
+		private JComponent makeOpenButtons() {
 			JPanel retVal = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0), false);
 			JButton tmp = new JButton(m_languageBundle.getString("key_openFile"));
-			tmp.setIcon(new ImageIcon("etc/images/text-x-generic.png"));
+			tmp.setIcon(new ImageIcon(this.getClass().getResource("/text-x-generic.png").getPath()));
 			tmp.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
@@ -656,7 +662,7 @@ public class View extends JFrame implements IView {
 			retVal.add(tmp);
 			
 			tmp = new JButton(m_languageBundle.getString("key_openDir"));
-			tmp.setIcon(new ImageIcon("etc/images/folder.png"));
+			tmp.setIcon(new ImageIcon(this.getClass().getResource("/folder.png").getPath()));
 			tmp.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
@@ -666,7 +672,7 @@ public class View extends JFrame implements IView {
 			retVal.add(tmp);
 			
 			tmp = new JButton(m_languageBundle.getString("key_exit"));
-			tmp.setIcon(new ImageIcon("etc/images/system-log-out.png"));
+			tmp.setIcon(new ImageIcon(this.getClass().getResource("/system-log-out.png").getPath()));
 			tmp.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
