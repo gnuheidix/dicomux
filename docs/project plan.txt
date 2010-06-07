@@ -269,7 +269,7 @@ Review meeting
 
 Sprint meeting
 * Some work has been done on the waveform plug-in. This has to be continued. (display formats)
-* The code has to be code cleaned up.
+* The code has to be cleaned up.
 * The integration has to be designed. (A jar would be nice)
 
 Working packages
@@ -280,5 +280,26 @@ Working packages
 Schedule
 * Begin: May/31st
 * End: June/6th
+
+Review meeting
+* The waveform plug-in has been improved. (the scale of mV now depends on the global min and max)
+* A code base wide clean up has been started and isn't finished yet.
+* The integration still needs to be designed.
+
+########### Sprint #8 ###########
+
+Sprint meeting
+* Some work has been done on the waveform plug-in. This has to be continued. (bugfix / display formats)
+* We need a technical manual and a user manual. (Latex - English as usual)
+* The integration has to be designed. (A jar would be nice)
+
+Working packages
+* continue work on the waveform render plug-in (Norbert)
+* technical manual and user manual (Tobi, Heidi)
+* design integration (Heidi, Tobi)
+
+Schedule
+* Begin: June/7th
+* End: June/13th
 
 Review meeting

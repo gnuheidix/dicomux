@@ -1,0 +1,4 @@
+Manifest-Version: 1.0
+Created-By: Norbert Stroh, Tobias Schmid and Thomas Heidrich
+Main-Class: dicomux.Main
+Class-Path: /etc/
