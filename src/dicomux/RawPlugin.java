@@ -18,6 +18,7 @@ import javax.swing.JTextArea;
 import javax.swing.JTree;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
+import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreeCellRenderer;
 
@@ -40,12 +41,12 @@ public class RawPlugin extends APlugin {
 	/**
 	 * the button for showing the DETAILS card
 	 */
-	private JButton m_detailsButton = new JButton("m_detailsButton");
+	private JButton m_detailsButton;
 	
 	/**
 	 * the button for showing the TREE-Card 
 	 */
-	private JButton m_closeDetailsButton = new JButton("m_closeDetailsButton");
+	private JButton m_closeDetailsButton;
 	
 	/**
 	 * the panel with the CardLayout for the main content
@@ -55,18 +56,78 @@ public class RawPlugin extends APlugin {
 	/**
 	 * the action listener for m_details
 	 */
-	private ActionListener m_action = null;
+	private ActionListener m_action;
 	
 	/**
 	 * the text box for the detail information
 	 */
-	private JTextArea m_detailsText = new JTextArea();
+	private JTextArea m_detailsText;
 	
 	@Override
 	public String getName() {
 		return "Raw Data";
 	}
 	
+	public RawPlugin() {
+		// get a panel with CardLayout for the main content
+		m_cards = new JPanel(new CardLayout(5, 5));
+		
+		// add the content card with the JTree
+		m_cards.add(getInitializedTreeCard(), "TREE");
+		
+		// add the content card with the detail information
+		m_cards.add(getInitializedDetailsCard(), "DETAILS");
+		
+		// add the card pane to the content pane
+		m_content = new JPanel(new BorderLayout(5, 5));
+		m_content.add(m_cards, BorderLayout.CENTER);
+	}
+	
+	/**
+	 * convenience method for initialization purpose
+	 * @return a JPanel with m_tree and m_detailsButton
+	 */
+	private JPanel getInitializedTreeCard() {
+		JPanel treeCard = new JPanel(new BorderLayout(5, 5));
+		m_tree = new JTree();
+		m_tree.setCellRenderer(new CellRendererWithButton());
+		m_tree.setRootVisible(false);
+		treeCard.add(new JScrollPane(m_tree), BorderLayout.CENTER);
+		
+		m_detailsButton = new JButton("m_detailsButton");
+		m_detailsButton.setEnabled(false);
+		m_detailsButton.setVisible(true);
+		treeCard.add(m_detailsButton, BorderLayout.SOUTH);
+		
+		return treeCard;
+	}
+	
+	/**
+	 * convenience method for initialization purpose
+	 * @return a JPanel with m_detailsText and m_closeDetailsButton
+	 */
+	private JPanel getInitializedDetailsCard() {
+		JPanel detailCard = new JPanel(new BorderLayout(5, 5));
+		
+		m_detailsText = new JTextArea();
+		m_detailsText.setLineWrap(true);
+		detailCard.add(new JScrollPane(m_detailsText), BorderLayout.CENTER);
+		
+		m_closeDetailsButton = new JButton("m_closeDetailsButton");
+		m_closeDetailsButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				CardLayout cl = (CardLayout)(m_cards.getLayout());
+				cl.show(m_cards, "TREE");
+			}
+		});
+		detailCard.add(m_closeDetailsButton, BorderLayout.SOUTH);
+		
+		m_action = null;
+		return detailCard;
+	}
+	
+	// TODO implement with ResourceBundles
 	@Override
 	public void setLanguage(Locale locale) {
 		if (locale != null) {
@@ -84,43 +145,8 @@ public class RawPlugin extends APlugin {
 	
 	@Override
 	public void setData(DicomObject dcm) throws Exception{
-		// create a new JTree and extract all DicomElements into it
-		m_tree = new JTree(extractAllDicomElements("/", dcm));
-		m_tree.setCellRenderer(new CellRendererWithButton());
-		
-		// disable the visibility of the root node
-		m_tree.setRootVisible(false);
-		
-		// get a panel with CardLayout for the main content
-		m_cards = new JPanel(new CardLayout(5, 5));
-		
-		// the content card with the JTree
-		JPanel treeCard = new JPanel(new BorderLayout(5, 5));
-		treeCard.add(new JScrollPane(m_tree), BorderLayout.CENTER);
-		
-		m_detailsButton.setEnabled(false);
-		m_detailsButton.setVisible(true);
-		treeCard.add(m_detailsButton, BorderLayout.SOUTH);
-		
-		m_cards.add(treeCard, "TREE");
-		
-		// the content card with the detail information
-		JPanel detailCard = new JPanel(new BorderLayout(5, 5));
-		m_detailsText.setLineWrap(true);
-		detailCard.add(new JScrollPane(m_detailsText), BorderLayout.CENTER);
-		
-		m_closeDetailsButton.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent arg0) {
-				CardLayout cl = (CardLayout)(m_cards.getLayout());
-				cl.show(m_cards, "TREE");
-			}
-		});
-		detailCard.add(m_closeDetailsButton, BorderLayout.SOUTH);
-		m_cards.add(detailCard, "DETAILS");
-		
-		m_content = new JPanel(new BorderLayout(5, 5));
-		m_content.add(m_cards, BorderLayout.CENTER);
+		// create a new DefaultTableModel and extract all DicomElements of the DicomObject into it
+		m_tree.setModel(new DefaultTreeModel(extractAllDicomElements("/", dcm))); 
 	}
 	
 	/**
@@ -243,6 +269,13 @@ public class RawPlugin extends APlugin {
 		}
 	}
 	
+	/**
+	 * This is a convenience class for having an own TreeCellRenderer which has the feature to
+	 * write the content of a DicomElement to m_detailsText. Without it we wouldn't be able to
+	 * do that.
+	 * @author heidi
+	 *
+	 */
 	private class CellRendererWithButton implements TreeCellRenderer {
 		private DefaultTreeCellRenderer m_defaultRenderer = new DefaultTreeCellRenderer();
 		
@@ -252,7 +285,6 @@ public class RawPlugin extends APlugin {
 				boolean hasFocus) {
 			m_defaultRenderer.setBorderSelectionColor(Color.WHITE); // deactivate selection border
 			Component stdRenderer = m_defaultRenderer.getTreeCellRendererComponent(tree, value, selected, expanded, leaf, row, hasFocus);
-			JPanel myRenderer = new JPanel(new FlowLayout(FlowLayout.LEFT, 2, 0)); // that's our new renderer
 			
 			if (value != null && value instanceof DefaultMutableTreeNode) { // type check
 				Object userObject = ((DefaultMutableTreeNode)value).getUserObject(); // extraction
@@ -260,17 +292,13 @@ public class RawPlugin extends APlugin {
 				if (userObject != null && userObject instanceof TDO) { // type check again
 					TDO tdo = (TDO) userObject; // extraction again - now we build our renderer
 					
-					myRenderer.add(leaf ? new JLabel(m_defaultRenderer.getDefaultLeafIcon()) // add correct icon
-										: new JLabel(m_defaultRenderer.getDefaultClosedIcon()));
-					
-					myRenderer.setBackground(selected ? m_defaultRenderer.getBackgroundSelectionColor() // set the correct background
-														: m_defaultRenderer.getBackgroundNonSelectionColor());
-					
 					if (selected)
 						setDetailsAction(tdo.getBytes());
 					
-					JLabel descLabel = new JLabel(); // add the description to our renderer
+					JLabel descLabel = new JLabel();
 					descLabel.setFont(stdRenderer.getFont());
+					
+					JPanel myRenderer = createOwnCellRenderer(leaf, selected);
 					myRenderer.add(descLabel);
 					
 					String description = tdo.getDescription(); // extract TDO
@@ -288,6 +316,28 @@ public class RawPlugin extends APlugin {
 			}
 			
 			return stdRenderer;
+		}
+		
+		/**
+		 * convenience method for creating an own TreeCellRenderer
+		 * @param leaf is the cell a leaf?
+		 * @param selected is the cell selected?
+		 * @return our own TreeCellRenderer
+		 */
+		private JPanel createOwnCellRenderer(boolean leaf, boolean selected) {
+			JPanel myRenderer = new JPanel(new FlowLayout(FlowLayout.LEFT, 2, 0));
+			
+			if (leaf) // set the correct icon
+				myRenderer.add(new JLabel(m_defaultRenderer.getDefaultLeafIcon()));
+			else
+				myRenderer.add(new JLabel(m_defaultRenderer.getDefaultClosedIcon()));
+			
+			if (selected) // set the correct background
+				myRenderer.setBackground(m_defaultRenderer.getBackgroundSelectionColor());
+			else
+				myRenderer.setBackground(m_defaultRenderer.getBackgroundNonSelectionColor());
+			
+			return myRenderer;
 		}
 	}
 }

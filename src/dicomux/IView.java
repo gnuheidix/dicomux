@@ -38,4 +38,10 @@ public interface IView {
 	 * @return the current language of the view
 	 */
 	public Locale getLanguage();
+	
+	/**
+	 * sets the language of the view
+	 * @param locale the new language setting
+	 */
+	public void setLanguage(Locale locale);
 }

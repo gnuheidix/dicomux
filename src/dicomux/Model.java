@@ -57,6 +57,7 @@ public class Model implements IModel {
 	@Override
 	public void removeWorkspace(int wsId) {
 		if (wsId < m_tabObjects.size() && wsId >= 0) {
+			dereferenceWorkspace(wsId);
 			m_tabObjects.remove(wsId);
 			
 			if (m_tabObjects.size() == 0)
@@ -67,7 +68,22 @@ public class Model implements IModel {
 			}
 		}
 	}
-
+	
+	/**
+	 * convenience method for dereferencing all contents of a workspace</br>
+	 * this helps the garbage collector to work properly
+	 * @param wsId workspace which shall be dereferenced
+	 */
+	private void dereferenceWorkspace(int wsId) {
+		TabObject ws = m_tabObjects.elementAt(wsId);
+		ws.setPlugin(null);
+		ws.setSuitablePlugins(null);
+		ws.setDicomObj(null);
+		ws.setName(null);
+		ws.setTabState(null);
+		System.gc();
+	}
+	
 	@Override
 	public void addWorkspace(TabObject tab) {
 		m_tabObjects.add(tab);
