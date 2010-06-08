@@ -152,6 +152,7 @@ public class View extends JFrame implements IView {
 		setPreferredSize(new Dimension(800, 600));
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 		// "etc/images/logo.png"
+		System.out.println(this.getClass().getResource("/logo.png").getPath());
 		setIconImage(new ImageIcon(this.getClass().getResource("/logo.png").getPath()).getImage());
 		UIManager.put("FileChooser.readOnly", Boolean.TRUE);
 		
@@ -378,23 +379,23 @@ public class View extends JFrame implements IView {
 		
 		JMenu menu = new JMenu(m_languageBundle.getString("key_language"));
 		
-		File dir = new File("etc");
-		// get all language files from the etc folder which are in this format BundleName_xx.properties
-		String[]lang_list = dir.list(new FilenameFilter() {
-			@Override
-			public boolean accept(File dir, String name) {
-				String regex = "^"+m_langBaseName+"_[a-z]{2}\\.properties$";
-				boolean test = name.matches(regex);
-				return test;
-			}
-		});
-		//add all languages found in the language files to the language-selection menu
-		for (String i : lang_list) {
-			Locale l = new Locale(i.substring(i.indexOf("_")+1, i.indexOf(".")));
-			JMenuItem tmp = new JMenuItem(l.getLanguage());
-			tmp.addActionListener(langAL);
-			menu.add(tmp);
-		}
+//		File dir = new File("etc");
+//		// get all language files from the etc folder which are in this format BundleName_xx.properties
+//		String[]lang_list = dir.list(new FilenameFilter() {
+//			@Override
+//			public boolean accept(File dir, String name) {
+//				String regex = "^"+m_langBaseName+"_[a-z]{2}\\.properties$";
+//				boolean test = name.matches(regex);
+//				return test;
+//			}
+//		});
+//		//add all languages found in the language files to the language-selection menu
+//		for (String i : lang_list) {
+//			Locale l = new Locale(i.substring(i.indexOf("_")+1, i.indexOf(".")));
+//			JMenuItem tmp = new JMenuItem(l.getLanguage());
+//			tmp.addActionListener(langAL);
+//			menu.add(tmp);
+//		}
 		
 		menu.addSeparator();
 		JMenuItem tmp = new JMenuItem(m_languageBundle.getString("key_languageNotification"));
