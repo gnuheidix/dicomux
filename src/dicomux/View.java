@@ -16,8 +16,8 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
-import java.io.FilenameFilter;
 import java.io.IOException;
+import java.net.URL;
 import java.util.Locale;
 import java.util.ResourceBundle;
 import java.util.Vector;
@@ -56,7 +56,7 @@ public class View extends JFrame implements IView {
 	/**
 	 * contains the tabbed pane which holds all workspaces
 	 */
-	private static JTabbedPane m_tabbedPane;
+	private JTabbedPane m_tabbedPane;
 	
 	/**
 	 * contains the menu bar of the application
@@ -64,7 +64,7 @@ public class View extends JFrame implements IView {
 	private JMenuBar m_menuBar;
 	
 	/**
-	 * contains all suitable plug-ins for the currently opened DicomObject
+	 * a menu which contains all suitable plug-ins for the currently opened DicomObject
 	 */
 	private JMenu m_pluginMenu;
 	
@@ -74,14 +74,19 @@ public class View extends JFrame implements IView {
 	private IModel m_model = null;
 	
 	/**
-	 * the model which serves as event listener
+	 * the instance of our dialogs class
 	 */
-	private static IController m_controller = null;
+	private StaticDialogs m_dialogs = new StaticDialogs();
+	
+	/**
+	 * the controller which does all the dirty work
+	 */
+	private IController m_controller = null;
 	
 	/**
 	 * The global language setting for the view
 	 */
-	private static ResourceBundle m_languageBundle; 
+	private ResourceBundle m_languageBundle; 
 	
 	/**
 	 * base name of the language files which are located in etc<br/>
@@ -92,12 +97,12 @@ public class View extends JFrame implements IView {
 	/**
 	 * path to the language setting file
 	 */
-	private final String m_pathLanguageSetting = "etc/language.setting";
+	private String m_pathLanguageSetting = System.getProperty("user.dir") + File.separator + "language.setting";
 	
 	/**
 	 * determins whether there is a refresh of the workspace in progress
 	 */
-	private static boolean m_refreshInProgress = false;
+	private boolean m_refreshInProgress = false;
 	
 	/**
 	 * Object for synchronizing the access to m_tabbedPane
@@ -145,8 +150,7 @@ public class View extends JFrame implements IView {
 		setTitle("Dicomux");
 		setPreferredSize(new Dimension(800, 600));
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
-		setIconImage(new ImageIcon("etc/images/logo.png").getImage());
-		UIManager.put("FileChooser.readOnly", Boolean.TRUE);
+		setIconImage(new ImageIcon(this.getClass().getResource(File.separator + "logo.png").getPath()).getImage());
 		
 		// extract own contentPane and set its layout manager
 		Container contentPane = getContentPane();
@@ -159,7 +163,22 @@ public class View extends JFrame implements IView {
 		// add menu entries to the main menu
 		initializeMenus();
 		
-		// create a tabbed pane, set a ChangeListener and add it to the content pane
+		// care about the tabbed pane
+		initializeTabbedPane();
+		contentPane.add(m_tabbedPane, BorderLayout.CENTER);
+		
+		// display the frame in the middle of the screen
+		pack();
+		Point screenCenterPoint = GraphicsEnvironment.getLocalGraphicsEnvironment().getCenterPoint();
+		setLocation(new Point (screenCenterPoint.x - getSize().width / 2,
+								screenCenterPoint.y - getSize().height / 2));
+		setVisible(true);
+	}
+	
+	/**
+	 * convenience method - creates the m_tabbedPane and sets a proper ChangeListener
+	 */
+	private void initializeTabbedPane() {
 		m_tabbedPane = new JTabbedPane(JTabbedPane.TOP, JTabbedPane.SCROLL_TAB_LAYOUT);
 		m_tabbedPane.addChangeListener(new ChangeListener() {
 			@Override
@@ -178,38 +197,35 @@ public class View extends JFrame implements IView {
 				}
 			}
 		});
-		contentPane.add(m_tabbedPane, BorderLayout.CENTER);
-		
-		// display the frame in the middle of the screen
-		pack();
-		Point screenCenterPoint = GraphicsEnvironment.getLocalGraphicsEnvironment().getCenterPoint();
-		setLocation(new Point (screenCenterPoint.x - getSize().width / 2,
-								screenCenterPoint.y - getSize().height / 2));
-		setVisible(true);
 	}
 	
 	/**
-	 * initializes all language settings by checking the config file
+	 * convenience method - initializes all language settings by checking the config file
 	 */
 	private void initializeLanguage() {
-		Locale locale; 
+		Locale locale;
 		
-		File langConf = new File(m_pathLanguageSetting);
-		BufferedReader br = null; // load that file
 		try {
-			br = new BufferedReader(new FileReader(langConf));
+			BufferedReader br = new BufferedReader(new FileReader(new File(m_pathLanguageSetting)));
 			String lang = br.readLine();
-			locale= new Locale(lang);
-			
-		} catch (IOException e) { // use the system setting if it didn't work
-			//e.printStackTrace();
-			locale= new Locale(System.getProperty("user.language"));
+			locale = new Locale(lang);
+			br.close();
+		} catch (IOException e) { // use the system setting if it didn't work and pray that it works
+			locale = new Locale(System.getProperty("user.language"));
 		}
 		
 		// set the global language for all GUI Elements (load the ResourceBundle)
 		m_languageBundle = ResourceBundle.getBundle(m_langBaseName, locale);
 		
 		// set all localization entries for JFileChooser
+		initializeJFileChooser();
+	}
+	
+	/**
+	 * big and ugly convenience method - initializes the JFileChooser settings
+	 */
+	public void initializeJFileChooser() {
+		UIManager.put("FileChooser.readOnly", Boolean.TRUE);
 		UIManager.put("FileChooser.openDialogTitleText", m_languageBundle.getString("openDialogTitleText"));
 		UIManager.put("FileChooser.saveDialogTitleText", m_languageBundle.getString("saveDialogTitleText"));
 		UIManager.put("FileChooser.saveInLabelText", m_languageBundle.getString("saveInLabelText"));
@@ -250,7 +266,7 @@ public class View extends JFrame implements IView {
 	}
 	
 	/**
-	 * initializes the whole main menu
+	 * convenience method - initializes the whole main menu
 	 */
 	private void initializeMenus() {
 		m_menuBar.removeAll();
@@ -344,7 +360,6 @@ public class View extends JFrame implements IView {
 		}
 	}
 	
-	// check for crap
 	/**
 	 * a convenience method for adding a menu for language selection to the main menu
 	 */
@@ -354,9 +369,6 @@ public class View extends JFrame implements IView {
 			public void actionPerformed(ActionEvent arg0) {
 				// build new Locale
 				Locale newLocale = new Locale(arg0.getActionCommand());
-				
-				// set the language in the view
-				setLanguage(newLocale);
 				
 				// inform the controller what happened
 				m_controller.setLanguage(newLocale);
@@ -369,26 +381,14 @@ public class View extends JFrame implements IView {
 			}
 		};
 		
+		// create a new language menu and add all available languages to it
 		JMenu menu = new JMenu(m_languageBundle.getString("key_language"));
-		
-		File dir = new File("etc");
-		// get all language files from the etc folder which are in this format BundleName_xx.properties
-		String[]lang_list = dir.list(new FilenameFilter() {
-			@Override
-			public boolean accept(File dir, String name) {
-				String regex = "^"+m_langBaseName+"_[a-z]{2}\\.properties$";
-				boolean test = name.matches(regex);
-				return test;
-			}
-		});
-		//add all languages found in the language files to the language-selection menu
-		for (String i : lang_list) {
-			Locale l = new Locale(i.substring(i.indexOf("_")+1, i.indexOf(".")));
-			JMenuItem tmp = new JMenuItem(l.getLanguage());
+		Vector<String> langList = getAvailableLanguages();
+		for (String i : langList) {
+			JMenuItem tmp = new JMenuItem(i);
 			tmp.addActionListener(langAL);
 			menu.add(tmp);
 		}
-		
 		menu.addSeparator();
 		JMenuItem tmp = new JMenuItem(m_languageBundle.getString("key_languageNotification"));
 		tmp.setEnabled(false);
@@ -398,19 +398,42 @@ public class View extends JFrame implements IView {
 	}
 	
 	/**
-	 * checks which language is selected in the language menu and writes the configuration
-	 * to the language configuration file which will be loaded at the start of the application
-	 * @param locale the new language setting which should be stored
+	 * convenience method for getting a list of all available languages<br/>
+	 * This method invokes availableLanguages.settings</br>
+	 * If the file is not available, the Vector will be empty.
+	 * @return a Vector containing all available languages in the following form ("de", "en", ...)
 	 */
-	private void setLanguage(Locale locale) {
-		String confFilePath = new String("etc/language.setting"); 
-		FileWriter fw;
+	private Vector<String> getAvailableLanguages() {
+		URL listFilePath = this.getClass().getResource(File.separator + "availableLanguages.settings");
+		Vector<String> langs = new Vector<String>(2);
+		if (listFilePath != null) {
+			try {
+				BufferedReader listFile = new BufferedReader(new FileReader(listFilePath.getPath()));
+				
+				String line = listFile.readLine();
+				while(line != null) {
+					langs.add(line);
+					line = listFile.readLine();
+				}
+				
+				listFile.close();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+		
+		return langs;
+	}
+	
+	@Override
+	public void setLanguage(Locale locale) {
+		// We try to save the language setting now. We simply want to load it at the next start.
 		try {
-			fw = new FileWriter(confFilePath);
+			FileWriter fw = new FileWriter(m_pathLanguageSetting);
 			fw.write(locale.getLanguage());
 			fw.close();
 		} catch (IOException e) {
-			e.printStackTrace();
+			System.err.println("ERROR: Couldn't write language setting to " + m_pathLanguageSetting);
 		}
 	}
 	
@@ -462,23 +485,23 @@ public class View extends JFrame implements IView {
 					// create a new tab with a certain content
 					switch (tmp.getTabState()) {
 					case WELCOME:
-						m_tabbedPane.add(StaticDialogs.makeWelcomeTab());
+						m_tabbedPane.add(m_dialogs.makeWelcomeTab());
 						name = m_languageBundle.getString("key_welcome");
 						break;
 					case FILE_OPEN:
-						m_tabbedPane.add(StaticDialogs.makeOpenFileTab());
+						m_tabbedPane.add(m_dialogs.makeOpenFileTab());
 						name = m_languageBundle.getString("key_open");
 						break;
 					case DIR_OPEN:
-						m_tabbedPane.add(StaticDialogs.makeOpenDirTab());
+						m_tabbedPane.add(m_dialogs.makeOpenDirTab());
 						name = m_languageBundle.getString("key_open");
 						break;
 					case ERROR_OPEN:
-						m_tabbedPane.add(StaticDialogs.makeErrorOpenTab(tmp.getName()));
+						m_tabbedPane.add(m_dialogs.makeErrorOpenTab(tmp.getName()));
 						name = m_languageBundle.getString("key_error");
 						break;
 					case ABOUT:
-						m_tabbedPane.add(StaticDialogs.makeAboutTab());
+						m_tabbedPane.add(m_dialogs.makeAboutTab());
 						name = m_languageBundle.getString("key_about");
 						break;
 					case PLUGIN_ACTIVE:
@@ -509,14 +532,13 @@ public class View extends JFrame implements IView {
 	/**
 	 * This class holds all static dialogs and their convenience functions
 	 * @author heidi
-	 *
 	 */
-	private static class StaticDialogs {
+	private class StaticDialogs {
 		/**
 		 * convenience method for building an welcome tab
 		 * @return a JPanel
 		 */
-		protected static JComponent makeWelcomeTab() {
+		protected JComponent makeWelcomeTab() {
 			JPanel content = new JPanel(new BorderLayout(5 , 5), false);
 			JPanel contentHead = new JPanel(new BorderLayout(5, 0), false);
 			content.add(contentHead, BorderLayout.NORTH);
@@ -531,7 +553,7 @@ public class View extends JFrame implements IView {
 		 * convenience method for building an file open dialog tab
 		 * @return a JPanel
 		 */
-		protected static JComponent makeOpenFileTab() {
+		protected JComponent makeOpenFileTab() {
 			JPanel content = new JPanel(new BorderLayout(5 , 5), false);
 			JPanel contentHead = new JPanel(new BorderLayout(5, 0), false);
 			content.add(contentHead, BorderLayout.NORTH);
@@ -564,7 +586,7 @@ public class View extends JFrame implements IView {
 		 * convenience method for building an file open dialog tab
 		 * @return a JPanel
 		 */
-		protected static JComponent makeOpenDirTab() {
+		protected JComponent makeOpenDirTab() {
 			JPanel content = new JPanel(new BorderLayout(5 , 5), false);
 			JPanel contentHead = new JPanel(new BorderLayout(5, 0), false);
 			content.add(contentHead, BorderLayout.NORTH);
@@ -596,7 +618,7 @@ public class View extends JFrame implements IView {
 		 * convenience method for building an error open tab
 		 * @return a JPanel
 		 */
-		protected static JComponent makeErrorOpenTab(String msg) {
+		protected JComponent makeErrorOpenTab(String msg) {
 			JPanel content = new JPanel(new BorderLayout(5 , 5), false);
 			JPanel contentHead = new JPanel(new BorderLayout(5, 0), false);
 			content.add(contentHead, BorderLayout.NORTH);
@@ -612,7 +634,7 @@ public class View extends JFrame implements IView {
 		 * convenience method for building an about tab
 		 * @return a JPanel
 		 */
-		protected static JComponent makeAboutTab() {
+		protected JComponent makeAboutTab() {
 			JPanel content = new JPanel(new BorderLayout(5 , 5), false);
 			
 			JPanel contentHead = new JPanel(new BorderLayout(5, 0), false);
@@ -620,8 +642,8 @@ public class View extends JFrame implements IView {
 			content.add(contentHead, BorderLayout.CENTER);
 			
 			JPanel logos = new JPanel(new FlowLayout(FlowLayout.RIGHT, 5, 5));
-			logos.add(new JLabel(new ImageIcon("etc/images/logo_big.png")));
-			logos.add(new JLabel(new ImageIcon("etc/images/gplv3.png")));
+			logos.add(new JLabel(new ImageIcon(this.getClass().getResource(File.separator + "logo_big.png").getPath())));
+			logos.add(new JLabel(new ImageIcon(this.getClass().getResource(File.separator + "gplv3.png").getPath())));
 			content.add(logos, BorderLayout.SOUTH);
 			
 			return content;
@@ -632,7 +654,7 @@ public class View extends JFrame implements IView {
 		 * @param msg the message - this might be HTML
 		 * @return a JPanel with the message
 		 */
-		private static JComponent makeMessage(String msg) {
+		private JComponent makeMessage(String msg) {
 			JPanel retVal = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0),false);
 			JLabel filler = new JLabel(msg);
 			retVal.add(filler);
@@ -643,10 +665,10 @@ public class View extends JFrame implements IView {
 		 * convenience method for adding open buttons to a static dialog
 		 * @return a JPanel with open buttons
 		 */
-		private static JComponent makeOpenButtons() {
+		private JComponent makeOpenButtons() {
 			JPanel retVal = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0), false);
 			JButton tmp = new JButton(m_languageBundle.getString("key_openFile"));
-			tmp.setIcon(new ImageIcon("etc/images/text-x-generic.png"));
+			tmp.setIcon(new ImageIcon(this.getClass().getResource(File.separator + "text-x-generic.png").getPath()));
 			tmp.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
@@ -656,7 +678,7 @@ public class View extends JFrame implements IView {
 			retVal.add(tmp);
 			
 			tmp = new JButton(m_languageBundle.getString("key_openDir"));
-			tmp.setIcon(new ImageIcon("etc/images/folder.png"));
+			tmp.setIcon(new ImageIcon(this.getClass().getResource(File.separator + "folder.png").getPath()));
 			tmp.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
@@ -666,7 +688,7 @@ public class View extends JFrame implements IView {
 			retVal.add(tmp);
 			
 			tmp = new JButton(m_languageBundle.getString("key_exit"));
-			tmp.setIcon(new ImageIcon("etc/images/system-log-out.png"));
+			tmp.setIcon(new ImageIcon(this.getClass().getResource(File.separator + "system-log-out.png").getPath()));
 			tmp.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {

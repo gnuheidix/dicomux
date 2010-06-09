@@ -104,11 +104,11 @@ public class PDFPlugin extends APlugin {
 			tools_navigation.add(nextPage);
 			tools.add(scaleTextField);
 			
-			nextPage.setIcon(new ImageIcon("etc/images/go-next.png"));
-			prevPage.setIcon(new ImageIcon("etc/images/go-previous.png"));	
-			zoomFit.setIcon(new ImageIcon("etc/images/fitToPage.png"));
-			zoomIn.setIcon(new ImageIcon("etc/images/zoomIn.png"));
-			zoomOut.setIcon(new ImageIcon("etc/images/zoomOut.png"));	
+			nextPage.setIcon(new ImageIcon(this.getClass().getResource("/go-next.png").getPath()));
+			prevPage.setIcon(new ImageIcon(this.getClass().getResource("/go-previous.png").getPath()));
+			zoomFit.setIcon(new ImageIcon(this.getClass().getResource("/fitToPage.png").getPath()));
+			zoomIn.setIcon(new ImageIcon(this.getClass().getResource("/zoomIn.png").getPath()));
+			zoomOut.setIcon(new ImageIcon(this.getClass().getResource("/zoomOut.png").getPath()));	
 			
 			if(pdfDecoder.getPageCount() > 1)
 			tools.add(tools_navigation);

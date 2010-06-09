@@ -214,7 +214,7 @@ public class WaveformPlugin extends APlugin {
 		JPanel tools = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 5));
 		
 		JButton zoomOut = new JButton();
-		zoomOut.setIcon(new ImageIcon("etc/images/zoomOut.png"));
+		zoomOut.setIcon(new ImageIcon(this.getClass().getResource("/zoomOut.png").getPath()));
 		zoomOut.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
@@ -228,7 +228,7 @@ public class WaveformPlugin extends APlugin {
 		tools.add(zoomOut);
 		
 		JButton zoomIn = new JButton();
-		zoomIn.setIcon(new ImageIcon("etc/images/zoomIn.png"));
+		zoomIn.setIcon(new ImageIcon(this.getClass().getResource("/zoomIn.png").getPath()));
 		zoomIn.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
@@ -242,7 +242,7 @@ public class WaveformPlugin extends APlugin {
 		tools.add(zoomIn);
 		
 		JButton zoomFit = new JButton();
-		zoomFit.setIcon(new ImageIcon("etc/images/fitToPage.png"));
+		zoomFit.setIcon(new ImageIcon(this.getClass().getResource("/fitToPage.png").getPath()));
 		zoomFit.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
