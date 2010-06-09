@@ -18,6 +18,7 @@ public class Main {
 			@SuppressWarnings("unused")
 			Controller ctrl = new Controller(model, view);
 		} catch (Exception e) {
+			e.printStackTrace();
 			JOptionPane.showMessageDialog(null, "Internal error during launch.\nPlease check plug-ins.");
 		}
 	}

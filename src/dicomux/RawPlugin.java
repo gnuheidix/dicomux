@@ -7,10 +7,12 @@ import java.awt.Component;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.FileOutputStream;
 import java.util.Iterator;
 import java.util.Locale;
 
 import javax.swing.JButton;
+import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -44,6 +46,11 @@ public class RawPlugin extends APlugin {
 	private JButton m_detailsButton;
 	
 	/**
+	 * the button which opens the save dialog card
+	 */
+	private JButton m_saveContentButton;
+	
+	/**
 	 * the button for showing the TREE-Card 
 	 */
 	private JButton m_closeDetailsButton;
@@ -52,6 +59,8 @@ public class RawPlugin extends APlugin {
 	 * the panel with the CardLayout for the main content
 	 */
 	private JPanel m_cards;
+	
+	private byte[] m_dicomContent = null;
 	
 	/**
 	 * the action listener for m_details
@@ -62,6 +71,11 @@ public class RawPlugin extends APlugin {
 	 * the text box for the detail information
 	 */
 	private JTextArea m_detailsText;
+	
+	/**
+	 * the JFileChooser for saving Dicom content
+	 */
+	private JFileChooser m_saveDialog;
 	
 	@Override
 	public String getName() {
@@ -77,6 +91,9 @@ public class RawPlugin extends APlugin {
 		
 		// add the content card with the detail information
 		m_cards.add(getInitializedDetailsCard(), "DETAILS");
+		
+		// add the content card with the detail information
+		m_cards.add(getInitializedSaveCard(), "SAVE");
 		
 		// add the card pane to the content pane
 		m_content = new JPanel(new BorderLayout(5, 5));
@@ -109,6 +126,16 @@ public class RawPlugin extends APlugin {
 	private JPanel getInitializedDetailsCard() {
 		JPanel detailCard = new JPanel(new BorderLayout(5, 5));
 		
+		m_saveContentButton = new JButton("m_saveContentButton");
+		m_saveContentButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				CardLayout cl = (CardLayout)(m_cards.getLayout());
+				cl.show(m_cards, "SAVE");
+			}
+		});
+		detailCard.add(m_saveContentButton, BorderLayout.NORTH);
+		
 		m_detailsText = new JTextArea();
 		m_detailsText.setLineWrap(true);
 		detailCard.add(new JScrollPane(m_detailsText), BorderLayout.CENTER);
@@ -127,6 +154,46 @@ public class RawPlugin extends APlugin {
 		return detailCard;
 	}
 	
+	/**
+	 * convenience method for initialization purpose
+	 * @return a JPanel with m_saveDialog
+	 */
+	private JPanel getInitializedSaveCard() {
+		JPanel saveCard = new JPanel(new BorderLayout(5, 5));
+		
+		m_saveDialog = new JFileChooser();
+		m_saveDialog.setDialogType(JFileChooser.SAVE_DIALOG);
+		m_saveDialog.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				JFileChooser chooser = (JFileChooser) e.getSource();
+				if (JFileChooser.APPROVE_SELECTION.equals(e.getActionCommand())) {
+					saveDicomContent(chooser.getSelectedFile().getPath());
+				}
+				CardLayout cl = (CardLayout)(m_cards.getLayout());
+				cl.show(m_cards, "DETAILS");
+			}
+		});
+		saveCard.add(m_saveDialog, BorderLayout.CENTER);
+		
+		return saveCard;
+	}
+	
+	/**
+	 * convenience funtion which saves the content of m_dicomContent into a file
+	 * @param path file path where you want to save the content
+	 */
+	private void saveDicomContent(String path) {
+		try {
+			FileOutputStream out = new FileOutputStream(path);
+			out.write(m_dicomContent);
+			out.close();
+		} catch (Exception e) {
+			// TODO inform the user if something bad happened
+			e.printStackTrace();
+		}
+	}
+	
 	// TODO implement with ResourceBundles
 	@Override
 	public void setLanguage(Locale locale) {
@@ -135,11 +202,15 @@ public class RawPlugin extends APlugin {
 			if(tmp == "de") {
 				m_detailsButton.setText("Details");
 				m_closeDetailsButton.setText("Zurück");
+				m_saveContentButton.setText("Inhalt in externe Datei speichern");
 			}
 			else if (tmp == "en") {
 				m_detailsButton.setText("view details");
 				m_closeDetailsButton.setText("back");
+				m_saveContentButton.setText("save content in external file");
 			}
+			if (m_saveDialog != null)
+				m_saveDialog.setLocale(locale); // this call is buggy due to JRE :-(
 		}
 	}
 	
@@ -150,19 +221,19 @@ public class RawPlugin extends APlugin {
 	}
 	
 	/**
-	 * sets the ActionListener of the m_details button
-	 * @param action
+	 * sets the ActionListener of the m_details button<br/>
+	 * looks for data in m_dicomContent
 	 */
-	private void setDetailsAction(final byte[] bytes) {
+	private void setDetailsAction() {
 		if (m_action != null) {
 			m_detailsButton.removeActionListener(m_action);
 		}
 		
-		if (bytes != null && bytes.length > 0) {
+		if (m_dicomContent != null && m_dicomContent.length > 0) {
 			m_action = new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent arg0) {
-					m_detailsText.setText(new String(bytes));
+					m_detailsText.setText(new String(m_dicomContent));
 					CardLayout cl = (CardLayout)(m_cards.getLayout());
 					cl.show(m_cards, "DETAILS");
 				}
@@ -292,8 +363,10 @@ public class RawPlugin extends APlugin {
 				if (userObject != null && userObject instanceof TDO) { // type check again
 					TDO tdo = (TDO) userObject; // extraction again - now we build our renderer
 					
-					if (selected)
-						setDetailsAction(tdo.getBytes());
+					if (selected) {
+						m_dicomContent = tdo.getBytes();
+						setDetailsAction();
+					}
 					
 					JLabel descLabel = new JLabel();
 					descLabel.setFont(stdRenderer.getFont());

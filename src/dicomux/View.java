@@ -257,6 +257,7 @@ public class View extends JFrame implements IView {
 		UIManager.put("FileChooser.newFolderToolTipText" , m_languageBundle.getString("newFolderToolTipText"));
 		UIManager.put("FileChooser.openButtonText" , m_languageBundle.getString("openButtonText"));
 		UIManager.put("FileChooser.openButtonToolTipText" , m_languageBundle.getString("openButtonToolTipText"));
+		UIManager.put("FileChooser.refreshActionLabelText" , m_languageBundle.getString("refreshActionLabelText"));
 		UIManager.put("FileChooser.saveButtonText" , m_languageBundle.getString("saveButtonText"));
 		UIManager.put("FileChooser.saveButtonToolTipText" , m_languageBundle.getString("saveButtonToolTipText"));
 		UIManager.put("FileChooser.updateButtonText" , m_languageBundle.getString("updateButtonText"));
