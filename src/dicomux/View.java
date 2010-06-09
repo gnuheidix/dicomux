@@ -643,8 +643,8 @@ public class View extends JFrame implements IView {
 			content.add(contentHead, BorderLayout.CENTER);
 			
 			JPanel logos = new JPanel(new FlowLayout(FlowLayout.RIGHT, 5, 5));
-			logos.add(new JLabel(new ImageIcon(this.getClass().getResource(File.separator + "logo_big.png").getPath())));
 			logos.add(new JLabel(new ImageIcon(this.getClass().getResource(File.separator + "gplv3.png").getPath())));
+			logos.add(new JLabel(new ImageIcon(this.getClass().getResource(File.separator + "logo_big.png").getPath())));
 			content.add(logos, BorderLayout.SOUTH);
 			
 			return content;
