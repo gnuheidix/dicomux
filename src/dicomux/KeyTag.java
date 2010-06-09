@@ -23,7 +23,7 @@ public class KeyTag {
 	private final int m_initialVectorCapacity = 3;
 	
 	/**
-	 * the keytag which is supported by the plug-in
+	 * the keytags which are supported by the plug-in
 	 */
 	private Vector<Integer> m_keyTag;
 	

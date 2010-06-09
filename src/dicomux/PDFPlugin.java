@@ -10,7 +10,6 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.Locale;
-import java.util.ResourceBundle;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -32,20 +31,20 @@ import org.jpedal.objects.PdfPageData;
  */
 public class PDFPlugin extends APlugin {
 	
-	private Dimension contend_dim = new Dimension();;
+	private Dimension contend_dim = new Dimension();
 	private int pdf_page = 1;
 	private JLabel page_lable;
 	JTextField scaleTextField ;
 	private Locale language;
-	private static ResourceBundle m_languageBundle; 
-	private final String m_langBaseName = "language";
+//	private static ResourceBundle m_languageBundle; 
+//	private final String m_langBaseName = "language";
 	private final JScrollPane currentScroll;
 	private final int prefered_scale = 76;
 	private PdfDecoder pdfDecoder = new PdfDecoder(true);
 	
 	// for zooming with mouse
-	private int mpsX,mpsY;
-	private int mpeX,mpeY;
+//	private int mpsX,mpsY;
+//	private int mpeX,mpeY;
 	
 	private JButton zoomOut = new JButton();
 	private JButton zoomIn = new JButton();
@@ -66,7 +65,7 @@ public class PDFPlugin extends APlugin {
 		if(language == null)
 		language = new Locale(System.getProperty("user.language"));
 		
-		m_languageBundle = ResourceBundle.getBundle(m_langBaseName,language );
+//		m_languageBundle = ResourceBundle.getBundle(m_langBaseName,language );
 		currentScroll = new JScrollPane();
 		scaleTextField = new JTextField(6);
 		// get a new content pane and add the PDF scrollpane to it
@@ -279,5 +278,14 @@ public class PDFPlugin extends APlugin {
 	public void setLanguage(Locale locale) {
 		language = locale;
 		// set the global language for all GUI Elements (load the ResourceBundle)
+	}
+	
+	/**
+	 * closes the PDF files correctly
+	 */
+	@Override
+	protected void finalize() throws Throwable {
+		pdfDecoder.closePdfFile();
+		super.finalize();
 	}
 }

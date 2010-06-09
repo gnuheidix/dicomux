@@ -152,7 +152,8 @@ public class Controller implements IController {
 			}
 			else
 				throw new Exception("No suitable plug-in found!");
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 			// something didn't work - let's show an error message
 			TabObject errorTab = new TabObject(TabState.ERROR_OPEN, true);
 			errorTab.setName(e.getMessage());
@@ -228,12 +229,10 @@ public class Controller implements IController {
 			for (int i = 0; i < m_model.getWorkspaceCount(); ++i) {
 				TabObject selectedWorkspace = m_model.getWorkspace(i);
 				APlugin selectedPlugin = selectedWorkspace.getPlugin();
-				if (selectedPlugin != null) {
+				if (selectedPlugin != null)
 					selectedPlugin.setLanguage(locale);
 			}
 		}
-	}
-
 	}
 	
 	@Override

@@ -48,9 +48,9 @@ public class PatientDataPlugin extends APlugin {
 		}
 		
 		Date tmpDate = dcm.getDate(Tag.PatientBirthDate);
-		if (tmp != null) {
+		if (tmpDate != null) {
 			content.add(new JLabel("Patient Birth Date:"));
-			content.add(new JLabel(tmp.toString()));
+			content.add(new JLabel(tmpDate.toString()));
 		}
 		
 		m_content = new JPanel(new BorderLayout(5, 5));

@@ -36,7 +36,7 @@ import org.dcm4che2.util.TagUtils;
  */
 public class RawPlugin extends APlugin {
 	/**
-	 * the tree
+	 * the tree which is for displaying all Dicom elements
 	 */
 	private JTree m_tree;
 	
@@ -46,7 +46,7 @@ public class RawPlugin extends APlugin {
 	private JButton m_detailsButton;
 	
 	/**
-	 * the button which opens the save dialog card
+	 * the button for showing the SAVE card
 	 */
 	private JButton m_saveContentButton;
 	
@@ -60,12 +60,10 @@ public class RawPlugin extends APlugin {
 	 */
 	private JPanel m_cards;
 	
-	private byte[] m_dicomContent = null;
-	
 	/**
-	 * the action listener for m_details
+	 * the content of the currently selected Dicom element
 	 */
-	private ActionListener m_action;
+	private byte[] m_dicomContent = null;
 	
 	/**
 	 * the text box for the detail information
@@ -112,8 +110,14 @@ public class RawPlugin extends APlugin {
 		treeCard.add(new JScrollPane(m_tree), BorderLayout.CENTER);
 		
 		m_detailsButton = new JButton("m_detailsButton");
+		m_detailsButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				m_detailsText.setText(new String(m_dicomContent)); // write the content to the JTextArea
+				switchToCard("DETAILS");
+			}
+		});
 		m_detailsButton.setEnabled(false);
-		m_detailsButton.setVisible(true);
 		treeCard.add(m_detailsButton, BorderLayout.SOUTH);
 		
 		return treeCard;
@@ -124,34 +128,31 @@ public class RawPlugin extends APlugin {
 	 * @return a JPanel with m_detailsText and m_closeDetailsButton
 	 */
 	private JPanel getInitializedDetailsCard() {
-		JPanel detailCard = new JPanel(new BorderLayout(5, 5));
+		JPanel detailsCard = new JPanel(new BorderLayout(5, 5));
 		
 		m_saveContentButton = new JButton("m_saveContentButton");
 		m_saveContentButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				CardLayout cl = (CardLayout)(m_cards.getLayout());
-				cl.show(m_cards, "SAVE");
+				switchToCard("SAVE");
 			}
 		});
-		detailCard.add(m_saveContentButton, BorderLayout.NORTH);
+		detailsCard.add(m_saveContentButton, BorderLayout.NORTH);
 		
 		m_detailsText = new JTextArea();
 		m_detailsText.setLineWrap(true);
-		detailCard.add(new JScrollPane(m_detailsText), BorderLayout.CENTER);
+		detailsCard.add(new JScrollPane(m_detailsText), BorderLayout.CENTER);
 		
 		m_closeDetailsButton = new JButton("m_closeDetailsButton");
 		m_closeDetailsButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				CardLayout cl = (CardLayout)(m_cards.getLayout());
-				cl.show(m_cards, "TREE");
+				switchToCard("TREE");
 			}
 		});
-		detailCard.add(m_closeDetailsButton, BorderLayout.SOUTH);
+		detailsCard.add(m_closeDetailsButton, BorderLayout.SOUTH);
 		
-		m_action = null;
-		return detailCard;
+		return detailsCard;
 	}
 	
 	/**
@@ -161,17 +162,17 @@ public class RawPlugin extends APlugin {
 	private JPanel getInitializedSaveCard() {
 		JPanel saveCard = new JPanel(new BorderLayout(5, 5));
 		
+		// create a new JFileChooser and configure it
 		m_saveDialog = new JFileChooser();
 		m_saveDialog.setDialogType(JFileChooser.SAVE_DIALOG);
 		m_saveDialog.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				JFileChooser chooser = (JFileChooser) e.getSource();
-				if (JFileChooser.APPROVE_SELECTION.equals(e.getActionCommand())) {
+				if (JFileChooser.APPROVE_SELECTION.equals(e.getActionCommand())) { // the user wants us to save the content
 					saveDicomContent(chooser.getSelectedFile().getPath());
 				}
-				CardLayout cl = (CardLayout)(m_cards.getLayout());
-				cl.show(m_cards, "DETAILS");
+				switchToCard("DETAILS");
 			}
 		});
 		saveCard.add(m_saveDialog, BorderLayout.CENTER);
@@ -221,28 +222,23 @@ public class RawPlugin extends APlugin {
 	}
 	
 	/**
-	 * sets the ActionListener of the m_details button<br/>
+	 * sets the status of the m_details button<br/>
 	 * looks for data in m_dicomContent
 	 */
 	private void setDetailsAction() {
-		if (m_action != null) {
-			m_detailsButton.removeActionListener(m_action);
-		}
-		
-		if (m_dicomContent != null && m_dicomContent.length > 0) {
-			m_action = new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent arg0) {
-					m_detailsText.setText(new String(m_dicomContent));
-					CardLayout cl = (CardLayout)(m_cards.getLayout());
-					cl.show(m_cards, "DETAILS");
-				}
-			};
-			m_detailsButton.addActionListener(m_action);
+		if (m_dicomContent != null && m_dicomContent.length > 0)
 			m_detailsButton.setEnabled(true);
-		}
 		else
 			m_detailsButton.setEnabled(false);
+	}
+	
+	/**
+	 * convenience method - switches to a specific card in the JPanel m_cards
+	 * @param cardId
+	 */
+	private void switchToCard(String cardId) {
+		CardLayout cl = (CardLayout)(m_cards.getLayout());
+		cl.show(m_cards, cardId);
 	}
 	
 	/**
@@ -388,7 +384,7 @@ public class RawPlugin extends APlugin {
 				}
 			}
 			
-			return stdRenderer;
+			return stdRenderer; // use the stdRenderer if something unexpected happened
 		}
 		
 		/**
