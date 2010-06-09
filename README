@@ -1,4 +1,6 @@
-The application which will be developed in this project is a viewer for DICOM files with ECG data.
+Dicomux is a viewer for DICOM files. Especially ECGs and encapsulated PDFs are supported.
+
+This software is a project of three students from Germany. Nobody is allowed to use it in an medical environment. Dicomux may only be used for testing purposes.
 
 own license
 - GPLv3

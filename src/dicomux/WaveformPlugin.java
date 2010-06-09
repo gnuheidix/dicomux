@@ -3,17 +3,24 @@ package dicomux;
 import java.awt.BasicStroke;
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.Image;
+import java.awt.Point;
 import java.awt.RenderingHints;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.AdjustmentEvent;
+import java.awt.event.AdjustmentListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import java.awt.geom.Line2D;
@@ -44,6 +51,9 @@ public class WaveformPlugin extends APlugin {
 	private Vector<ChannelPanel> pannels = new Vector<ChannelPanel>(12);
 	private double zoomLevel;
 	private int mv_cells;
+	private int seconds;
+	private boolean fitToPage;
+	private JScrollPane scroll;
 	
 	public WaveformPlugin() throws Exception {
 		super();
@@ -52,6 +62,7 @@ public class WaveformPlugin extends APlugin {
 		m_keyTag.addKey(Tag.WaveformData, null);
 		
 		this.zoomLevel = 3.0f;
+		fitToPage = true;
 	}
 	
 	@Override
@@ -96,7 +107,7 @@ public class WaveformPlugin extends APlugin {
 		int numberOfSamples = samples.getInt(true);
 		
 		// calculate the seconds		
-		int seconds = (int) (numberOfSamples / frequency);
+		this.seconds = (int) (numberOfSamples / frequency);
 		
 		// read number of channels
 		DicomElement channels = dcm.get(Tag.NumberOfWaveformChannels);
@@ -192,9 +203,12 @@ public class WaveformPlugin extends APlugin {
 		}		
 		
 		// in most cases we have to many channels so we use a scrollpane
-		final JScrollPane scroll = new JScrollPane(channelpane);
+		this.scroll = new JScrollPane(channelpane);
 		scroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		scroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+		
+		scroll.getHorizontalScrollBar().addAdjustmentListener(new ScrollListener());
+		scroll.getVerticalScrollBar().addAdjustmentListener(new ScrollListener());
 		
 		// Panel which includes the Buttons for zooming 
 		JPanel tools = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 5));
@@ -204,12 +218,12 @@ public class WaveformPlugin extends APlugin {
 		zoomOut.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				zoomLevel += 0.5;
-				Dimension m_content_dim = m_content.getSize();
-				Dimension dim = new Dimension(m_content.getWidth() - 20, (int) (m_content_dim.getHeight() / zoomLevel));
-				repaintPanels(dim);
-				m_content.repaint();
-				scroll.updateUI();
+				if(zoomLevel < 6.0)
+				{
+					zoomLevel += 0.5;
+				}
+				fitToPage = false;
+				repaintPanels();
 			}});
 		tools.add(zoomOut);
 		
@@ -218,12 +232,12 @@ public class WaveformPlugin extends APlugin {
 		zoomIn.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				zoomLevel -= 0.5;
-				Dimension m_content_dim = m_content.getSize();
-				Dimension dim = new Dimension(m_content.getWidth() - 20, (int) (m_content_dim.getHeight() / zoomLevel));
-				repaintPanels(dim);
-				m_content.repaint();
-				scroll.updateUI();
+				if(zoomLevel > 1.0) {
+					zoomLevel -= 0.5;
+				}
+				System.out.println(zoomLevel);
+				fitToPage = false;
+				repaintPanels();
 			}});
 		tools.add(zoomIn);
 		
@@ -233,11 +247,8 @@ public class WaveformPlugin extends APlugin {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				zoomLevel = 3.0f;
-				Dimension m_content_dim = m_content.getSize();
-				Dimension dim = new Dimension(m_content.getWidth() - 20, (int) (m_content_dim.getHeight() / zoomLevel));
-				repaintPanels(dim);
-				m_content.repaint();
-				scroll.updateUI();
+				fitToPage = true;
+				repaintPanels();
 			}});
 		tools.add(zoomFit);
 		
@@ -250,12 +261,7 @@ public class WaveformPlugin extends APlugin {
 			@Override
 			public void componentResized(ComponentEvent e) {
 				super.componentResized(e);
-				// get new size of the main panel
-				Dimension m_content_dim = m_content.getSize();
-				// we take 20 px for the scrollbar
-				// height is divided by zoomLevel so the channels will not be too high
-				Dimension dim = new Dimension(m_content.getWidth() - 20, (int) (m_content_dim.getHeight() / zoomLevel));
-				repaintPanels(dim);
+				repaintPanels();
 			}
 		});
 		
@@ -273,14 +279,34 @@ public class WaveformPlugin extends APlugin {
 	 * 
 	 * @param dim The new Dimension the ChannelPannels will use
 	 */
-	private void repaintPanels(Dimension dim) {
+	private void repaintPanels() {
 		if(!this.pannels.isEmpty()) {
+			Dimension m_content_dim = m_content.getSize();
+			// we take 20 px for the scrollbar
+			// height is divided by zoomLevel so the channels will not be too high
+			double width = 0;
+			int height = 0;
+			if(fitToPage)
+			{
+				width = m_content.getWidth() - 20;
+				height = (int) (m_content_dim.getHeight() / zoomLevel);
+			}
+			else
+			{
+				height = (int) (m_content_dim.getHeight() / zoomLevel);
+				int cellheight = height / mv_cells;
+				
+				width = cellheight * seconds * 10 / zoomLevel + 140;
+			}
+			Dimension dim = new Dimension((int) width, height);
 			for (ChannelPanel p : this.pannels) {
 				p.setPreferredSize(dim);
 				p.setSize(dim);
 				p.repaint();
 			}
 		}
+		scroll.updateUI();
+		m_content.repaint();
 	}
 	
 	private void getMinMax(int data[][], ChannelDefinition definitions[]) {
@@ -444,7 +470,8 @@ public class WaveformPlugin extends APlugin {
 			c3.ipady = 5;
 			c3.anchor = GridBagConstraints.LINE_END;
 			
-			JLabel minimum_value = new JLabel("" + this.min);
+			DecimalFormat form = new DecimalFormat("####.##");
+			JLabel minimum_value = new JLabel("" + form.format(this.min));
 			info.add(minimum_value, c3);
 			
 			GridBagConstraints c4 = new GridBagConstraints();
@@ -465,7 +492,7 @@ public class WaveformPlugin extends APlugin {
 			c5.ipady = 5;
 			c5.anchor = GridBagConstraints.LINE_END;
 			
-			JLabel maximum_value = new JLabel("" + this.max);
+			JLabel maximum_value = new JLabel("" + form.format(this.max));
 			info.add(maximum_value, c5);
 			
 			GridBagConstraints c6 = new GridBagConstraints();
@@ -538,7 +565,7 @@ public class WaveformPlugin extends APlugin {
 			// set info to new size
 			info.setPreferredSize(new Dimension(this.infowidth,(int)this.height));
 			info.setSize(new Dimension(this.infowidth,(int)this.height));
-			info.setMaximumSize(new Dimension(this.infowidth, Short.MAX_VALUE));
+			info.setMaximumSize(new Dimension(this.infowidth, (int)this.height));
 			info.repaint();
 			// set graph to new size
 			dim = new Dimension((int) (this.width - this.infowidth), (int) this.height);
@@ -676,13 +703,34 @@ public class WaveformPlugin extends APlugin {
 					public void mouseMoved(MouseEvent e) {
 						
 						double sec = e.getPoint().getX() / cellwidth * 0.1;
-						double mv = ((dim.getHeight() / 2) - e.getPoint().getY()) / cellheight;
+						double mv = ((dim.getHeight() / 2) - e.getPoint().getY()) / cellheight * 1000;
 						
 						upper.setPosition(mv, sec);
 						
 					}
 				}
 			);
+			
+			this.addMouseListener( new MouseAdapter() {
+				
+				public void mouseEntered(MouseEvent e) {
+					
+					Toolkit toolkit = Toolkit.getDefaultToolkit();  
+					Image image = toolkit.getImage("etc/images/cursorHand.png");
+					
+					Point hotspot = new Point(7,0);
+					
+					//Cursor other = new Cursor(Cursor.HAND_CURSOR);
+					
+					Cursor cursor = toolkit.createCustomCursor(image, hotspot, "dicomux"); 
+					setCursor(cursor);
+				}
+				
+				public void mouseExited(MouseEvent e) {
+					Cursor normal = new Cursor(Cursor.DEFAULT_CURSOR);
+					setCursor(normal);
+				}
+			});
 				
 			
 		}	
@@ -734,9 +782,14 @@ public class WaveformPlugin extends APlugin {
 		public void setMaximum(double maximum) {
 			this.maximum = maximum;
 		}
-		
-		
-		
+	}
+	
+	private class ScrollListener implements AdjustmentListener {
+
+		@Override
+		public void adjustmentValueChanged(AdjustmentEvent e) {
+			repaintPanels();
+		}
 		
 	}
 	
