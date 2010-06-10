@@ -5,6 +5,11 @@ This software is a project of three students from Germany. Nobody is allowed to 
 own license
 - GPLv3
 
+logo derived from
+- http://commons.wikimedia.org/wiki/File:Linia_izoelektryczna_EKG.svg
+
 used external libraries
-- dcm4che - http://www.dcm4che.org/
-- JPedal LGPL release - http://www.jpedal.org/os_response.php
+- <Name>         <License>                  <URL>
+- dcm4che      - MPLv1.1, GPLv2, LGPLv2.1 - http://www.dcm4che.org/
+- pdf-renderer - LGPL                     - https://pdf-renderer.dev.java.net/
+
