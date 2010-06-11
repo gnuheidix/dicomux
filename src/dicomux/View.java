@@ -150,7 +150,7 @@ public class View extends JFrame implements IView {
 		setTitle("Dicomux");
 		setPreferredSize(new Dimension(800, 600));
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
-		setIconImage(new ImageIcon(this.getClass().getResource(File.separator + "logo.png").getPath()).getImage());
+		setIconImage(new ImageIcon(this.getClass().getResource("/logo.png").getPath()).getImage());
 		
 		// extract own contentPane and set its layout manager
 		Container contentPane = getContentPane();
@@ -669,7 +669,7 @@ public class View extends JFrame implements IView {
 		private JComponent makeOpenButtons() {
 			JPanel retVal = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0), false);
 			JButton tmp = new JButton(m_languageBundle.getString("key_openFile"));
-			tmp.setIcon(new ImageIcon(this.getClass().getResource(File.separator + "text-x-generic.png").getPath()));
+			tmp.setIcon(new ImageIcon(this.getClass().getResource("/text-x-generic.png").getPath()));
 			tmp.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
@@ -679,7 +679,7 @@ public class View extends JFrame implements IView {
 			retVal.add(tmp);
 			
 			tmp = new JButton(m_languageBundle.getString("key_openDir"));
-			tmp.setIcon(new ImageIcon(this.getClass().getResource(File.separator + "folder.png").getPath()));
+			tmp.setIcon(new ImageIcon(this.getClass().getResource("/folder.png").getPath()));
 			tmp.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
@@ -689,7 +689,7 @@ public class View extends JFrame implements IView {
 			retVal.add(tmp);
 			
 			tmp = new JButton(m_languageBundle.getString("key_exit"));
-			tmp.setIcon(new ImageIcon(this.getClass().getResource(File.separator + "system-log-out.png").getPath()));
+			tmp.setIcon(new ImageIcon(this.getClass().getResource("/system-log-out.png").getPath()));
 			tmp.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {

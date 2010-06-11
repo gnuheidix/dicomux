@@ -100,6 +100,10 @@ public class DirectoryPlugin extends APlugin{
 
 	}
 	
+	/**
+	 * This method draws the selected image. 
+	 * If no image is selected the method clears the content panel and draws nothing.
+	 */
 	private void drawImage()
 	{	
 		BufferedImage img = images.get(recource_combo.getSelectedItem());
@@ -112,6 +116,11 @@ public class DirectoryPlugin extends APlugin{
 
 	}
 	
+	/**
+	 * 
+	 * @param key
+	 * @param type
+	 */
 	private void writeInformation(String key,dir_type type)
 	{
 		recourcePanel.removeAll();
@@ -140,7 +149,6 @@ public class DirectoryPlugin extends APlugin{
 				values[counter][1] = entry.getValue();
 				counter++;
 			}
-			
 			JTable table = new JTable(values,col);
 			JScrollPane scroll = new JScrollPane(table);
 			table.setSize(800,600);
