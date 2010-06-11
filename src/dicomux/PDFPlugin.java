@@ -4,6 +4,8 @@ import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.nio.ByteBuffer;
 import java.util.Locale;
 
@@ -11,6 +13,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JPanel;
 import javax.swing.JToggleButton;
 
+import org.dcm4che2.data.DicomElement;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 
@@ -18,6 +21,11 @@ import com.sun.pdfview.PDFFile;
 import com.sun.pdfview.PDFPage;
 import com.sun.pdfview.PagePanel;
 
+/**
+ * This plug-in is for opening an encapsulated PDF in an DicomObject
+ * @author heidi
+ *
+ */
 public class PDFPlugin extends APlugin {
 	/**
 	 * the panel which holds the PDF
@@ -50,9 +58,19 @@ public class PDFPlugin extends APlugin {
 	 */
 	public PDFPlugin() throws Exception {
 		super();
-		m_content = new JPanel(new BorderLayout(5, 5));
 		m_keyTag.addKey(Tag.MIMETypeOfEncapsulatedDocument, "application/pdf");
 		m_keyTag.addKey(Tag.EncapsulatedDocument, null);
+		m_content = new JPanel(new BorderLayout(5, 5));
+		m_content.addComponentListener(new ComponentAdapter() {
+			@Override
+			public void componentResized(ComponentEvent e) {
+				super.componentResized(e);
+				if (m_zoomModeToggleButton != null &&		// reset zoom on resize
+						m_zoomModeToggleButton.getModel().isSelected()) {
+					m_zoomModeToggleButton.doClick();
+				}
+			}
+		});
 		
 		JPanel tools = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 5));
 		tools.add(createZoomButton());
@@ -91,10 +109,15 @@ public class PDFPlugin extends APlugin {
 	
 	@Override
 	public void setData(DicomObject dcm) throws Exception {
-		ByteBuffer buf = ByteBuffer.wrap(dcm.get(Tag.EncapsulatedDocument).getBytes());
-		
-		m_pdfFile = new PDFFile(buf);
-		showPage(0);
+		if (dcm != null) {
+			DicomElement element = dcm.get(Tag.EncapsulatedDocument);
+			if (element != null) {
+				ByteBuffer buf = ByteBuffer.wrap(element.getBytes());
+				
+				m_pdfFile = new PDFFile(buf);
+				showPage(0);
+			}
+		}
 	}
 	
 	/**
