@@ -13,6 +13,7 @@ import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.Rectangle2D;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileReader;
@@ -31,8 +32,10 @@ import org.dcm4che2.data.DicomElement;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 
+import com.sun.pdfview.PDFCmd;
 import com.sun.pdfview.PDFFile;
 import com.sun.pdfview.PDFPage;
+import com.sun.pdfview.PDFRenderer;
 import com.sun.pdfview.PagePanel;
 
 /**
@@ -70,6 +73,10 @@ public class PDFPlugin extends APlugin {
 	 * the prefered pdf scale
 	 */
 	int m_preferedScale = 100;
+	/**
+	 * the current pdf scale
+	 */
+	int m_currentScale = 100;
 	
 	/**
 	 * button which is used for enabeling / disabeling the zoom-part mode
@@ -131,16 +138,16 @@ public class PDFPlugin extends APlugin {
 		});
 		
 		m_pdfPanel = new PagePanel();
-		m_pdfPanel.setSize(100, 100); // dummy call to make it work
+		m_pdfPanel.setSize(300, 300); // dummy call to make it work
 		
-		m_scroll = new JScrollPane();
-		m_scroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-		m_scroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-		m_scroll.setSize(100,100);
-		m_scroll.add(m_pdfPanel);
-		m_scroll.setViewportView(m_pdfPanel);
+//		m_scroll = new JScrollPane();
+//		m_scroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+//		m_scroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+//		m_scroll.setSize(100,100);
+//		m_scroll.add(m_pdfPanel);
+//		m_scroll.setViewportView(m_pdfPanel);
 		
-		m_content.add(m_scroll, BorderLayout.CENTER);
+		m_content.add(m_pdfPanel, BorderLayout.CENTER);
 		
 		m_locale =  new Locale(System.getProperty("user.language"));
 	}
@@ -152,9 +159,9 @@ public class PDFPlugin extends APlugin {
 		JPanel tools = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 5));
 		//add tools
 		tools.add(createZoomPartButton());
-		tools.add(createZoomInButton());
-		tools.add(createZoomOutButton());
-		tools.add(createScalePageTextField());	
+//		tools.add(createZoomInButton());
+//		tools.add(createZoomOutButton());
+//		tools.add(createScalePageTextField());	
 		if(m_pdfFile != null && m_pdfFile.getNumPages() > 1){
 			tools.add(createPrevPageButton());
 			tools.add(createPageOfLable());
@@ -221,7 +228,7 @@ public class PDFPlugin extends APlugin {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				//do zoom
-//				setScale();
+				setScale(m_currentScale - 10);
 			}
 		});
 		m_zoomInModeToggleButton.addMouseListener(new MouseListener() {	
@@ -257,7 +264,7 @@ public class PDFPlugin extends APlugin {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				//do zoom
-				
+				setScale(m_currentScale + 10);
 			}
 		});
 		m_zoomOutModeToggleButton.addMouseListener(new MouseListener() {	
@@ -293,7 +300,10 @@ public class PDFPlugin extends APlugin {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				//do prev
-				showPage(m_pdfPanel.getPage().getPageNumber()-1);
+				if(m_pdfPanel.getPage().getPageNumber() - 1 < 1)
+					showPage(m_pdfFile.getNumPages());
+				else
+					showPage(m_pdfPanel.getPage().getPageNumber()-1);
 				
 			}
 		});
@@ -330,7 +340,10 @@ public class PDFPlugin extends APlugin {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				//do next
-				showPage(m_pdfPanel.getPage().getPageNumber()+1);
+				if(m_pdfPanel.getPage().getPageNumber()+1 > m_pdfFile.getNumPages() )
+					showPage(1);
+				else
+					showPage(m_pdfPanel.getPage().getPageNumber()+1);
 			}
 		});
 		m_nextPageModeToggleButton.addMouseListener(new MouseListener() {	
@@ -400,7 +413,7 @@ public class PDFPlugin extends APlugin {
 	public void updatePageOfLable(){
 		if(m_pageOfLable != null){
 			if(m_pdfPanel != null && m_pdfFile != null)
-				m_pageOfLable.setText(page + (m_pdfPanel.getPage().getPageNumber()+1) + of + m_pdfFile.getNumPages());
+				m_pageOfLable.setText(page + (m_pdfPanel.getPage().getPageNumber() ) + of + m_pdfFile.getNumPages());
 			else
 				m_pageOfLable.setText(page + of);
 		}
@@ -413,26 +426,24 @@ public class PDFPlugin extends APlugin {
 	
 	@Override
 	public void setData(DicomObject dcm) throws Exception {
-//		if (dcm != null) {
-//			DicomElement element = dcm.get(Tag.EncapsulatedDocument);
-//			if (element != null) {
-//				ByteBuffer buf = ByteBuffer.wrap(element.getBytes());
-//				
-//				m_pdfFile = new PDFFile(buf);
-//				addTools();
-//				showPage(0);
-//			}
-//		}
+		if (dcm != null) {
+			DicomElement element = dcm.get(Tag.EncapsulatedDocument);
+			if (element != null) {
+				ByteBuffer buf = ByteBuffer.wrap(element.getBytes());
+				
+				m_pdfFile = new PDFFile(buf);
+				addTools();
+				showPage(1);
+			}
+		}
 		//test
-
-		File file = new File("C:\\Users\\tobi\\Desktop\\gpl-3.0.pdf");
-		
-		FileInputStream fin = new FileInputStream(file);
-		byte fileContent[] = new byte[(int)file.length()];
-		fin.read(fileContent);
-		m_pdfFile = new PDFFile(ByteBuffer.wrap(fileContent));
-		addTools();
-		showPage(0);
+//		File file = new File("C:\\Users\\tobi\\Desktop\\gpl-3.0.pdf");
+//		FileInputStream fin = new FileInputStream(file);
+//		byte fileContent[] = new byte[(int)file.length()];
+//		fin.read(fileContent);
+//		m_pdfFile = new PDFFile(ByteBuffer.wrap(fileContent));
+//		addTools();
+//		showPage(1);
 	}
 	
 	/**
@@ -454,11 +465,42 @@ public class PDFPlugin extends APlugin {
 	 * @param scaleInPercent the scale in percent
 	 */
 	private void setScale(int scaleInPercent)
-	{	//TODO: implement
-		float scale = (float)((float)scaleInPercent/(float)100);
-//		m_pdfPanel.getPage().addXform(AffineTransform.getScaleInstance(0.5, 0.5));
-//		pdfDecoder.setPageParameters(scale,pdf_page);
-//		m_scaleModeTextField.setText(new Integer((int) (pdfDecoder.getScaling()*100)).toString() + "%");
+	{
+		int less_scale_Site;
+		Rectangle2D rect = null;
+		double height, width, x , y;
+		if(m_pdfPanel.getCurClip() == null){
+			height = m_pdfPanel.getPage().getHeight();
+			width = m_pdfPanel.getPage().getWidth();
+			x = 0;
+			y = 0;
+ 		}
+		else{
+			height = m_pdfPanel.getCurClip().getHeight();
+			width = m_pdfPanel.getCurClip().getWidth();
+			x = m_pdfPanel.getCurClip().getX();
+			y = m_pdfPanel.getCurClip().getY();
+		}
+		
+		if(scaleInPercent > m_currentScale){
+			less_scale_Site = (-(m_currentScale - scaleInPercent))/2;
+			double less_px_height =  ((height/100)*less_scale_Site);
+			double less_px_width =  ((width/100)*less_scale_Site);
+
+			rect = new Rectangle2D.Double(x - less_px_width,y - less_px_height,
+										width+(2*less_px_width),height+(2*less_px_width));
+		}
+		else{
+			less_scale_Site = (m_currentScale - scaleInPercent)/2;
+			double less_px_height =  ((height/100)*less_scale_Site);
+			double less_px_width =  ((width/100)*less_scale_Site);
+
+			rect = new Rectangle2D.Double(less_px_width,less_px_height,
+										width-(2*less_px_width),height-(2*less_px_width));
+		}
+	
+		m_pdfPanel.setClip(rect);
+		m_currentScale = scaleInPercent;
 		m_content.repaint();
 		m_scroll.updateUI();
 	}
