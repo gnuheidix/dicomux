@@ -291,8 +291,6 @@ public class WaveformPlugin extends APlugin {
 	}
 	
 	private void getMinMax(int data[][], ChannelDefinition definitions[]) {
-//		double valueScaling = this.upper.getDefinition().getSensitity() *
-//		this.upper.getDefinition().getSensitivityCorrection();
 						
 			for(int i = 0; i < data.length; i++) {
 				double min = 0;
@@ -417,6 +415,12 @@ public class WaveformPlugin extends APlugin {
 			this.setLayout(layout);
 			
 			// create info panel
+			addInfoPane();
+			// create graph
+			addGraph();
+		}
+		
+		private void addInfoPane() {
 			this.info = new JPanel();
 			GridBagLayout infolayout = new GridBagLayout();
 			info.setLayout(infolayout);
@@ -528,9 +532,11 @@ public class WaveformPlugin extends APlugin {
 			info.add(this.secs_pos_label, c10);
 				
 			this.add(info, BorderLayout.WEST);
-			// create graph
+		}
+		
+		private void addGraph() {
 			this.graph = new DrawingPanel(this.data,(int) (this.width - this.infowidth), (int) this.height, this.secs, this);
-			dim = new Dimension((int) (this.width - this.infowidth), (int) this.height);
+			Dimension dim = new Dimension((int) (this.width - this.infowidth), (int) this.height);
 			graph.setPreferredSize(dim);
 			
 			this.add(graph, BorderLayout.EAST);
@@ -599,6 +605,9 @@ public class WaveformPlugin extends APlugin {
 		private double cellheight;
 		private double cellwidth;
 		private Dimension dim;
+		private int start;
+		private int lenght;
+		private double valueScaling;
 		
 		public DrawingPanel(int[] values, int width, int height, int secs, final ChannelPanel upper) {
 			super();
@@ -613,14 +622,24 @@ public class WaveformPlugin extends APlugin {
 			// calculate height and width of the cells
 			this.cellheight = dim.getHeight() / mv_cell_count;
 			this.cellwidth = dim.getWidth() / secs_cell_count;
+			this.start = 0;
+			this.lenght = 0; 
 			
+			// calculate scaling of the sample values
+			this.valueScaling = this.upper.getDefinition().getSensitity() *
+								this.upper.getDefinition().getSensitivityCorrection();
+			
+			addListeners();
+			
+		}
+		
+		private void addListeners() {
 			// used to get the current position of the mouse pointer into the information panel
 			this.addMouseMotionListener( new MouseMotionAdapter() {
 						
-					@Override
 					public void mouseMoved(MouseEvent e) {
-						
 						double offset = 0;
+						
 						if(displayFormat.equals(DEFAULTFORMAT)) {
 							offset = 0.0;
 						}
@@ -632,11 +651,9 @@ public class WaveformPlugin extends APlugin {
 						}
 						
 						double sec = offset + (e.getPoint().getX() / cellwidth * 0.1);
-						
 						double mv = ((dim.getHeight() / 2.0) - e.getPoint().getY()) / cellheight * 1000;
 						
 						upper.setPosition(mv, sec);
-						
 					}
 				}
 			);
@@ -644,7 +661,6 @@ public class WaveformPlugin extends APlugin {
 			this.addMouseListener( new MouseAdapter() {
 				
 				public void mouseEntered(MouseEvent e) {
-					
 					Toolkit toolkit = Toolkit.getDefaultToolkit();  
 					Image image = toolkit.getImage("etc/images/cursorHand.png");					
 					Point hotspot = new Point(7,0);
@@ -657,41 +673,36 @@ public class WaveformPlugin extends APlugin {
 					setCursor(normal);
 				}
 			});
-			
 		}
 		
+		
 		public void paintComponent( Graphics g ) {
-			
-			int lenght = 0;
-			int start = 0;
 			
 			super.paintComponent(g);
 			final Graphics2D g2 = (Graphics2D) g;
 			
-			if(displayFormat.equals(DEFAULTFORMAT)) {
-				this.secs_cell_count = this.secs * 10;
-				lenght = this.data.length;
-			}
-			if(displayFormat.equals(FOURPARTS)) {
-				this.secs_cell_count = (int) (2.5 * 10);
-				lenght = this.data.length / 4;
-			}
-			if(displayFormat.equals(TWOPARTS)) {
-				this.secs_cell_count = 5 * 10;
-				lenght = this.data.length / 2;
-			}
-			start = lenght * (showPart - 1);
-			// calculate scaling of the sample values
-			double valueScaling = this.upper.getDefinition().getSensitity() *
-								this.upper.getDefinition().getSensitivityCorrection();
-			
-			//set background color to white
-			this.setBackground(Color.WHITE);
 			// set rendering options
 			g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);    
 			g2.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
 			g2.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_NORMALIZE);
 			g2.setRenderingHint(RenderingHints.KEY_DITHERING, RenderingHints.VALUE_DITHER_ENABLE);
+			
+			if(displayFormat.equals(DEFAULTFORMAT)) {
+				this.secs_cell_count = this.secs * 10;
+				this.lenght = this.data.length;
+			}
+			if(displayFormat.equals(FOURPARTS)) {
+				this.secs_cell_count = (int) (2.5 * 10);
+				this.lenght = this.data.length / 4;
+			}
+			if(displayFormat.equals(TWOPARTS)) {
+				this.secs_cell_count = 5 * 10;
+				this.lenght = this.data.length / 2;
+			}
+			this.start = this.lenght * (showPart - 1);
+
+			//set background color to white
+			this.setBackground(Color.WHITE);
 						
 			this.dim = getPreferredSize();
 			// calculate height and width of the cells
@@ -701,15 +712,19 @@ public class WaveformPlugin extends APlugin {
 			// calculate the scaling which is dependent to the width	
 			this.scalingWidth =  (float) (cellwidth / (lenght / secs_cell_count ));			
 			
+			drawGrid(g2);
+			drawGraph(g2);
+			
+		}
+		
+		private void drawGrid(Graphics2D g2) {
 			// set line color
 			g2.setColor(new Color(231, 84, 72));
 			// draw horizontal lines
 			g2.setStroke(new BasicStroke(2.0f));
 			for(int i = 0; i < mv_cell_count; i++) {
-
 				g2.draw(new Line2D.Double(0, i * cellheight, 
-						dim.getWidth(), i * cellheight));
-				
+						dim.getWidth(), i * cellheight));			
 			}
 			
 			// draw vertical lines
@@ -726,7 +741,9 @@ public class WaveformPlugin extends APlugin {
 				g2.draw(new Line2D.Double(i * cellwidth , 0, 
 						i * cellwidth, dim.getHeight()));
 			}
-			
+		}
+		
+		private void drawGraph(Graphics2D g2) {
 			// draw waveform as line using the given values
 			g2.setColor(Color.BLACK);
 			g2.setStroke(new BasicStroke(1.2f));
@@ -737,12 +754,12 @@ public class WaveformPlugin extends APlugin {
 				// dim.height / 2 is our base line
 				Line2D line = new Line2D.Double(
 						this.scalingWidth * (a - start), 
-						(dim.height /2 - valueScaling * ( (float)(this.data[a] / (float) 1000) * cellheight) ), 
+						(this.dim.height /2 - this.valueScaling * ( (float)(this.data[a] / (float) 1000) * this.cellheight) ), 
 						this.scalingWidth * (b - start), 
-						( dim.height /2 - valueScaling * ( (float)(this.data[b] / (float) 1000) * cellheight ) ));
+						( this.dim.height /2 - this.valueScaling * ( (float)(this.data[b] / (float) 1000) * this.cellheight ) ));
 				g2.draw(line);
 			 }	
-		}	
+		}
 	}
 	
 	// used to save information about a channel
@@ -813,6 +830,13 @@ public class WaveformPlugin extends APlugin {
 			this.displayFormats.add(FOURPARTS);
 			this.displayFormats.add(TWOPARTS);
 			
+			addZoomButtons();
+			addDisplayFormatComponent();
+			
+		}
+		
+		private void addZoomButtons() {
+			
 			this.zoomOut = new JButton();
 			this.zoomOut.setIcon(new ImageIcon(this.getClass().getResource("/zoomOut.png").getPath()));
 			this.zoomOut.addActionListener(new ActionListener() {
@@ -851,15 +875,15 @@ public class WaveformPlugin extends APlugin {
 					
 				}});
 			this.add(zoomFit);
-			
+		}
+		
+		private void addDisplayFormatComponent() {
 			displayLabel = new JLabel("display format: ");
 			this.add(displayLabel);
-		
-			
+				
 			displayCombo = new JComboBox(displayFormats);	
 			displayCombo.addActionListener(new ActionListener() {
-				
-				@Override
+
 				public void actionPerformed(ActionEvent e) {
 					JComboBox cb = (JComboBox) e.getSource();
 					displayFormat = (String) cb.getSelectedItem();
@@ -874,8 +898,7 @@ public class WaveformPlugin extends APlugin {
 			this.prevButton = new JButton();
 			prevButton.setIcon(new ImageIcon(this.getClass().getResource("/go-previous.png").getPath()));
 			prevButton.addActionListener(new ActionListener() {
-				
-				@Override
+
 				public void actionPerformed(ActionEvent e) {
 					--showPart;
 					if(showPart < 1)
@@ -888,8 +911,7 @@ public class WaveformPlugin extends APlugin {
 			this.nextButton = new JButton();
 			nextButton.setIcon(new ImageIcon(this.getClass().getResource("/go-next.png").getPath()));
 			nextButton.addActionListener(new ActionListener() {
-				
-				@Override
+
 				public void actionPerformed(ActionEvent e) {
 					++showPart;
 					if(showPart > numberOfParts)
