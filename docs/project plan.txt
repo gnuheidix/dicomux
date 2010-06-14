@@ -303,3 +303,28 @@ Schedule
 * End: June/13th
 
 Review meeting
+* The integration still needs to be designed. (attempts failed)
+* The waveform plug-in has been improved. (display format first design and implementation)
+* PDF lib has been changed - we currently got a new zoom function and lost an old zoom function
+
+########### Sprint #9 ###########
+
+Sprint meeting
+* Some work has been done on the waveform plug-in. This has to be continued. (display formats / language)
+* We need a technical manual. (Latex - English as usual)
+** architecture
+** description
+** class diagram
+* The integration has to be designed. (as jar)
+
+Working packages
+* continue work on the waveform render plug-in (Norbert)
+* technical manual (Tobi, Heidi)
+* implement welcome and about tabs (Tobi)
+* do integration (Heidi, Tobi)
+
+Schedule
+* Begin: June/14th
+* End: June/20th
+
+Review meeting
