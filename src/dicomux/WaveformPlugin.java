@@ -27,16 +27,15 @@ import java.awt.geom.Line2D;
 import java.text.DecimalFormat;
 import java.util.Locale;
 import java.util.Vector;
-
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-
 import org.dcm4che2.data.DicomElement;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.SpecificCharacterSet;
@@ -54,6 +53,15 @@ public class WaveformPlugin extends APlugin {
 	private int seconds;
 	private boolean fitToPage;
 	private JScrollPane scroll;
+	private JPanel channelpane;
+	private int numberOfChannels;
+	private String displayFormat;
+	private int showPart;
+	private JPanel tools;
+	
+	private final String DEFAULTFORMAT = "1x10s";
+	private final String FOURPARTS = "4x2.5s";
+	private final String TWOPARTS = "2x5s";
 	
 	public WaveformPlugin() throws Exception {
 		super();
@@ -62,7 +70,9 @@ public class WaveformPlugin extends APlugin {
 		m_keyTag.addKey(Tag.WaveformData, null);
 		
 		this.zoomLevel = 3.0f;
-		fitToPage = true;
+		this.fitToPage = true;
+		this.showPart = 1;
+		this.displayFormat = DEFAULTFORMAT;
 	}
 	
 	@Override
@@ -114,7 +124,7 @@ public class WaveformPlugin extends APlugin {
 		if(channels == null)
 			throw new Exception("Could not read NumberOfWaveformChannels");
 			
-		int numberOfChannels = channels.getInt(true);
+		this.numberOfChannels = channels.getInt(true);
 		
 		// write the sample data into a 2-dimensional array
 		// first dimension: channel
@@ -183,7 +193,7 @@ public class WaveformPlugin extends APlugin {
 		}
 		
 		// this panel will hold all channels and their drawings of the waveform
-		JPanel channelpane = new JPanel();
+		this.channelpane = new JPanel();
 		channelpane.setBackground(Color.BLACK);
 		
 		// using a BoxLayout, top-to-bottom  
@@ -211,49 +221,11 @@ public class WaveformPlugin extends APlugin {
 		scroll.getVerticalScrollBar().addAdjustmentListener(new ScrollListener());
 		
 		// Panel which includes the Buttons for zooming 
-		JPanel tools = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 5));
-		
-		JButton zoomOut = new JButton();
-		zoomOut.setIcon(new ImageIcon(this.getClass().getResource("/zoomOut.png").getPath()));
-		zoomOut.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent arg0) {
-				if(zoomLevel < 6.0)
-				{
-					zoomLevel += 0.5;
-				}
-				fitToPage = false;
-				repaintPanels();
-			}});
-		tools.add(zoomOut);
-		
-		JButton zoomIn = new JButton();
-		zoomIn.setIcon(new ImageIcon(this.getClass().getResource("/zoomIn.png").getPath()));
-		zoomIn.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent arg0) {
-				if(zoomLevel > 1.0) {
-					zoomLevel -= 0.5;
-				}
-				System.out.println(zoomLevel);
-				fitToPage = false;
-				repaintPanels();
-			}});
-		tools.add(zoomIn);
-		
-		JButton zoomFit = new JButton();
-		zoomFit.setIcon(new ImageIcon(this.getClass().getResource("/fitToPage.png").getPath()));
-		zoomFit.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent arg0) {
-				zoomLevel = 3.0f;
-				fitToPage = true;
-				repaintPanels();
-			}});
-		tools.add(zoomFit);
+		this.tools = new ToolPanel();
+		this.tools.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 5));
 		
 		
-		m_content.add(tools, BorderLayout.NORTH);
+		m_content.add(this.tools, BorderLayout.NORTH);
 		m_content.add(scroll, BorderLayout.CENTER);
 		
 		// this gets called when the application is resized
@@ -296,22 +268,29 @@ public class WaveformPlugin extends APlugin {
 				height = (int) (m_content_dim.getHeight() / zoomLevel);
 				int cellheight = height / mv_cells;
 				
-				width = cellheight * seconds * 10 / zoomLevel + 140;
+				width = cellheight * seconds * 10 / zoomLevel + 140 - 20;
 			}
 			Dimension dim = new Dimension((int) width, height);
 			for (ChannelPanel p : this.pannels) {
 				p.setPreferredSize(dim);
 				p.setSize(dim);
 				p.repaint();
+				p.revalidate();
 			}
+			dim = new Dimension((int) width, height * this.numberOfChannels + 2 * this.numberOfChannels);
+			tools.repaint();
+			tools.revalidate();
+			channelpane.setPreferredSize(dim);
+			channelpane.setSize(dim);
+			channelpane.repaint();
+			channelpane.revalidate();
+			scroll.getViewport().setView(channelpane);
+			m_content.repaint();
+			m_content.revalidate();
 		}
-		scroll.updateUI();
-		m_content.repaint();
 	}
 	
 	private void getMinMax(int data[][], ChannelDefinition definitions[]) {
-//		double valueScaling = this.upper.getDefinition().getSensitity() *
-//		this.upper.getDefinition().getSensitivityCorrection();
 						
 			for(int i = 0; i < data.length; i++) {
 				double min = 0;
@@ -412,6 +391,8 @@ public class WaveformPlugin extends APlugin {
 		private final int infowidth = 140;
 
 		public ChannelPanel(int[] values, int width, int height, int secs, ChannelDefinition definition) {
+			
+			super();
 			this.data = values;
 			
 			this.mv_pos_label = new JLabel();
@@ -434,6 +415,12 @@ public class WaveformPlugin extends APlugin {
 			this.setLayout(layout);
 			
 			// create info panel
+			addInfoPane();
+			// create graph
+			addGraph();
+		}
+		
+		private void addInfoPane() {
 			this.info = new JPanel();
 			GridBagLayout infolayout = new GridBagLayout();
 			info.setLayout(infolayout);
@@ -532,7 +519,7 @@ public class WaveformPlugin extends APlugin {
 			c9.ipady = 5;
 			c9.anchor = GridBagConstraints.LINE_START;
 			
-			JLabel secs_pos = new JLabel("Second:");
+			JLabel secs_pos = new JLabel("Seconds:");
 			info.add(secs_pos, c9);
 
 			GridBagConstraints c10 = new GridBagConstraints();
@@ -545,9 +532,11 @@ public class WaveformPlugin extends APlugin {
 			info.add(this.secs_pos_label, c10);
 				
 			this.add(info, BorderLayout.WEST);
-			// create graph
+		}
+		
+		private void addGraph() {
 			this.graph = new DrawingPanel(this.data,(int) (this.width - this.infowidth), (int) this.height, this.secs, this);
-			dim = new Dimension((int) (this.width - this.infowidth), (int) this.height);
+			Dimension dim = new Dimension((int) (this.width - this.infowidth), (int) this.height);
 			graph.setPreferredSize(dim);
 			
 			this.add(graph, BorderLayout.EAST);
@@ -563,15 +552,17 @@ public class WaveformPlugin extends APlugin {
 			this.height = dim.getHeight();
 			this.width = dim.getWidth();
 			// set info to new size
-			info.setPreferredSize(new Dimension(this.infowidth,(int)this.height));
-			info.setSize(new Dimension(this.infowidth,(int)this.height));
-			info.setMaximumSize(new Dimension(this.infowidth, (int)this.height));
+			dim = new Dimension(this.infowidth,(int)this.height);
+			info.setPreferredSize(dim);
+			info.setSize(dim);
+			info.setMaximumSize(dim);
 			info.repaint();
 			// set graph to new size
 			dim = new Dimension((int) (this.width - this.infowidth), (int) this.height);
 			graph.setPreferredSize(dim);
 			graph.setSize(dim);
 			graph.repaint();
+			this.validate();
 		}
 		
 		/**
@@ -609,60 +600,131 @@ public class WaveformPlugin extends APlugin {
 		private float scalingWidth;
 		private int secs;
 		private ChannelPanel upper;
+		private int mv_cell_count;
+		private int secs_cell_count;
+		private double cellheight;
+		private double cellwidth;
+		private Dimension dim;
+		private int start;
+		private int lenght;
+		private double valueScaling;
 		
-		public DrawingPanel(int[] values, int width, int height, int secs, ChannelPanel upper) {
+		public DrawingPanel(int[] values, int width, int height, int secs, final ChannelPanel upper) {
+			super();
 			this.data = values;
 			this.setPreferredSize(new Dimension(width, height));
 			this.setSize(new Dimension(width, height));
 			this.secs = secs;
-			this.upper = upper;
+			this.upper = upper;			
+			this.mv_cell_count = mv_cells;
+			this.secs_cell_count = this.secs * 10;
+			this.dim = getPreferredSize();
+			// calculate height and width of the cells
+			this.cellheight = dim.getHeight() / mv_cell_count;
+			this.cellwidth = dim.getWidth() / secs_cell_count;
+			this.start = 0;
+			this.lenght = 0; 
+			
+			// calculate scaling of the sample values
+			this.valueScaling = this.upper.getDefinition().getSensitity() *
+								this.upper.getDefinition().getSensitivityCorrection();
+			
+			addListeners();
+			
 		}
+		
+		private void addListeners() {
+			// used to get the current position of the mouse pointer into the information panel
+			this.addMouseMotionListener( new MouseMotionAdapter() {
+						
+					public void mouseMoved(MouseEvent e) {
+						double offset = 0;
+						
+						if(displayFormat.equals(DEFAULTFORMAT)) {
+							offset = 0.0;
+						}
+						if(displayFormat.equals(FOURPARTS)) {
+							offset = 2.5 * (showPart - 1);
+						}
+						if(displayFormat.equals(TWOPARTS)) {
+							offset = 5.0 * (showPart - 1);
+						}
+						
+						double sec = offset + (e.getPoint().getX() / cellwidth * 0.1);
+						double mv = ((dim.getHeight() / 2.0) - e.getPoint().getY()) / cellheight * 1000;
+						
+						upper.setPosition(mv, sec);
+					}
+				}
+			);
+			
+			this.addMouseListener( new MouseAdapter() {
+				
+				public void mouseEntered(MouseEvent e) {
+					Toolkit toolkit = Toolkit.getDefaultToolkit();  
+					Image image = toolkit.getImage("etc/images/cursorHand.png");					
+					Point hotspot = new Point(7,0);
+					Cursor cursor = toolkit.createCustomCursor(image, hotspot, "dicomux"); 
+					setCursor(cursor);
+				}
+				
+				public void mouseExited(MouseEvent e) {
+					Cursor normal = new Cursor(Cursor.DEFAULT_CURSOR);
+					setCursor(normal);
+				}
+			});
+		}
+		
 		
 		public void paintComponent( Graphics g ) {
 			
 			super.paintComponent(g);
 			final Graphics2D g2 = (Graphics2D) g;
-					
-			int mv_cell_count = mv_cells;
-			int secs_cell_count = this.secs * 10;
 			
-			// calculate scaling of the sample values
-			final double valueScaling = this.upper.getDefinition().getSensitity() *
-								this.upper.getDefinition().getSensitivityCorrection();
-			
-			//set background color to white
-			this.setBackground(Color.WHITE);
 			// set rendering options
 			g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);    
 			g2.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
 			g2.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_NORMALIZE);
 			g2.setRenderingHint(RenderingHints.KEY_DITHERING, RenderingHints.VALUE_DITHER_ENABLE);
+			
+			if(displayFormat.equals(DEFAULTFORMAT)) {
+				this.secs_cell_count = this.secs * 10;
+				this.lenght = this.data.length;
+			}
+			if(displayFormat.equals(FOURPARTS)) {
+				this.secs_cell_count = (int) (2.5 * 10);
+				this.lenght = this.data.length / 4;
+			}
+			if(displayFormat.equals(TWOPARTS)) {
+				this.secs_cell_count = 5 * 10;
+				this.lenght = this.data.length / 2;
+			}
+			this.start = this.lenght * (showPart - 1);
+
+			//set background color to white
+			this.setBackground(Color.WHITE);
 						
-			final Dimension dim = getPreferredSize();
+			this.dim = getPreferredSize();
 			// calculate height and width of the cells
-			final double cellheight = dim.getHeight() / mv_cell_count;
-			final double cellwidth = dim.getWidth() / secs_cell_count;
+			this.cellheight = dim.getHeight() / this.mv_cell_count;
+			this.cellwidth = dim.getWidth() / this.secs_cell_count;
 			
 			// calculate the scaling which is dependent to the width	
-			// here is our problem with the zooming
-			this.scalingWidth =  (float) (cellwidth / (data.length / secs_cell_count ));			
+			this.scalingWidth =  (float) (cellwidth / (lenght / secs_cell_count ));			
 			
+			drawGrid(g2);
+			drawGraph(g2);
+			
+		}
+		
+		private void drawGrid(Graphics2D g2) {
 			// set line color
 			g2.setColor(new Color(231, 84, 72));
 			// draw horizontal lines
+			g2.setStroke(new BasicStroke(2.0f));
 			for(int i = 0; i < mv_cell_count; i++) {
-				// draw every second line bigger
-				if(i % (mv_cell_count / 2) == 0)
-				{
-					g2.setStroke(new BasicStroke(2.0f));
-				}
-				else
-				{
-					g2.setStroke(new BasicStroke(1.0f));
-				}
 				g2.draw(new Line2D.Double(0, i * cellheight, 
-						dim.getWidth(), i * cellheight));
-				
+						dim.getWidth(), i * cellheight));			
 			}
 			
 			// draw vertical lines
@@ -679,62 +741,25 @@ public class WaveformPlugin extends APlugin {
 				g2.draw(new Line2D.Double(i * cellwidth , 0, 
 						i * cellwidth, dim.getHeight()));
 			}
-			
+		}
+		
+		private void drawGraph(Graphics2D g2) {
 			// draw waveform as line using the given values
 			g2.setColor(Color.BLACK);
 			g2.setStroke(new BasicStroke(1.2f));
-			for(int i  = 0; i < (this.data.length - 1); i++) {
+			for(int i  = start; i < (start + lenght - 1); i++) {
 				int a = i;
 				int b = i + 1;
 				// draw a line between two points
 				// dim.height / 2 is our base line
 				Line2D line = new Line2D.Double(
-						this.scalingWidth * a, 
-						(dim.height /2 - valueScaling * ( (float)(this.data[a] / (float) 1000) * cellheight) ), 
-						this.scalingWidth * b, 
-						( dim.height /2 - valueScaling * ( (float)(this.data[b] / (float) 1000) * cellheight ) ));
+						this.scalingWidth * (a - start), 
+						(this.dim.height /2 - this.valueScaling * ( (float)(this.data[a] / (float) 1000) * this.cellheight) ), 
+						this.scalingWidth * (b - start), 
+						( this.dim.height /2 - this.valueScaling * ( (float)(this.data[b] / (float) 1000) * this.cellheight ) ));
 				g2.draw(line);
-			 }
-			
-			// used to get the current position of the mouse pointer into the information panel
-			this.addMouseMotionListener( new MouseMotionAdapter() {
-						
-					@Override
-					public void mouseMoved(MouseEvent e) {
-						
-						double sec = e.getPoint().getX() / cellwidth * 0.1;
-						double mv = ((dim.getHeight() / 2) - e.getPoint().getY()) / cellheight * 1000;
-						
-						upper.setPosition(mv, sec);
-						
-					}
-				}
-			);
-			
-			this.addMouseListener( new MouseAdapter() {
-				
-				public void mouseEntered(MouseEvent e) {
-					
-					Toolkit toolkit = Toolkit.getDefaultToolkit();  
-					Image image = toolkit.getImage("etc/images/cursorHand.png");
-					
-					Point hotspot = new Point(7,0);
-					
-					//Cursor other = new Cursor(Cursor.HAND_CURSOR);
-					
-					Cursor cursor = toolkit.createCustomCursor(image, hotspot, "dicomux"); 
-					setCursor(cursor);
-				}
-				
-				public void mouseExited(MouseEvent e) {
-					Cursor normal = new Cursor(Cursor.DEFAULT_CURSOR);
-					setCursor(normal);
-				}
-			});
-				
-			
-		}	
-		
+			 }	
+		}
 	}
 	
 	// used to save information about a channel
@@ -782,6 +807,145 @@ public class WaveformPlugin extends APlugin {
 		public void setMaximum(double maximum) {
 			this.maximum = maximum;
 		}
+	}
+	
+	private class ToolPanel extends JPanel {
+		private static final long serialVersionUID = 2827148456926205919L;
+		private int numberOfParts;
+		private JLabel partsLabel;
+		private JButton prevButton;
+		private JButton nextButton;
+		private JButton zoomOut;
+		private JButton zoomIn;
+		private JButton zoomFit;
+		private JLabel displayLabel;
+		private JComboBox displayCombo;
+		private Vector<String> displayFormats;
+		
+		public ToolPanel() {
+			this.numberOfParts = 1;
+			
+			this.displayFormats = new Vector<String>();
+			this.displayFormats.add(DEFAULTFORMAT);
+			this.displayFormats.add(FOURPARTS);
+			this.displayFormats.add(TWOPARTS);
+			
+			addZoomButtons();
+			addDisplayFormatComponent();
+			
+		}
+		
+		private void addZoomButtons() {
+			
+			this.zoomOut = new JButton();
+			this.zoomOut.setIcon(new ImageIcon(this.getClass().getResource("/zoomOut.png").getPath()));
+			this.zoomOut.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent arg0) {
+					if(zoomLevel < 6.0)
+					{
+						zoomLevel += 0.5;
+					}
+					fitToPage = false;
+					repaintPanels();
+				}});
+			this.add(this.zoomOut);		
+			
+			this.zoomIn = new JButton();
+			this.zoomIn.setIcon(new ImageIcon(this.getClass().getResource("/zoomIn.png").getPath()));
+			this.zoomIn.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent arg0) {
+					if(zoomLevel > 1.0) {
+						zoomLevel -= 0.5;
+					}
+					fitToPage = false;
+					repaintPanels();
+				}});
+			this.add(zoomIn);
+			
+			zoomFit = new JButton();
+			zoomFit.setIcon(new ImageIcon(this.getClass().getResource("/fitToPage.png").getPath()));
+			zoomFit.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent arg0) {
+					zoomLevel = 3.0f;
+					fitToPage = true;
+					repaintPanels();
+					
+				}});
+			this.add(zoomFit);
+		}
+		
+		private void addDisplayFormatComponent() {
+			displayLabel = new JLabel("display format: ");
+			this.add(displayLabel);
+				
+			displayCombo = new JComboBox(displayFormats);	
+			displayCombo.addActionListener(new ActionListener() {
+
+				public void actionPerformed(ActionEvent e) {
+					JComboBox cb = (JComboBox) e.getSource();
+					displayFormat = (String) cb.getSelectedItem();
+					showPart = 1;
+					
+					repaintPanels();
+				}
+			});
+			this.add(displayCombo);
+			
+			this.partsLabel = new JLabel("part " + showPart + " of " + numberOfParts);
+			this.prevButton = new JButton();
+			prevButton.setIcon(new ImageIcon(this.getClass().getResource("/go-previous.png").getPath()));
+			prevButton.addActionListener(new ActionListener() {
+
+				public void actionPerformed(ActionEvent e) {
+					--showPart;
+					if(showPart < 1)
+						showPart = 1;
+					
+					repaintPanels();
+				}
+			});
+			
+			this.nextButton = new JButton();
+			nextButton.setIcon(new ImageIcon(this.getClass().getResource("/go-next.png").getPath()));
+			nextButton.addActionListener(new ActionListener() {
+
+				public void actionPerformed(ActionEvent e) {
+					++showPart;
+					if(showPart > numberOfParts)
+						showPart = numberOfParts;
+					
+					repaintPanels();
+				}
+			});
+			
+			this.add(prevButton);
+			this.add(partsLabel);
+			this.add(nextButton);
+		}
+		
+		@Override
+		protected void paintComponent(Graphics g) {
+			super.paintComponent(g);
+				
+			if(displayFormat.equals(FOURPARTS))
+			{
+				this.numberOfParts = 4;
+			}
+			if(displayFormat.equals(TWOPARTS))
+			{
+				this.numberOfParts = 2;
+			}
+			if(displayFormat.equals(DEFAULTFORMAT)) {
+				this.numberOfParts = 1;
+			}
+			
+			this.partsLabel.setText("part " + showPart + " of " + numberOfParts);
+			
+		}
+		
 	}
 	
 	private class ScrollListener implements AdjustmentListener {
