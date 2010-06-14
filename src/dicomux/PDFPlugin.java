@@ -466,6 +466,7 @@ public class PDFPlugin extends APlugin {
 	 */
 	private void setScale(int scaleInPercent)
 	{
+
 		int less_scale_Site;
 		Rectangle2D rect = null;
 		double height, width, x , y;
@@ -474,30 +475,35 @@ public class PDFPlugin extends APlugin {
 			width = m_pdfPanel.getPage().getWidth();
 			x = 0;
 			y = 0;
+			if(scaleInPercent < m_currentScale){
+				less_scale_Site = (m_currentScale - scaleInPercent)/2;
+				double less_px_height =  ((height/100)*less_scale_Site);
+				double less_px_width =  ((width/100)*less_scale_Site);
+				double new_wi = width-(7*less_px_width);
+				double new_hi = height-(7*less_px_width);
+				System.out.println("height:"+height);
+				System.out.println("width:"+width);
+				System.out.println("new height:"+new_hi);
+				System.out.println("new width::"+new_wi);
+				rect = new Rectangle2D.Double(less_px_width,less_px_height,new_wi,new_hi);
+			}
  		}
-		else{
-			height = m_pdfPanel.getCurClip().getHeight();
-			width = m_pdfPanel.getCurClip().getWidth();
-			x = m_pdfPanel.getCurClip().getX();
-			y = m_pdfPanel.getCurClip().getY();
-		}
-		
-		if(scaleInPercent > m_currentScale){
-			less_scale_Site = (-(m_currentScale - scaleInPercent))/2;
-			double less_px_height =  ((height/100)*less_scale_Site);
-			double less_px_width =  ((width/100)*less_scale_Site);
+//		else{
+//			height = m_pdfPanel.getCurClip().getHeight();
+//			width = m_pdfPanel.getCurClip().getWidth();
+//			x = m_pdfPanel.getCurClip().getX();
+//			y = m_pdfPanel.getCurClip().getY();
+//		}
+//		//int y1 = scaleInPercent > m_currentScale ? 1 : -1;
+//		if(scaleInPercent > m_currentScale){
+//			less_scale_Site = (-(m_currentScale - scaleInPercent))/2;
+//			double less_px_height =  ((height/100)*less_scale_Site);
+//			double less_px_width =  ((width/100)*less_scale_Site);
+//
+//			rect = new Rectangle2D.Double(x - less_px_width,y - less_px_height,
+//										width+(2*less_px_width),height+(2*less_px_width));
+//		}
 
-			rect = new Rectangle2D.Double(x - less_px_width,y - less_px_height,
-										width+(2*less_px_width),height+(2*less_px_width));
-		}
-		else{
-			less_scale_Site = (m_currentScale - scaleInPercent)/2;
-			double less_px_height =  ((height/100)*less_scale_Site);
-			double less_px_width =  ((width/100)*less_scale_Site);
-
-			rect = new Rectangle2D.Double(less_px_width,less_px_height,
-										width-(2*less_px_width),height-(2*less_px_width));
-		}
 	
 		m_pdfPanel.setClip(rect);
 		m_currentScale = scaleInPercent;
