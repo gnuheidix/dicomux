@@ -319,9 +319,9 @@ Sprint meeting
 
 Working packages
 * continue work on the waveform render plug-in (Norbert)
-* technical manual (Tobi, Heidi)
+* technical manual (Heidi)
 * implement welcome and about tabs (Tobi)
-* do integration (Heidi, Tobi)
+* do integration (Tobi)
 
 Schedule
 * Begin: June/14th
