@@ -662,7 +662,7 @@ public class WaveformPlugin extends APlugin {
 				
 				public void mouseEntered(MouseEvent e) {
 					Toolkit toolkit = Toolkit.getDefaultToolkit();  
-					Image image = toolkit.getImage("etc/images/cursorHand.png");					
+					Image image = new ImageIcon(this.getClass().getClassLoader().getResource("cursorHand.png")).getImage();					
 					Point hotspot = new Point(7,0);
 					Cursor cursor = toolkit.createCustomCursor(image, hotspot, "dicomux"); 
 					setCursor(cursor);
@@ -838,7 +838,7 @@ public class WaveformPlugin extends APlugin {
 		private void addZoomButtons() {
 			
 			this.zoomOut = new JButton();
-			this.zoomOut.setIcon(new ImageIcon(this.getClass().getResource("/zoomOut.png").getPath()));
+			this.zoomOut.setIcon(new ImageIcon(this.getClass().getClassLoader().getResource("zoomOut.png")));
 			this.zoomOut.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent arg0) {
@@ -852,7 +852,7 @@ public class WaveformPlugin extends APlugin {
 			this.add(this.zoomOut);		
 			
 			this.zoomIn = new JButton();
-			this.zoomIn.setIcon(new ImageIcon(this.getClass().getResource("/zoomIn.png").getPath()));
+			this.zoomIn.setIcon(new ImageIcon(this.getClass().getClassLoader().getResource("zoomIn.png")));
 			this.zoomIn.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent arg0) {
@@ -865,7 +865,7 @@ public class WaveformPlugin extends APlugin {
 			this.add(zoomIn);
 			
 			zoomFit = new JButton();
-			zoomFit.setIcon(new ImageIcon(this.getClass().getResource("/fitToPage.png").getPath()));
+			zoomFit.setIcon(new ImageIcon(this.getClass().getClassLoader().getResource("fitToPage.png")));
 			zoomFit.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent arg0) {
@@ -896,7 +896,7 @@ public class WaveformPlugin extends APlugin {
 			
 			this.partsLabel = new JLabel("part " + showPart + " of " + numberOfParts);
 			this.prevButton = new JButton();
-			prevButton.setIcon(new ImageIcon(this.getClass().getResource("/go-previous.png").getPath()));
+			prevButton.setIcon(new ImageIcon(this.getClass().getClassLoader().getResource("go-previous.png")));
 			prevButton.addActionListener(new ActionListener() {
 
 				public void actionPerformed(ActionEvent e) {
@@ -909,7 +909,7 @@ public class WaveformPlugin extends APlugin {
 			});
 			
 			this.nextButton = new JButton();
-			nextButton.setIcon(new ImageIcon(this.getClass().getResource("/go-next.png").getPath()));
+			nextButton.setIcon(new ImageIcon(this.getClass().getClassLoader().getResource("go-next.png")));
 			nextButton.addActionListener(new ActionListener() {
 
 				public void actionPerformed(ActionEvent e) {

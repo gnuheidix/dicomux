@@ -17,12 +17,15 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.Locale;
 import java.util.ResourceBundle;
 import java.util.Vector;
 
 import javax.swing.BorderFactory;
+import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -98,7 +101,7 @@ public class View extends JFrame implements IView {
 	 * path to the language setting file
 	 */
 	private String m_pathLanguageSetting = System.getProperty("user.dir") + File.separator + "language.setting";
-	
+
 	/**
 	 * determins whether there is a refresh of the workspace in progress
 	 */
@@ -131,14 +134,17 @@ public class View extends JFrame implements IView {
 	
 	@Override
 	public Locale getLanguage() {
-		return m_languageBundle.getLocale();
+		if(m_languageBundle != null)
+			return m_languageBundle.getLocale();
+		else
+			return null;
 	}
 	
 	/**
 	 * creates a new view
 	 */
 	public View() {
-		initializeLanguage();
+		initializeLanguage(getLanguage());
 		initializeApplication();
 	}
 	
@@ -150,8 +156,9 @@ public class View extends JFrame implements IView {
 		setTitle("Dicomux");
 		setPreferredSize(new Dimension(800, 600));
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
-		setIconImage(new ImageIcon(this.getClass().getResource("/logo.png").getPath()).getImage());
-		
+		setIconImage(new ImageIcon(this.getClass().getClassLoader().getResource("logo.png")).getImage());
+//		System.out.println(this.getClass().getClassLoader().getResource("logo.png").getPath());
+		 
 		// extract own contentPane and set its layout manager
 		Container contentPane = getContentPane();
 		contentPane.setLayout(new BorderLayout(0, 5));
@@ -201,22 +208,27 @@ public class View extends JFrame implements IView {
 	
 	/**
 	 * convenience method - initializes all language settings by checking the config file
+	 * @param loc the language to initialize
 	 */
-	private void initializeLanguage() {
-		Locale locale;
+	private void initializeLanguage(Locale loc) {
+		Locale locale = null;
 		
-		try {
-			BufferedReader br = new BufferedReader(new FileReader(new File(m_pathLanguageSetting)));
-			String lang = br.readLine();
-			locale = new Locale(lang);
-			br.close();
-		} catch (IOException e) { // use the system setting if it didn't work and pray that it works
-			locale = new Locale(System.getProperty("user.language"));
+		if(loc == null){
+			try {
+				BufferedReader br = new BufferedReader(new FileReader(new File(m_pathLanguageSetting)));
+				String lang = br.readLine();
+				locale = new Locale(lang);
+				br.close();
+			} catch (IOException e) { // use the system setting if it didn't work and pray that it works
+				locale = new Locale(System.getProperty("user.language"));
+			}
+		}
+		else{
+			locale = loc;
 		}
 		
 		// set the global language for all GUI Elements (load the ResourceBundle)
 		m_languageBundle = ResourceBundle.getBundle(m_langBaseName, locale);
-		
 		// set all localization entries for JFileChooser
 		initializeJFileChooser();
 	}
@@ -375,7 +387,7 @@ public class View extends JFrame implements IView {
 				m_controller.setLanguage(newLocale);
 				
 				// reinitialize the view
-				initializeLanguage();
+				initializeLanguage(newLocale);
 				initializeMenus();
 				refreshAllTabs();
 				repaint();
@@ -405,11 +417,12 @@ public class View extends JFrame implements IView {
 	 * @return a Vector containing all available languages in the following form ("de", "en", ...)
 	 */
 	private Vector<String> getAvailableLanguages() {
-		URL listFilePath = this.getClass().getResource(File.separator + "availableLanguages.settings");
+		URL listFilePath = this.getClass().getClassLoader().getResource("availableLanguages.settings");
 		Vector<String> langs = new Vector<String>(2);
 		if (listFilePath != null) {
 			try {
-				BufferedReader listFile = new BufferedReader(new FileReader(listFilePath.getPath()));
+				InputStreamReader iStream = new InputStreamReader(listFilePath.openStream()); 
+				BufferedReader listFile = new BufferedReader(iStream);
 				
 				String line = listFile.readLine();
 				while(line != null) {
@@ -643,8 +656,8 @@ public class View extends JFrame implements IView {
 			content.add(contentHead, BorderLayout.CENTER);
 			
 			JPanel logos = new JPanel(new FlowLayout(FlowLayout.RIGHT, 5, 5));
-			logos.add(new JLabel(new ImageIcon(this.getClass().getResource(File.separator + "gplv3.png").getPath())));
-			logos.add(new JLabel(new ImageIcon(this.getClass().getResource(File.separator + "logo_big.png").getPath())));
+			logos.add(new JLabel(new ImageIcon(this.getClass().getClassLoader().getResource("gplv3.png"))));
+			logos.add(new JLabel(new ImageIcon(this.getClass().getClassLoader().getResource("logo_big.png"))));
 			content.add(logos, BorderLayout.SOUTH);
 			
 			return content;
@@ -669,7 +682,7 @@ public class View extends JFrame implements IView {
 		private JComponent makeOpenButtons() {
 			JPanel retVal = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0), false);
 			JButton tmp = new JButton(m_languageBundle.getString("key_openFile"));
-			tmp.setIcon(new ImageIcon(this.getClass().getResource("/text-x-generic.png").getPath()));
+			tmp.setIcon(new ImageIcon(this.getClass().getClassLoader().getResource("text-x-generic.png")));
 			tmp.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
@@ -679,7 +692,8 @@ public class View extends JFrame implements IView {
 			retVal.add(tmp);
 			
 			tmp = new JButton(m_languageBundle.getString("key_openDir"));
-			tmp.setIcon(new ImageIcon(this.getClass().getResource("/folder.png").getPath()));
+//			setIconImage(new ImageIcon(this.getClass().getClassLoader().getResource("folder.png").getPath()).getImage());
+			tmp.setIcon(new ImageIcon(this.getClass().getClassLoader().getResource("folder.png")));
 			tmp.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
@@ -689,7 +703,7 @@ public class View extends JFrame implements IView {
 			retVal.add(tmp);
 			
 			tmp = new JButton(m_languageBundle.getString("key_exit"));
-			tmp.setIcon(new ImageIcon(this.getClass().getResource("/system-log-out.png").getPath()));
+			tmp.setIcon(new ImageIcon(this.getClass().getClassLoader().getResource("system-log-out.png")));
 			tmp.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {

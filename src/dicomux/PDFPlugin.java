@@ -176,7 +176,7 @@ public class PDFPlugin extends APlugin {
 	 * @return the new button :-)
 	 */
 	public JToggleButton createZoomPartButton() { 
-		m_zoomPartModeToggleButton = new JToggleButton(new ImageIcon(this.getClass().getResource("/zoomPart.png").getPath()), false);
+		m_zoomPartModeToggleButton = new JToggleButton(new ImageIcon(this.getClass().getClassLoader().getResource("zoomPart.png")), false);
 		m_zoomPartModeToggleButton.setSelected(false);
 		m_zoomPartModeToggleButton.addActionListener(new ActionListener() {
 			@Override
@@ -222,7 +222,7 @@ public class PDFPlugin extends APlugin {
 	 * @return the new button :-)
 	 */
 	public JToggleButton createZoomInButton() { 
-		m_zoomInModeToggleButton = new JToggleButton(new ImageIcon(this.getClass().getResource("/zoomIn.png").getPath()), false);
+		m_zoomInModeToggleButton = new JToggleButton(new ImageIcon(this.getClass().getClassLoader().getResource("zoomIn.png")), false);
 		m_zoomInModeToggleButton.setSelected(false);
 		m_zoomInModeToggleButton.addActionListener(new ActionListener() {
 			@Override
@@ -258,7 +258,7 @@ public class PDFPlugin extends APlugin {
 	 * @return the new button :-)
 	 */
 	public JToggleButton createZoomOutButton() { 
-		m_zoomOutModeToggleButton = new JToggleButton(new ImageIcon(this.getClass().getResource("/zoomOut.png").getPath()), false);
+		m_zoomOutModeToggleButton = new JToggleButton(new ImageIcon(this.getClass().getClassLoader().getResource("zoomOut.png")), false);
 		m_zoomOutModeToggleButton.setSelected(false);
 		m_zoomOutModeToggleButton.addActionListener(new ActionListener() {
 			@Override
@@ -294,7 +294,7 @@ public class PDFPlugin extends APlugin {
 	 * @return the new button :-)
 	 */
 	public JToggleButton createPrevPageButton() { 
-		m_prevPageModeToggleButton = new JToggleButton(new ImageIcon(this.getClass().getResource("/go-previous.png").getPath()), false);
+		m_prevPageModeToggleButton = new JToggleButton(new ImageIcon(this.getClass().getClassLoader().getResource("go-previous.png")), false);
 		m_prevPageModeToggleButton.setSelected(false);
 		m_prevPageModeToggleButton.addActionListener(new ActionListener() {
 			@Override
@@ -334,7 +334,7 @@ public class PDFPlugin extends APlugin {
 	 * @return the new button :-)
 	 */
 	public JToggleButton createNextPageButton() { 
-		m_nextPageModeToggleButton = new JToggleButton(new ImageIcon(this.getClass().getResource("/go-next.png").getPath()), false);
+		m_nextPageModeToggleButton = new JToggleButton(new ImageIcon(this.getClass().getClassLoader().getResource("go-next.png")), false);
 		m_nextPageModeToggleButton.setSelected(false);
 		m_nextPageModeToggleButton.addActionListener(new ActionListener() {
 			@Override
