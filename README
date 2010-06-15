@@ -1,6 +1,6 @@
 Dicomux is a viewer for DICOM files. Especially ECGs and encapsulated PDFs are supported.
 
-This software is a project of three students from Germany. Nobody is allowed to use it in an medical environment. Dicomux may only be used for testing purposes.
+This software is a project of three students from Germany. Nobody is allowed to use this software for diagnostic purposes. Dicomux may only be used for testing purposes.
 
 own license
 - GPLv3
