@@ -12,4 +12,4 @@ used external libraries
 - <Name>         <License>                  <URL>
 - dcm4che      - MPLv1.1, GPLv2, LGPLv2.1 - http://www.dcm4che.org/
 - pdf-renderer - LGPL                     - https://pdf-renderer.dev.java.net/
-
+- jai-imageio    - BSD                     - https://jai-imageio.dev.java.net/
