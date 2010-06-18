@@ -12,11 +12,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileReader;
 import java.nio.ByteBuffer;
 import java.util.Locale;
 
@@ -32,10 +28,8 @@ import org.dcm4che2.data.DicomElement;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 
-import com.sun.pdfview.PDFCmd;
 import com.sun.pdfview.PDFFile;
 import com.sun.pdfview.PDFPage;
-import com.sun.pdfview.PDFRenderer;
 import com.sun.pdfview.PagePanel;
 
 /**
@@ -469,12 +463,12 @@ public class PDFPlugin extends APlugin {
 
 		int less_scale_Site;
 		Rectangle2D rect = null;
-		double height, width, x , y;
+		double height, width;//, x , y;
 		if(m_pdfPanel.getCurClip() == null){
 			height = m_pdfPanel.getPage().getHeight();
 			width = m_pdfPanel.getPage().getWidth();
-			x = 0;
-			y = 0;
+//			x = 0;
+//			y = 0;
 			if(scaleInPercent < m_currentScale){
 				less_scale_Site = (m_currentScale - scaleInPercent)/2;
 				double less_px_height =  ((height/100)*less_scale_Site);
