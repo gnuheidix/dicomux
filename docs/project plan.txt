@@ -328,3 +328,34 @@ Schedule
 * End: June/20th
 
 Review meeting
+* integration possible and running
+** access on resources only with getResource()
+** resources have to be copied into the src/ directory
+* technical manual has been created
+** class diagramm is missing
+* waveform plugin is still under construction
+
+########### Sprint #A ###########
+
+Sprint meeting
+* Some work has been done on the waveform plug-in. This has to be continued. (display formats / language)
+* We need a technical manual. (Latex - English as usual)
+** class diagram
+** JavaDoc export
+* implement welcome and about tabs (Tobi)
+* RawPlugin redesign of the buttons
+* User manual creation
+** with screenshots
+
+Working packages
+* continue work on the waveform render plug-in (Norbert)
+* technical manual javadoc (Heidi)
+* user manual without waveform plugin (Tobi)
+* RawPlugin (Heidi)
+* tabs welcome / about (Heidi)
+
+Schedule
+* Begin: June/21st
+* End: June/27th
+
+Review meeting

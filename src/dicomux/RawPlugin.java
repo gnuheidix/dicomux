@@ -11,6 +11,7 @@ import java.io.FileOutputStream;
 import java.util.Iterator;
 import java.util.Locale;
 
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
@@ -46,16 +47,6 @@ public class RawPlugin extends APlugin {
 	private JButton m_detailsButton;
 	
 	/**
-	 * the button for showing the SAVE card
-	 */
-	private JButton m_saveContentButton;
-	
-	/**
-	 * the button for showing the TREE-Card 
-	 */
-	private JButton m_closeDetailsButton;
-	
-	/**
 	 * the panel with the CardLayout for the main content
 	 */
 	private JPanel m_cards;
@@ -75,6 +66,11 @@ public class RawPlugin extends APlugin {
 	 */
 	private JFileChooser m_saveDialog;
 	
+	/**
+	 * name of the currently selected card
+	 */
+	private String m_currentCard;
+	
 	@Override
 	public String getName() {
 		return "Raw Data";
@@ -82,7 +78,7 @@ public class RawPlugin extends APlugin {
 	
 	public RawPlugin() {
 		// get a panel with CardLayout for the main content
-		m_cards = new JPanel(new CardLayout(5, 5));
+		m_cards = new JPanel(new CardLayout());
 		
 		// add the content card with the JTree
 		m_cards.add(getInitializedTreeCard(), "TREE");
@@ -96,6 +92,8 @@ public class RawPlugin extends APlugin {
 		// add the card pane to the content pane
 		m_content = new JPanel(new BorderLayout(5, 5));
 		m_content.add(m_cards, BorderLayout.CENTER);
+		
+		switchToCard("TREE");
 	}
 	
 	/**
@@ -104,21 +102,19 @@ public class RawPlugin extends APlugin {
 	 */
 	private JPanel getInitializedTreeCard() {
 		JPanel treeCard = new JPanel(new BorderLayout(5, 5));
+		
+		// create toolbar
+		JPanel tools = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 5));
+		m_detailsButton = createDetailsButton("zoomPart.png");
+		m_detailsButton.setEnabled(false);
+		tools.add(m_detailsButton);
+		treeCard.add(tools, BorderLayout.NORTH);
+		
+		// create tree
 		m_tree = new JTree();
 		m_tree.setCellRenderer(new CellRendererWithButton());
 		m_tree.setRootVisible(false);
 		treeCard.add(new JScrollPane(m_tree), BorderLayout.CENTER);
-		
-		m_detailsButton = new JButton("m_detailsButton");
-		m_detailsButton.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent arg0) {
-				m_detailsText.setText(new String(m_dicomContent)); // write the content to the JTextArea
-				switchToCard("DETAILS");
-			}
-		});
-		m_detailsButton.setEnabled(false);
-		treeCard.add(m_detailsButton, BorderLayout.SOUTH);
 		
 		return treeCard;
 	}
@@ -130,27 +126,16 @@ public class RawPlugin extends APlugin {
 	private JPanel getInitializedDetailsCard() {
 		JPanel detailsCard = new JPanel(new BorderLayout(5, 5));
 		
-		m_saveContentButton = new JButton("m_saveContentButton");
-		m_saveContentButton.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent arg0) {
-				switchToCard("SAVE");
-			}
-		});
-		detailsCard.add(m_saveContentButton, BorderLayout.NORTH);
+		// create toolbar
+		JPanel tools = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 5));
+		tools.add(createDetailsButton("go-previous.png"));
+		tools.add(createSaveButton());
+		detailsCard.add(tools, BorderLayout.NORTH);
 		
+		// create textarea
 		m_detailsText = new JTextArea();
 		m_detailsText.setLineWrap(true);
 		detailsCard.add(new JScrollPane(m_detailsText), BorderLayout.CENTER);
-		
-		m_closeDetailsButton = new JButton("m_closeDetailsButton");
-		m_closeDetailsButton.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent arg0) {
-				switchToCard("TREE");
-			}
-		});
-		detailsCard.add(m_closeDetailsButton, BorderLayout.SOUTH);
 		
 		return detailsCard;
 	}
@@ -181,6 +166,43 @@ public class RawPlugin extends APlugin {
 	}
 	
 	/**
+	 * convenience method - creates a button for switiching between TREE and DETAILS card and returns it
+	 * @param pictureFileName name of the picture file
+	 * @return the new button :-)
+	 */
+	public JButton createDetailsButton(String pictureFileName) {
+		JButton detailsButton = new JButton(new ImageIcon(this.getClass().getClassLoader().getResource(pictureFileName)));
+		detailsButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if (m_currentCard.equals("TREE")) {
+					m_detailsText.setText(new String(m_dicomContent));
+					switchToCard("DETAILS");
+				}
+				else
+					switchToCard("TREE");
+			}
+		});
+		return detailsButton;
+	}
+	
+	/**
+	 * convenience method - creates a button for switching between SAVE card and returns it
+	 * @param pictureFileName name of the picture file
+	 * @return the new button :-)
+	 */
+	public JButton createSaveButton() {
+		JButton saveButton = new JButton(new ImageIcon(this.getClass().getClassLoader().getResource("saveFile.png")));
+		saveButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				switchToCard("SAVE");
+			}
+		});
+		return saveButton;
+	}
+	
+	/**
 	 * convenience funtion which saves the content of m_dicomContent into a file
 	 * @param path file path where you want to save the content
 	 */
@@ -195,24 +217,9 @@ public class RawPlugin extends APlugin {
 		}
 	}
 	
-	// TODO implement with ResourceBundles
 	@Override
 	public void setLanguage(Locale locale) {
-		if (locale != null) {
-			String tmp = locale.getLanguage();
-			if(tmp == "de") {
-				m_detailsButton.setText("Details");
-				m_closeDetailsButton.setText("Zurück");
-				m_saveContentButton.setText("Inhalt in externe Datei speichern");
-			}
-			else if (tmp == "en") {
-				m_detailsButton.setText("view details");
-				m_closeDetailsButton.setText("back");
-				m_saveContentButton.setText("save content in external file");
-			}
-			if (m_saveDialog != null)
-				m_saveDialog.setLocale(locale); // this call is buggy due to JRE :-(
-		}
+		// not needed
 	}
 	
 	@Override
@@ -239,6 +246,7 @@ public class RawPlugin extends APlugin {
 	private void switchToCard(String cardId) {
 		CardLayout cl = (CardLayout)(m_cards.getLayout());
 		cl.show(m_cards, cardId);
+		m_currentCard = cardId;
 	}
 	
 	/**

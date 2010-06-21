@@ -10,13 +10,12 @@ import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.awt.geom.Rectangle2D;
 import java.nio.ByteBuffer;
 import java.util.Locale;
 
-import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -35,6 +34,7 @@ import com.sun.pdfview.PagePanel;
 /**
  * This plug-in is for opening an encapsulated PDF in an DicomObject
  * @author heidi
+ * @author tobi
  *
  */
 public class PDFPlugin extends APlugin {
@@ -120,6 +120,9 @@ public class PDFPlugin extends APlugin {
 		m_keyTag.addKey(Tag.MIMETypeOfEncapsulatedDocument, "application/pdf");
 		m_keyTag.addKey(Tag.EncapsulatedDocument, null);
 		m_content = new JPanel(new BorderLayout(5, 5));
+		
+		m_content.add(createToolsMenu(), BorderLayout.NORTH);
+		
 		m_content.addComponentListener(new ComponentAdapter() {
 			@Override
 			public void componentResized(ComponentEvent e) {
@@ -133,23 +136,16 @@ public class PDFPlugin extends APlugin {
 		
 		m_pdfPanel = new PagePanel();
 		m_pdfPanel.setSize(300, 300); // dummy call to make it work
-		
-//		m_scroll = new JScrollPane();
-//		m_scroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-//		m_scroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-//		m_scroll.setSize(100,100);
-//		m_scroll.add(m_pdfPanel);
-//		m_scroll.setViewportView(m_pdfPanel);
+		m_pdfPanel.setBackground(Color.WHITE);
 		
 		m_content.add(m_pdfPanel, BorderLayout.CENTER);
-		
 		m_locale =  new Locale(System.getProperty("user.language"));
 	}
 	/**
-	 * convenience method - creates m_zoomModeToggleButton and returns it
+	 * convenience method - creates a tools menu and returns it
 	 * @return the new button :-)
 	 */
-	public void addTools(){
+	public JPanel createToolsMenu(){
 		JPanel tools = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 5));
 		//add tools
 		tools.add(createZoomPartButton());
@@ -161,21 +157,21 @@ public class PDFPlugin extends APlugin {
 			tools.add(createPageOfLable());
 			tools.add(createNextPageButton());
 		}
-		tools.setBorder(BorderFactory.createLineBorder(Color.GRAY, 2));
-		m_content.add(tools, BorderLayout.NORTH);
+		return tools;
 	}
 	
+	//TODO setSelected() is imho not the correct way to change the color on mouse hovering
 	/**
 	 * convenience method - creates m_zoomModeToggleButton and returns it
 	 * @return the new button :-)
 	 */
-	public JToggleButton createZoomPartButton() { 
+	public JToggleButton createZoomPartButton() {
 		m_zoomPartModeToggleButton = new JToggleButton(new ImageIcon(this.getClass().getClassLoader().getResource("zoomPart.png")), false);
 		m_zoomPartModeToggleButton.setSelected(false);
 		m_zoomPartModeToggleButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				m_zoomActive = !m_zoomActive;			// invert the current state			
+				m_zoomActive = !m_zoomActive;			// invert the current state
 				m_pdfPanel.useZoomTool(m_zoomActive);	// write the new state to the GUI
 				m_zoomPartModeToggleButton.setSelected(m_zoomActive);
 				
@@ -188,13 +184,7 @@ public class PDFPlugin extends APlugin {
 				}
 			}
 		});
-		m_zoomPartModeToggleButton.addMouseListener(new MouseListener() {	
-			@Override
-			public void mouseReleased(MouseEvent arg0) {	
-			}
-			@Override
-			public void mousePressed(MouseEvent arg0) {
-			}	
+		m_zoomPartModeToggleButton.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseExited(MouseEvent arg0) {
 				if (!m_zoomActive)
@@ -204,9 +194,6 @@ public class PDFPlugin extends APlugin {
 			public void mouseEntered(MouseEvent arg0) {	
 				m_zoomPartModeToggleButton.setSelected(true);
 			}
-			@Override
-			public void mouseClicked(MouseEvent arg0) {	
-			}
 		});
 		return m_zoomPartModeToggleButton;
 	}
@@ -215,7 +202,7 @@ public class PDFPlugin extends APlugin {
 	 * convenience method - creates m_zoomInModeToggleButton and returns it
 	 * @return the new button :-)
 	 */
-	public JToggleButton createZoomInButton() { 
+	public JToggleButton createZoomInButton() {
 		m_zoomInModeToggleButton = new JToggleButton(new ImageIcon(this.getClass().getClassLoader().getResource("zoomIn.png")), false);
 		m_zoomInModeToggleButton.setSelected(false);
 		m_zoomInModeToggleButton.addActionListener(new ActionListener() {
@@ -225,13 +212,7 @@ public class PDFPlugin extends APlugin {
 				setScale(m_currentScale - 10);
 			}
 		});
-		m_zoomInModeToggleButton.addMouseListener(new MouseListener() {	
-			@Override
-			public void mouseReleased(MouseEvent arg0) {	
-			}
-			@Override
-			public void mousePressed(MouseEvent arg0) {
-			}	
+		m_zoomInModeToggleButton.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseExited(MouseEvent arg0) {
 				m_zoomInModeToggleButton.setSelected(false);
@@ -239,9 +220,6 @@ public class PDFPlugin extends APlugin {
 			@Override
 			public void mouseEntered(MouseEvent arg0) {	
 				m_zoomInModeToggleButton.setSelected(true);
-			}
-			@Override
-			public void mouseClicked(MouseEvent arg0) {	
 			}
 		});
 		return m_zoomInModeToggleButton;
@@ -251,7 +229,7 @@ public class PDFPlugin extends APlugin {
 	 * convenience method - creates m_zoomOutModeToggleButton and returns it
 	 * @return the new button :-)
 	 */
-	public JToggleButton createZoomOutButton() { 
+	public JToggleButton createZoomOutButton() {
 		m_zoomOutModeToggleButton = new JToggleButton(new ImageIcon(this.getClass().getClassLoader().getResource("zoomOut.png")), false);
 		m_zoomOutModeToggleButton.setSelected(false);
 		m_zoomOutModeToggleButton.addActionListener(new ActionListener() {
@@ -261,13 +239,7 @@ public class PDFPlugin extends APlugin {
 				setScale(m_currentScale + 10);
 			}
 		});
-		m_zoomOutModeToggleButton.addMouseListener(new MouseListener() {	
-			@Override
-			public void mouseReleased(MouseEvent arg0) {	
-			}
-			@Override
-			public void mousePressed(MouseEvent arg0) {
-			}	
+		m_zoomOutModeToggleButton.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseExited(MouseEvent arg0) {
 				m_zoomOutModeToggleButton.setSelected(false);
@@ -275,9 +247,6 @@ public class PDFPlugin extends APlugin {
 			@Override
 			public void mouseEntered(MouseEvent arg0) {	
 				m_zoomOutModeToggleButton.setSelected(true);
-			}
-			@Override
-			public void mouseClicked(MouseEvent arg0) {	
 			}
 		});
 		return m_zoomOutModeToggleButton;
@@ -287,7 +256,7 @@ public class PDFPlugin extends APlugin {
 	 * convenience method - creates m_prevPageModeToggleButton and returns it
 	 * @return the new button :-)
 	 */
-	public JToggleButton createPrevPageButton() { 
+	public JToggleButton createPrevPageButton() {
 		m_prevPageModeToggleButton = new JToggleButton(new ImageIcon(this.getClass().getClassLoader().getResource("go-previous.png")), false);
 		m_prevPageModeToggleButton.setSelected(false);
 		m_prevPageModeToggleButton.addActionListener(new ActionListener() {
@@ -298,16 +267,9 @@ public class PDFPlugin extends APlugin {
 					showPage(m_pdfFile.getNumPages());
 				else
 					showPage(m_pdfPanel.getPage().getPageNumber()-1);
-				
 			}
 		});
-		m_prevPageModeToggleButton.addMouseListener(new MouseListener() {	
-			@Override
-			public void mouseReleased(MouseEvent arg0) {	
-			}
-			@Override
-			public void mousePressed(MouseEvent arg0) {
-			}	
+		m_prevPageModeToggleButton.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseExited(MouseEvent arg0) {
 				m_prevPageModeToggleButton.setSelected(false);
@@ -315,9 +277,6 @@ public class PDFPlugin extends APlugin {
 			@Override
 			public void mouseEntered(MouseEvent arg0) {	
 				m_prevPageModeToggleButton.setSelected(true);
-			}
-			@Override
-			public void mouseClicked(MouseEvent arg0) {	
 			}
 		});
 		return m_prevPageModeToggleButton;
@@ -327,26 +286,20 @@ public class PDFPlugin extends APlugin {
 	 * convenience method - creates m_nextPageModeToggleButton and returns it
 	 * @return the new button :-)
 	 */
-	public JToggleButton createNextPageButton() { 
+	public JToggleButton createNextPageButton() {
 		m_nextPageModeToggleButton = new JToggleButton(new ImageIcon(this.getClass().getClassLoader().getResource("go-next.png")), false);
 		m_nextPageModeToggleButton.setSelected(false);
 		m_nextPageModeToggleButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				//do next
-				if(m_pdfPanel.getPage().getPageNumber()+1 > m_pdfFile.getNumPages() )
+				if(m_pdfPanel.getPage().getPageNumber()+1 > m_pdfFile.getNumPages())
 					showPage(1);
 				else
 					showPage(m_pdfPanel.getPage().getPageNumber()+1);
 			}
 		});
-		m_nextPageModeToggleButton.addMouseListener(new MouseListener() {	
-			@Override
-			public void mouseReleased(MouseEvent arg0) {	
-			}
-			@Override
-			public void mousePressed(MouseEvent arg0) {
-			}	
+		m_nextPageModeToggleButton.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseExited(MouseEvent arg0) {
 				m_nextPageModeToggleButton.setSelected(false);
@@ -354,9 +307,6 @@ public class PDFPlugin extends APlugin {
 			@Override
 			public void mouseEntered(MouseEvent arg0) {	
 				m_nextPageModeToggleButton.setSelected(true);
-			}
-			@Override
-			public void mouseClicked(MouseEvent arg0) {	
 			}
 		});
 		return m_nextPageModeToggleButton;
@@ -366,7 +316,7 @@ public class PDFPlugin extends APlugin {
 	 * convenience method - creates m_scaleModeTextField and returns it
 	 * @return the new button :-)
 	 */
-	public JTextField createScalePageTextField() { 
+	public JTextField createScalePageTextField() {
 		m_scaleModeTextField = new JTextField(6);
 		m_scaleModeTextField.setText(m_preferedScale + "%");
 		m_scaleModeTextField.addKeyListener(new KeyListener() {
@@ -400,7 +350,7 @@ public class PDFPlugin extends APlugin {
 	 * convenience method - creates m_pageOfLable and returns it
 	 * @return the new button :-)
 	 */
-	public JLabel createPageOfLable() { 
+	public JLabel createPageOfLable() {
 		m_pageOfLable = new JLabel(page + of);
 		return m_pageOfLable;
 	}
@@ -426,7 +376,6 @@ public class PDFPlugin extends APlugin {
 				ByteBuffer buf = ByteBuffer.wrap(element.getBytes());
 				
 				m_pdfFile = new PDFFile(buf);
-				addTools();
 				showPage(1);
 			}
 		}
@@ -460,7 +409,6 @@ public class PDFPlugin extends APlugin {
 	 */
 	private void setScale(int scaleInPercent)
 	{
-
 		int less_scale_Site;
 		Rectangle2D rect = null;
 		double height, width;//, x , y;
@@ -497,7 +445,6 @@ public class PDFPlugin extends APlugin {
 //			rect = new Rectangle2D.Double(x - less_px_width,y - less_px_height,
 //										width+(2*less_px_width),height+(2*less_px_width));
 //		}
-
 	
 		m_pdfPanel.setClip(rect);
 		m_currentScale = scaleInPercent;
