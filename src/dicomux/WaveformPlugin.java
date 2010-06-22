@@ -28,7 +28,6 @@ import java.awt.geom.Line2D;
 import java.text.DecimalFormat;
 import java.util.Locale;
 import java.util.Vector;
-import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
