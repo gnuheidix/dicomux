@@ -45,7 +45,6 @@ public interface IModel {
 	
 	/**
 	 * initalizes the whole model
-	 * @return 
 	 */
 	public void initialize();
 	

@@ -149,7 +149,7 @@ public class TabObject {
 	}
 	
 	/**
-	 * @param m_tabActive
+	 * @param tabActive
 	 */
 	public void setTabActive(boolean tabActive) {
 		this.m_tabActive = tabActive;

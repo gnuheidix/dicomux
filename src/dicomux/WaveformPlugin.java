@@ -248,8 +248,6 @@ public class WaveformPlugin extends APlugin {
 	
 	/**
 	 * Iterate over all ChannelPanels, set their size to the given Dimension and repaints them
-	 * 
-	 * @param dim The new Dimension the ChannelPannels will use
 	 */
 	private void repaintPanels() {
 		if(!this.pannels.isEmpty()) {

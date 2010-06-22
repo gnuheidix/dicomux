@@ -299,8 +299,7 @@ public class DirectoryPlugin extends APlugin{
 	
 	/**
 	 * recursive function for extracting all DicomElements from an DicomObject; This function calls itself if a DicomObject is encapsulated in object
-	 * @param rootElement the rootElement of the tree which will be returned
-	 * @param object DicomObject which has to be extracted
+	 * @param dcm DicomObject which has to be extracted
 	 * @return a MutableTreeNode which has the rootElement as root node and all DicomElements of object
 	 */
 	private el_map extractAllDicomElements(DicomObject dcm) throws Exception {
