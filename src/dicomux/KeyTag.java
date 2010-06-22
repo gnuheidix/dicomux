@@ -6,7 +6,6 @@ import java.util.Vector;
 import org.dcm4che2.data.DicomElement;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.SpecificCharacterSet;
-import org.dcm4che2.data.Tag;
 import org.dcm4che2.util.TagUtils;
 
 /**
@@ -58,7 +57,6 @@ public class KeyTag {
 	 * @param keyTag a dcm4che Tag
 	 * @param desiredContent a string with the desired content of the specified tag or null if the value of the tag is not relevant
 	 * @throws Exception
-	 * @see {@link Tag}
 	 */
 	public void addKey(int keyTag, String desiredContent) throws Exception {
 		synchronized (m_accessLock) {
@@ -97,7 +95,6 @@ public class KeyTag {
 	/**
 	 * This method iterates over all DicomElements of a DicomObject and calls checkDicomElement() 
 	 * @param dcm the DicomObject which should be iterated through
-	 * @return true if at least one of the checkDicomElement calls returned true // otherwise true
 	 * @throws Exception for bad days
 	 */
 	private void traverseAndCheckDicomObject(DicomObject dcm) throws Exception {
@@ -120,7 +117,6 @@ public class KeyTag {
 	 * Checks whether one of the pairs of tags and values stored by addKey are matching for this DicomElement.<br/>
 	 * Only call it with properly initialized vectors m_tmpKeys and m_tmpValues!
 	 * @param element the DicomElement which should be used for the check
-	 * @return true if one of the pairs matches
 	 * @throws Exception things go wrong sometimes
 	 */
 	private void checkDicomElement(DicomElement element) throws Exception {

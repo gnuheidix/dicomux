@@ -40,7 +40,7 @@ public interface IController {
 	
 	/**
 	 * opens a dicom file
-	 * @param name file path of the dicom file
+	 * @param path file path of the dicom file
 	 */
 	public void openDicomFile(String path);
 	

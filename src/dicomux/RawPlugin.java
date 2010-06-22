@@ -188,7 +188,6 @@ public class RawPlugin extends APlugin {
 	
 	/**
 	 * convenience method - creates a button for switching between SAVE card and returns it
-	 * @param pictureFileName name of the picture file
 	 * @return the new button :-)
 	 */
 	public JButton createSaveButton() {

@@ -47,7 +47,7 @@ import javax.swing.plaf.basic.BasicButtonUI;
 import javax.swing.text.html.HTMLFrameHyperlinkEvent;
 
 /**
- * View for Dicomux
+ * concrete View for Dicomux
  * @author heidi
  * @author tobi
  *
@@ -161,8 +161,7 @@ public class View extends JFrame implements IView {
 		setMinimumSize(new Dimension(800, 600));
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 		setIconImage(new ImageIcon(this.getClass().getClassLoader().getResource("logo.png")).getImage());
-//		System.out.println(this.getClass().getClassLoader().getResource("logo.png").getPath());
-		 
+		
 		// extract own contentPane and set its layout manager
 		Container contentPane = getContentPane();
 		contentPane.setLayout(new BorderLayout(0, 5));
@@ -212,7 +211,7 @@ public class View extends JFrame implements IView {
 	
 	/**
 	 * convenience method - initializes all language settings by checking the config file
-	 * @param loc the language to initialize
+	 * @param loc the language which should be used for initialization // if null, the file at m_pathLanguageSetting will be used
 	 */
 	private void initializeLanguage(Locale loc) {
 		Locale locale = null;
@@ -233,7 +232,7 @@ public class View extends JFrame implements IView {
 		
 		// set the global language for all GUI Elements (load the ResourceBundle)
 		m_languageBundle = ResourceBundle.getBundle(m_langBaseName, locale);
-		// set all localization entries for JFileChooser
+		// initialize all localization entries for JFileChooser
 		initializeJFileChooser();
 	}
 	
@@ -573,18 +572,14 @@ public class View extends JFrame implements IView {
 		 */
 		protected JComponent makeOpenFileTab() {
 			JPanel content = new JPanel(new BorderLayout(5 , 5), false);
-			JPanel contentHead = new JPanel(new BorderLayout(5, 0), false);
-			content.add(contentHead, BorderLayout.NORTH);
+			content.add(makeMessage(m_languageBundle.getString("key_html_openFile")), BorderLayout.NORTH);
 			
-			contentHead.add(makeMessage(m_languageBundle.getString("key_html_openFile")), BorderLayout.NORTH);
-			
-			JPanel control = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0), false);
 			JFileChooser filechooser = new JFileChooser(m_lastSelectedFilePath);
 			filechooser.setDialogType(JFileChooser.OPEN_DIALOG);
 			filechooser.setLocale(m_languageBundle.getLocale());		// Set the current language to the file chooser!
 			filechooser.addActionListener(new ActionListener() {
 				@Override
-				public void actionPerformed(ActionEvent e) {
+				public void actionPerformed(ActionEvent e) {			// declare what to do if the user presses OK / Cancel
 					JFileChooser chooser = (JFileChooser) e.getSource();
 					if (JFileChooser.APPROVE_SELECTION.equals(e.getActionCommand())) {
 						m_lastSelectedFilePath = chooser.getSelectedFile().getAbsolutePath();
@@ -594,8 +589,7 @@ public class View extends JFrame implements IView {
 						m_controller.closeWorkspace();
 				}
 			});
-			control.add(filechooser);
-			contentHead.add(control, BorderLayout.SOUTH);
+			content.add(filechooser, BorderLayout.CENTER);
 			
 			return content;
 		}
@@ -606,19 +600,15 @@ public class View extends JFrame implements IView {
 		 */
 		protected JComponent makeOpenDirTab() {
 			JPanel content = new JPanel(new BorderLayout(5 , 5), false);
-			JPanel contentHead = new JPanel(new BorderLayout(5, 0), false);
-			content.add(contentHead, BorderLayout.NORTH);
+			content.add(makeMessage(m_languageBundle.getString("key_html_openDir")), BorderLayout.NORTH);
 			
-			contentHead.add(makeMessage(m_languageBundle.getString("key_html_openDir")), BorderLayout.NORTH);
-			
-			JPanel control = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0), false);
 			JFileChooser filechooser = new JFileChooser();
 			filechooser.setDialogType(JFileChooser.OPEN_DIALOG);
 			filechooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 			filechooser.setLocale(m_languageBundle.getLocale());		// Set the current language to the file chooser!
 			filechooser.addActionListener(new ActionListener() {
 				@Override
-				public void actionPerformed(ActionEvent e) {
+				public void actionPerformed(ActionEvent e) {			// declare what to do if the user presses OK / Cancel
 					JFileChooser chooser = (JFileChooser) e.getSource();
 					if (JFileChooser.APPROVE_SELECTION.equals(e.getActionCommand()))
 						m_controller.openDicomDirectory(chooser.getSelectedFile().getPath());
@@ -626,8 +616,7 @@ public class View extends JFrame implements IView {
 						m_controller.closeWorkspace();
 				}
 			});
-			control.add(filechooser);
-			contentHead.add(control, BorderLayout.SOUTH);
+			content.add(filechooser, BorderLayout.CENTER);
 			
 			return content;
 		}
@@ -665,8 +654,7 @@ public class View extends JFrame implements IView {
 		 * @return the HTML panel
 		 */
 		private JEditorPane getHTMLPane(String propKey) {
-			JEditorPane content = null;
-			content = new JEditorPane("text/html", getParsedHTML(m_languageBundle.getString(propKey)));
+			JEditorPane content = new JEditorPane("text/html", getParsedHTML(m_languageBundle.getString(propKey)));
 			content.setEditable(false);
 			
 			if (Desktop.isDesktopSupported()) {		// a link has to be opened in the default web browser
@@ -696,35 +684,39 @@ public class View extends JFrame implements IView {
 		 * @return parsed HTML code
 		 */
 		private String getParsedHTML(String source) {
-			final String imagePräfix = "<img src=\"";
+			final String imagePrefix = "<img src=\"";
 			final String imageSuffix = "\">";
 			String src = source;
-			String dest = new String();
+			String retVal = new String();
 			
 			while (!src.isEmpty()) {
-				int startIndex = src.indexOf(imagePräfix);	// search for our indicators
-				int endIndex = src.indexOf(imageSuffix, startIndex + imagePräfix.length());
+				int startIndex = src.indexOf(imagePrefix);	// search for our indicators
+				int endIndex = src.indexOf(imageSuffix, startIndex + imagePrefix.length());
 				
-				if (startIndex >= 0 && endIndex >= 0 && endIndex > startIndex) { // we found something
-					String item = src.substring(startIndex + imagePräfix.length(), endIndex); // extract item file name
+				if (startIndex >= 0 && endIndex >= 0 && endIndex > startIndex) {	// we found an image in the HTML code
+					String item = src.substring(startIndex + imagePrefix.length(), endIndex); // extract item file name
 					System.out.println("Parser found item " + item);
 					
-					String cache = src.substring(0, startIndex); // get the HTML until the end of the img tag
-					URL filePath = this.getClass().getClassLoader().getResource(item); // ask classloader for a correct file path
+					String imagePath = "";
+					URL filePath = this.getClass().getClassLoader().getResource(item);	// ask classloader for a correct file path
 					if (filePath != null) {
-						String imageHTML = MessageFormat.format(imagePräfix + "{0}" + imageSuffix, filePath);
-						dest += cache + imageHTML;
+						imagePath = MessageFormat.format(imagePrefix + "{0}" + imageSuffix, filePath);
+						System.out.println("Classloader found image at " + filePath);
 					}
-					src = src.substring(endIndex + imageSuffix.length());
+					else
+						System.out.println("Classloader couldn't find the file " + item);
+					
+					retVal += src.substring(0, startIndex) + imagePath;		// write our work to the retVal
+					src = src.substring(endIndex + imageSuffix.length());	// trunkate everything before the end of our image
 				}
-				else { // we found nothing
-					dest += src;
+				else { // we found no image in the HTML code
+					retVal += src;
 					break; // we are done
 				}
 			}
 			
-			System.out.println(dest);
-			return dest;
+			System.out.println(retVal);
+			return retVal;
 		}
 		/**
 		 * convenience method for adding a headline to a static dialog
@@ -780,7 +772,7 @@ public class View extends JFrame implements IView {
 	
 	/**
 	 * A convenience class for creating a JPanel with a title and a button, <br/>
-	 * which triggers the close of the currently active workspace<br/>
+	 * which triggers the close action of the currently active workspace<br/>
 	 * This might be used for the title of all tabs
 	 * 
 	 * This class was a part of the Java Tutorial
