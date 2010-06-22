@@ -47,7 +47,7 @@ import javax.swing.plaf.basic.BasicButtonUI;
 import javax.swing.text.html.HTMLFrameHyperlinkEvent;
 
 /**
- * View for Dicomux
+ * concrete View for Dicomux
  * @author heidi
  * @author tobi
  *
@@ -161,8 +161,7 @@ public class View extends JFrame implements IView {
 		setMinimumSize(new Dimension(800, 600));
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 		setIconImage(new ImageIcon(this.getClass().getClassLoader().getResource("logo.png")).getImage());
-//		System.out.println(this.getClass().getClassLoader().getResource("logo.png").getPath());
-		 
+		
 		// extract own contentPane and set its layout manager
 		Container contentPane = getContentPane();
 		contentPane.setLayout(new BorderLayout(0, 5));
@@ -212,7 +211,7 @@ public class View extends JFrame implements IView {
 	
 	/**
 	 * convenience method - initializes all language settings by checking the config file
-	 * @param loc the language to initialize
+	 * @param loc the language which should be used for initialization // if null, the file at m_pathLanguageSetting will be used
 	 */
 	private void initializeLanguage(Locale loc) {
 		Locale locale = null;
@@ -233,7 +232,7 @@ public class View extends JFrame implements IView {
 		
 		// set the global language for all GUI Elements (load the ResourceBundle)
 		m_languageBundle = ResourceBundle.getBundle(m_langBaseName, locale);
-		// set all localization entries for JFileChooser
+		// initialize all localization entries for JFileChooser
 		initializeJFileChooser();
 	}
 	
@@ -702,7 +701,7 @@ public class View extends JFrame implements IView {
 					URL filePath = this.getClass().getClassLoader().getResource(item);	// ask classloader for a correct file path
 					if (filePath != null) {
 						imagePath = MessageFormat.format(imagePrefix + "{0}" + imageSuffix, filePath);
-						System.out.println("Classloader found image at " + imagePath);
+						System.out.println("Classloader found image at " + filePath);
 					}
 					else
 						System.out.println("Classloader couldn't find the file " + item);
@@ -773,7 +772,7 @@ public class View extends JFrame implements IView {
 	
 	/**
 	 * A convenience class for creating a JPanel with a title and a button, <br/>
-	 * which triggers the close of the currently active workspace<br/>
+	 * which triggers the close action of the currently active workspace<br/>
 	 * This might be used for the title of all tabs
 	 * 
 	 * This class was a part of the Java Tutorial

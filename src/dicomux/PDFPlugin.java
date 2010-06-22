@@ -8,11 +8,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.geom.Rectangle2D;
 import java.nio.ByteBuffer;
 import java.util.Locale;
 
@@ -67,6 +62,7 @@ public class PDFPlugin extends APlugin {
 	 * the prefered pdf scale
 	 */
 	int m_preferedScale = 100;
+	
 	/**
 	 * the current pdf scale
 	 */
@@ -76,26 +72,32 @@ public class PDFPlugin extends APlugin {
 	 * button which is used for enabeling / disabeling the zoom-part mode
 	 */
 	JToggleButton m_zoomPartModeToggleButton;
+	
 	/**
 	 * button which is used for enabeling / disabeling the zoom-in mode
 	 */
 	JToggleButton m_zoomInModeToggleButton;
+	
 	/**
 	 * button which is used for enabeling / disabeling the zoom-out mode
 	 */
 	JToggleButton m_zoomOutModeToggleButton;
+	
 	/**
 	 * button which is used for enabeling / disabeling the next-page mode
 	 */
 	JToggleButton m_nextPageModeToggleButton;
+	
 	/**
 	 * button which is used for enabeling / disabeling the prev-page mode
 	 */
 	JToggleButton m_prevPageModeToggleButton;
+	
 	/**
 	 * TextFile which is used for scaling mode
 	 */
 	JTextField m_scaleModeTextField;
+	
 	/**
 	 * Lable which is used for Page of
 	 */
@@ -109,7 +111,7 @@ public class PDFPlugin extends APlugin {
 	/**
 	 * page of language Strings
 	 */
-	String page = "Page " ,of = " of ";
+	String m_pageLabel = "Page ", m_ofLabel = " of ";
 	
 	/**
 	 * @throws Exception 
@@ -147,20 +149,20 @@ public class PDFPlugin extends APlugin {
 	 */
 	public JPanel createToolsMenu(){
 		JPanel tools = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 5));
-		//add tools
+		
 		tools.add(createZoomPartButton());
 //		tools.add(createZoomInButton());
 //		tools.add(createZoomOutButton());
-//		tools.add(createScalePageTextField());	
+//		tools.add(createScalePageTextField());
+		
 		if(m_pdfFile != null && m_pdfFile.getNumPages() > 1){
 			tools.add(createPrevPageButton());
-			tools.add(createPageOfLable());
+			tools.add(createPageOfLabel());
 			tools.add(createNextPageButton());
 		}
 		return tools;
 	}
 	
-	//TODO setSelected() is imho not the correct way to change the color on mouse hovering
 	/**
 	 * convenience method - creates m_zoomModeToggleButton and returns it
 	 * @return the new button :-)
@@ -184,73 +186,42 @@ public class PDFPlugin extends APlugin {
 				}
 			}
 		});
-		m_zoomPartModeToggleButton.addMouseListener(new MouseAdapter() {
-			@Override
-			public void mouseExited(MouseEvent arg0) {
-				if (!m_zoomActive)
-					m_zoomPartModeToggleButton.setSelected(false);
-			}
-			@Override
-			public void mouseEntered(MouseEvent arg0) {	
-				m_zoomPartModeToggleButton.setSelected(true);
-			}
-		});
 		return m_zoomPartModeToggleButton;
 	}
 	
-	/**
-	 * convenience method - creates m_zoomInModeToggleButton and returns it
-	 * @return the new button :-)
-	 */
-	public JToggleButton createZoomInButton() {
-		m_zoomInModeToggleButton = new JToggleButton(new ImageIcon(this.getClass().getClassLoader().getResource("zoomIn.png")), false);
-		m_zoomInModeToggleButton.setSelected(false);
-		m_zoomInModeToggleButton.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				//do zoom
-				setScale(m_currentScale - 10);
-			}
-		});
-		m_zoomInModeToggleButton.addMouseListener(new MouseAdapter() {
-			@Override
-			public void mouseExited(MouseEvent arg0) {
-				m_zoomInModeToggleButton.setSelected(false);
-			}
-			@Override
-			public void mouseEntered(MouseEvent arg0) {	
-				m_zoomInModeToggleButton.setSelected(true);
-			}
-		});
-		return m_zoomInModeToggleButton;
-	}
-	
-	/**
-	 * convenience method - creates m_zoomOutModeToggleButton and returns it
-	 * @return the new button :-)
-	 */
-	public JToggleButton createZoomOutButton() {
-		m_zoomOutModeToggleButton = new JToggleButton(new ImageIcon(this.getClass().getClassLoader().getResource("zoomOut.png")), false);
-		m_zoomOutModeToggleButton.setSelected(false);
-		m_zoomOutModeToggleButton.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				//do zoom
-				setScale(m_currentScale + 10);
-			}
-		});
-		m_zoomOutModeToggleButton.addMouseListener(new MouseAdapter() {
-			@Override
-			public void mouseExited(MouseEvent arg0) {
-				m_zoomOutModeToggleButton.setSelected(false);
-			}
-			@Override
-			public void mouseEntered(MouseEvent arg0) {	
-				m_zoomOutModeToggleButton.setSelected(true);
-			}
-		});
-		return m_zoomOutModeToggleButton;
-	}
+//	/**
+//	 * convenience method - creates m_zoomInModeToggleButton and returns it
+//	 * @return the new button :-)
+//	 */
+//	public JToggleButton createZoomInButton() {
+//		m_zoomInModeToggleButton = new JToggleButton(new ImageIcon(this.getClass().getClassLoader().getResource("zoomIn.png")), false);
+//		m_zoomInModeToggleButton.setSelected(false);
+//		m_zoomInModeToggleButton.addActionListener(new ActionListener() {
+//			@Override
+//			public void actionPerformed(ActionEvent e) {
+//				//do zoom
+//				setScale(m_currentScale - 10);
+//			}
+//		});
+//		return m_zoomInModeToggleButton;
+//	}
+//	
+//	/**
+//	 * convenience method - creates m_zoomOutModeToggleButton and returns it
+//	 * @return the new button :-)
+//	 */
+//	public JToggleButton createZoomOutButton() {
+//		m_zoomOutModeToggleButton = new JToggleButton(new ImageIcon(this.getClass().getClassLoader().getResource("zoomOut.png")), false);
+//		m_zoomOutModeToggleButton.setSelected(false);
+//		m_zoomOutModeToggleButton.addActionListener(new ActionListener() {
+//			@Override
+//			public void actionPerformed(ActionEvent e) {
+//				//do zoom
+//				setScale(m_currentScale + 10);
+//			}
+//		});
+//		return m_zoomOutModeToggleButton;
+//	}
 	
 	/**
 	 * convenience method - creates m_prevPageModeToggleButton and returns it
@@ -267,16 +238,6 @@ public class PDFPlugin extends APlugin {
 					showPage(m_pdfFile.getNumPages());
 				else
 					showPage(m_pdfPanel.getPage().getPageNumber()-1);
-			}
-		});
-		m_prevPageModeToggleButton.addMouseListener(new MouseAdapter() {
-			@Override
-			public void mouseExited(MouseEvent arg0) {
-				m_prevPageModeToggleButton.setSelected(false);
-			}
-			@Override
-			public void mouseEntered(MouseEvent arg0) {	
-				m_prevPageModeToggleButton.setSelected(true);
 			}
 		});
 		return m_prevPageModeToggleButton;
@@ -299,67 +260,57 @@ public class PDFPlugin extends APlugin {
 					showPage(m_pdfPanel.getPage().getPageNumber()+1);
 			}
 		});
-		m_nextPageModeToggleButton.addMouseListener(new MouseAdapter() {
-			@Override
-			public void mouseExited(MouseEvent arg0) {
-				m_nextPageModeToggleButton.setSelected(false);
-			}
-			@Override
-			public void mouseEntered(MouseEvent arg0) {	
-				m_nextPageModeToggleButton.setSelected(true);
-			}
-		});
 		return m_nextPageModeToggleButton;
 	}
 	
-	/**
-	 * convenience method - creates m_scaleModeTextField and returns it
-	 * @return the new button :-)
-	 */
-	public JTextField createScalePageTextField() {
-		m_scaleModeTextField = new JTextField(6);
-		m_scaleModeTextField.setText(m_preferedScale + "%");
-		m_scaleModeTextField.addKeyListener(new KeyListener() {
-			@Override
-			public void keyPressed(KeyEvent arg0) {	
-			}
-			@Override
-			public void keyReleased(KeyEvent arg0) {	
-				if(arg0.getKeyCode() == KeyEvent.VK_ENTER)
-				{
-					String scale = m_scaleModeTextField.getText();
-					scale = scale.replace("%", "");
-					int new_scale;
-					try{
-						new_scale = Integer.parseInt(scale);
-					}
-					catch(NumberFormatException exc){
-						new_scale = m_preferedScale;
-					}
-					setScale(new_scale);
-				}
-			}
-			@Override
-			public void keyTyped(KeyEvent arg0) {
-			}
-		});
-		return m_scaleModeTextField;
-	}
+//	/**
+//	 * convenience method - creates m_scaleModeTextField and returns it
+//	 * @return the new button :-)
+//	 */
+//	public JTextField createScalePageTextField() {
+//		m_scaleModeTextField = new JTextField(6);
+//		m_scaleModeTextField.setText(m_preferedScale + "%");
+//		m_scaleModeTextField.addKeyListener(new KeyListener() {
+//			@Override
+//			public void keyPressed(KeyEvent arg0) {	
+//			}
+//			@Override
+//			public void keyReleased(KeyEvent arg0) {	
+//				if(arg0.getKeyCode() == KeyEvent.VK_ENTER)
+//				{
+//					String scale = m_scaleModeTextField.getText();
+//					scale = scale.replace("%", "");
+//					int new_scale;
+//					try{
+//						new_scale = Integer.parseInt(scale);
+//					}
+//					catch(NumberFormatException exc){
+//						new_scale = m_preferedScale;
+//					}
+//					setScale(new_scale);
+//				}
+//			}
+//			@Override
+//			public void keyTyped(KeyEvent arg0) {
+//			}
+//		});
+//		return m_scaleModeTextField;
+//	}
 	
 	/**
 	 * convenience method - creates m_pageOfLable and returns it
 	 * @return the new button :-)
 	 */
-	public JLabel createPageOfLable() {
-		m_pageOfLable = new JLabel(page + of);
+	public JLabel createPageOfLabel() {
+		m_pageOfLable = new JLabel(m_pageLabel + m_ofLabel);
 		return m_pageOfLable;
 	}
 	public void updatePageOfLable(){
 		if(m_pageOfLable != null){
 			if(m_pdfPanel != null && m_pdfFile != null)
-				m_pageOfLable.setText(page + (m_pdfPanel.getPage().getPageNumber() ) + of + m_pdfFile.getNumPages());
+				m_pageOfLable.setText(m_pageLabel + (m_pdfPanel.getPage().getPageNumber() ) + m_ofLabel + m_pdfFile.getNumPages());
 			else
-				m_pageOfLable.setText(page + of);
+				m_pageOfLable.setText(m_pageLabel + m_ofLabel);
 		}
 	}
 	
@@ -403,33 +354,33 @@ public class PDFPlugin extends APlugin {
 		}
 	}
 	
-	/**
-	 * convenience method - scale the page with the scale scaleInPercent
-	 * @param scaleInPercent the scale in percent
-	 */
-	private void setScale(int scaleInPercent)
-	{
-		int less_scale_Site;
-		Rectangle2D rect = null;
-		double height, width;//, x , y;
-		if(m_pdfPanel.getCurClip() == null){
-			height = m_pdfPanel.getPage().getHeight();
-			width = m_pdfPanel.getPage().getWidth();
+//	/**
+//	 * convenience method - scale the page with the scale scaleInPercent
+//	 * @param scaleInPercent the scale in percent
+//	 */
+//	private void setScale(int scaleInPercent)
+//	{
+//		int less_scale_Site;
+//		Rectangle2D rect = null;
+//		double height, width;//, x , y;
+//		if(m_pdfPanel.getCurClip() == null){
+//			height = m_pdfPanel.getPage().getHeight();
+//			width = m_pdfPanel.getPage().getWidth();
 //			x = 0;
 //			y = 0;
-			if(scaleInPercent < m_currentScale){
-				less_scale_Site = (m_currentScale - scaleInPercent)/2;
-				double less_px_height =  ((height/100)*less_scale_Site);
-				double less_px_width =  ((width/100)*less_scale_Site);
-				double new_wi = width-(7*less_px_width);
-				double new_hi = height-(7*less_px_width);
-				System.out.println("height:"+height);
-				System.out.println("width:"+width);
-				System.out.println("new height:"+new_hi);
-				System.out.println("new width::"+new_wi);
-				rect = new Rectangle2D.Double(less_px_width,less_px_height,new_wi,new_hi);
-			}
- 		}
+//			if(scaleInPercent < m_currentScale){
+//				less_scale_Site = (m_currentScale - scaleInPercent)/2;
+//				double less_px_height =  ((height/100)*less_scale_Site);
+//				double less_px_width =  ((width/100)*less_scale_Site);
+//				double new_wi = width-(7*less_px_width);
+//				double new_hi = height-(7*less_px_width);
+//				System.out.println("height:"+height);
+//				System.out.println("width:"+width);
+//				System.out.println("new height:"+new_hi);
+//				System.out.println("new width::"+new_wi);
+//				rect = new Rectangle2D.Double(less_px_width,less_px_height,new_wi,new_hi);
+//			}
+//		}
 //		else{
 //			height = m_pdfPanel.getCurClip().getHeight();
 //			width = m_pdfPanel.getCurClip().getWidth();
@@ -445,21 +396,21 @@ public class PDFPlugin extends APlugin {
 //			rect = new Rectangle2D.Double(x - less_px_width,y - less_px_height,
 //										width+(2*less_px_width),height+(2*less_px_width));
 //		}
-	
-		m_pdfPanel.setClip(rect);
-		m_currentScale = scaleInPercent;
-		m_content.repaint();
-		m_scroll.updateUI();
-	}
+//	
+//		m_pdfPanel.setClip(rect);
+//		m_currentScale = scaleInPercent;
+//		m_content.repaint();
+//		m_scroll.updateUI();
+//	}
 	
 	@Override
 	public void setLanguage(Locale locale) {
 		m_locale = locale;
 		
 		if(m_locale.getLanguage() == "de"){
-			page = "Seite "; of = " von ";}
+			m_pageLabel = "Seite "; m_ofLabel = " von ";}
 		else{
-			page = "Page "; of = " of ";}
+			m_pageLabel = "Page "; m_ofLabel = " of ";}
 		
 		updatePageOfLable();
 	}
