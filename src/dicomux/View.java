@@ -573,18 +573,14 @@ public class View extends JFrame implements IView {
 		 */
 		protected JComponent makeOpenFileTab() {
 			JPanel content = new JPanel(new BorderLayout(5 , 5), false);
-			JPanel contentHead = new JPanel(new BorderLayout(5, 0), false);
-			content.add(contentHead, BorderLayout.NORTH);
+			content.add(makeMessage(m_languageBundle.getString("key_html_openFile")), BorderLayout.NORTH);
 			
-			contentHead.add(makeMessage(m_languageBundle.getString("key_html_openFile")), BorderLayout.NORTH);
-			
-			JPanel control = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0), false);
 			JFileChooser filechooser = new JFileChooser(m_lastSelectedFilePath);
 			filechooser.setDialogType(JFileChooser.OPEN_DIALOG);
 			filechooser.setLocale(m_languageBundle.getLocale());		// Set the current language to the file chooser!
 			filechooser.addActionListener(new ActionListener() {
 				@Override
-				public void actionPerformed(ActionEvent e) {
+				public void actionPerformed(ActionEvent e) {			// declare what to do if the user presses OK / Cancel
 					JFileChooser chooser = (JFileChooser) e.getSource();
 					if (JFileChooser.APPROVE_SELECTION.equals(e.getActionCommand())) {
 						m_lastSelectedFilePath = chooser.getSelectedFile().getAbsolutePath();
@@ -594,8 +590,7 @@ public class View extends JFrame implements IView {
 						m_controller.closeWorkspace();
 				}
 			});
-			control.add(filechooser);
-			contentHead.add(control, BorderLayout.SOUTH);
+			content.add(filechooser, BorderLayout.CENTER);
 			
 			return content;
 		}
@@ -606,12 +601,8 @@ public class View extends JFrame implements IView {
 		 */
 		protected JComponent makeOpenDirTab() {
 			JPanel content = new JPanel(new BorderLayout(5 , 5), false);
-			JPanel contentHead = new JPanel(new BorderLayout(5, 0), false);
-			content.add(contentHead, BorderLayout.NORTH);
+			content.add(makeMessage(m_languageBundle.getString("key_html_openDir")), BorderLayout.NORTH);
 			
-			contentHead.add(makeMessage(m_languageBundle.getString("key_html_openDir")), BorderLayout.NORTH);
-			
-			JPanel control = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0), false);
 			JFileChooser filechooser = new JFileChooser();
 			filechooser.setDialogType(JFileChooser.OPEN_DIALOG);
 			filechooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
@@ -626,8 +617,7 @@ public class View extends JFrame implements IView {
 						m_controller.closeWorkspace();
 				}
 			});
-			control.add(filechooser);
-			contentHead.add(control, BorderLayout.SOUTH);
+			content.add(filechooser, BorderLayout.CENTER);
 			
 			return content;
 		}
