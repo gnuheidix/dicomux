@@ -609,7 +609,7 @@ public class View extends JFrame implements IView {
 			filechooser.setLocale(m_languageBundle.getLocale());		// Set the current language to the file chooser!
 			filechooser.addActionListener(new ActionListener() {
 				@Override
-				public void actionPerformed(ActionEvent e) {
+				public void actionPerformed(ActionEvent e) {			// declare what to do if the user presses OK / Cancel
 					JFileChooser chooser = (JFileChooser) e.getSource();
 					if (JFileChooser.APPROVE_SELECTION.equals(e.getActionCommand()))
 						m_controller.openDicomDirectory(chooser.getSelectedFile().getPath());
@@ -655,8 +655,7 @@ public class View extends JFrame implements IView {
 		 * @return the HTML panel
 		 */
 		private JEditorPane getHTMLPane(String propKey) {
-			JEditorPane content = null;
-			content = new JEditorPane("text/html", getParsedHTML(m_languageBundle.getString(propKey)));
+			JEditorPane content = new JEditorPane("text/html", getParsedHTML(m_languageBundle.getString(propKey)));
 			content.setEditable(false);
 			
 			if (Desktop.isDesktopSupported()) {		// a link has to be opened in the default web browser
@@ -686,35 +685,39 @@ public class View extends JFrame implements IView {
 		 * @return parsed HTML code
 		 */
 		private String getParsedHTML(String source) {
-			final String imagePräfix = "<img src=\"";
+			final String imagePrefix = "<img src=\"";
 			final String imageSuffix = "\">";
 			String src = source;
-			String dest = new String();
+			String retVal = new String();
 			
 			while (!src.isEmpty()) {
-				int startIndex = src.indexOf(imagePräfix);	// search for our indicators
-				int endIndex = src.indexOf(imageSuffix, startIndex + imagePräfix.length());
+				int startIndex = src.indexOf(imagePrefix);	// search for our indicators
+				int endIndex = src.indexOf(imageSuffix, startIndex + imagePrefix.length());
 				
-				if (startIndex >= 0 && endIndex >= 0 && endIndex > startIndex) { // we found something
-					String item = src.substring(startIndex + imagePräfix.length(), endIndex); // extract item file name
+				if (startIndex >= 0 && endIndex >= 0 && endIndex > startIndex) {	// we found an image in the HTML code
+					String item = src.substring(startIndex + imagePrefix.length(), endIndex); // extract item file name
 					System.out.println("Parser found item " + item);
 					
-					String cache = src.substring(0, startIndex); // get the HTML until the end of the img tag
-					URL filePath = this.getClass().getClassLoader().getResource(item); // ask classloader for a correct file path
+					String imagePath = "";
+					URL filePath = this.getClass().getClassLoader().getResource(item);	// ask classloader for a correct file path
 					if (filePath != null) {
-						String imageHTML = MessageFormat.format(imagePräfix + "{0}" + imageSuffix, filePath);
-						dest += cache + imageHTML;
+						imagePath = MessageFormat.format(imagePrefix + "{0}" + imageSuffix, filePath);
+						System.out.println("Classloader found image at " + imagePath);
 					}
-					src = src.substring(endIndex + imageSuffix.length());
+					else
+						System.out.println("Classloader couldn't find the file " + item);
+					
+					retVal += src.substring(0, startIndex) + imagePath;		// write our work to the retVal
+					src = src.substring(endIndex + imageSuffix.length());	// trunkate everything before the end of our image
 				}
-				else { // we found nothing
-					dest += src;
+				else { // we found no image in the HTML code
+					retVal += src;
 					break; // we are done
 				}
 			}
 			
-			System.out.println(dest);
-			return dest;
+			System.out.println(retVal);
+			return retVal;
 		}
 		/**
 		 * convenience method for adding a headline to a static dialog
