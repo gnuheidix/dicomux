@@ -4,6 +4,7 @@ import java.awt.BasicStroke;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Container;
+import java.awt.Desktop;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Graphics;
@@ -19,6 +20,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
+import java.text.MessageFormat;
 import java.util.Locale;
 import java.util.ResourceBundle;
 import java.util.Vector;
@@ -27,6 +29,7 @@ import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
+import javax.swing.JEditorPane;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -38,7 +41,10 @@ import javax.swing.JTabbedPane;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.HyperlinkEvent;
+import javax.swing.event.HyperlinkListener;
 import javax.swing.plaf.basic.BasicButtonUI;
+import javax.swing.text.html.HTMLFrameHyperlinkEvent;
 
 /**
  * View for Dicomux
@@ -152,7 +158,7 @@ public class View extends JFrame implements IView {
 	private void initializeApplication() {
 		// misc initialization
 		setTitle("Dicomux");
-		setPreferredSize(new Dimension(800, 600));
+		setMinimumSize(new Dimension(800, 600));
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 		setIconImage(new ImageIcon(this.getClass().getClassLoader().getResource("logo.png")).getImage());
 //		System.out.println(this.getClass().getClassLoader().getResource("logo.png").getPath());
@@ -648,19 +654,78 @@ public class View extends JFrame implements IView {
 		 */
 		protected JComponent makeAboutTab() {
 			JPanel content = new JPanel(new BorderLayout(5 , 5), false);
-			
-			JPanel contentHead = new JPanel(new BorderLayout(5, 0), false);
-			contentHead.add(makeMessage(m_languageBundle.getString("key_html_about")), BorderLayout.NORTH);
-			content.add(contentHead, BorderLayout.CENTER);
-			
-			JPanel logos = new JPanel(new FlowLayout(FlowLayout.RIGHT, 5, 5));
-			logos.add(new JLabel(new ImageIcon(this.getClass().getClassLoader().getResource("gplv3.png"))));
-			logos.add(new JLabel(new ImageIcon(this.getClass().getClassLoader().getResource("logo_big.png"))));
-			content.add(logos, BorderLayout.SOUTH);
+			content.add(getHTMLPane("key_html_about"), BorderLayout.CENTER);
 			
 			return content;
 		}
 		
+		/**
+		 * convenience method for creating a HTML panel
+		 * @param propKey the key from the property files which contains the HTML code we want to render
+		 * @return the HTML panel
+		 */
+		private JEditorPane getHTMLPane(String propKey) {
+			JEditorPane content = null;
+			content = new JEditorPane("text/html", getParsedHTML(m_languageBundle.getString(propKey)));
+			content.setEditable(false);
+			
+			if (Desktop.isDesktopSupported()) {		// a link has to be opened in the default web browser
+				content.addHyperlinkListener(new HyperlinkListener() {
+					@Override
+					public void hyperlinkUpdate(HyperlinkEvent e) {
+						if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED &&
+								!(e instanceof HTMLFrameHyperlinkEvent)) {
+							try {
+								Desktop.getDesktop().browse(e.getURL().toURI());
+							} 
+							catch (Throwable t) {
+								System.out.println("Could not open web link with the default browser.");
+							}
+						}
+					}
+				});
+			}
+			return content;
+		}
+		
+		/**
+		 * convenience method<br/>
+		 * searches for all image tags in a HTML String and corrects the file path with the help of the classloader<br/>
+		 * e.g. <img src="image.png"> - image.png will be searched by the classloader and the path will be repaired
+		 * @param source a string containing HTML
+		 * @return parsed HTML code
+		 */
+		private String getParsedHTML(String source) {
+			final String imagePräfix = "<img src=\"";
+			final String imageSuffix = "\">";
+			String src = source;
+			String dest = new String();
+			
+			while (!src.isEmpty()) {
+				int startIndex = src.indexOf(imagePräfix);	// search for our indicators
+				int endIndex = src.indexOf(imageSuffix, startIndex + imagePräfix.length());
+				
+				if (startIndex >= 0 && endIndex >= 0 && endIndex > startIndex) { // we found something
+					String item = src.substring(startIndex + imagePräfix.length(), endIndex); // extract item file name
+					System.out.println("Parser found item " + item);
+					
+					String cache = src.substring(0, startIndex); // get the HTML until the end of the img tag
+					URL filePath = this.getClass().getClassLoader().getResource(item); // ask classloader for a correct file path
+					if (filePath != null) {
+						String imageHTML = MessageFormat.format(imagePräfix + "{0}" + imageSuffix, filePath);
+						dest += cache + imageHTML;
+					}
+					src = src.substring(endIndex + imageSuffix.length());
+				}
+				else { // we found nothing
+					dest += src;
+					break; // we are done
+				}
+			}
+			
+			System.out.println(dest);
+			return dest;
+		}
 		/**
 		 * convenience method for adding a headline to a static dialog
 		 * @param msg the message - this might be HTML
@@ -690,7 +755,6 @@ public class View extends JFrame implements IView {
 			retVal.add(tmp);
 			
 			tmp = new JButton(m_languageBundle.getString("key_openDir"));
-//			setIconImage(new ImageIcon(this.getClass().getClassLoader().getResource("folder.png").getPath()).getImage());
 			tmp.setIcon(new ImageIcon(this.getClass().getClassLoader().getResource("folder.png")));
 			tmp.addActionListener(new ActionListener() {
 				@Override

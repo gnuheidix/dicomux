@@ -342,7 +342,7 @@ Sprint meeting
 * We need a technical manual. (Latex - English as usual)
 ** class diagram
 ** JavaDoc export
-* implement welcome and about tabs (Tobi)
+* implement welcome and about tabs
 * RawPlugin redesign of the buttons
 * User manual creation
 ** with screenshots
