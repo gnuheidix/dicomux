@@ -65,7 +65,7 @@ public class WaveformPlugin extends APlugin {
 	private int displayFactorWidth;
 	private int displayFactorHeight;
 	
-	private DrawingPanel rythm;
+	private DrawingPanel rhythm;
 	
 	private final double MAX_ZOOM_OUT = 1.0f;
 	private final double MAX_ZOOM_IN = 10.0f;
@@ -77,6 +77,17 @@ public class WaveformPlugin extends APlugin {
 	private final String FOURPARTSPLUS = "4x2.5s & RS";
 	private final String TWOPARTS = "2x5s";
 	
+	// Strings used for localization
+	private String labelMinimum;
+	private String labelMaximum;
+	private String labelPosition;
+	private String labelSecond;
+	private String labelDisplayFormat;
+	private String displayFormatDefault;
+	private String displayFormatFourParts;
+	private String displayFormatFourPartsPlus;
+	private String displayFormatTwoParts;	
+	
 	public WaveformPlugin() throws Exception {
 		super();
 		m_keyTag.addKey(Tag.Modality, "ECG");
@@ -87,7 +98,8 @@ public class WaveformPlugin extends APlugin {
 		this.fitToPage = true;
 		this.displayFormat = DEFAULTFORMAT;
 		this.displayFormatChanged = false;
-		this.rythm = null;
+		this.rhythm = null;
+		
 	}
 	
 	@Override
@@ -272,7 +284,37 @@ public class WaveformPlugin extends APlugin {
 	// TODO implement if necessary
 	@Override
 	public void setLanguage(Locale locale) {
+		if(locale.getLanguage() == "de") {
+			// deutsch
+			this.labelMinimum = "Mimimum";
+			this.labelMaximum = "Maximum";
+			this.labelPosition = "Position";
+			this.labelSecond = "Sekunde";
+			this.labelDisplayFormat = "Anzeigeformat";
+			this.displayFormatDefault = "1x10 Sekunden";
+			this.displayFormatFourParts = "4x2,5 Sekunden";
+			this.displayFormatFourPartsPlus = "4x2,5 Sekunden mit Rhythmusstreifen";
+			this.displayFormatTwoParts = "2X5 Sekunden";	
+		}
+		else {
+		   // englisch (default/dropback)
+			this.labelMinimum = "Minimum";
+			this.labelMaximum = "Maximum";
+			this.labelPosition = "Position";
+			this.labelSecond = "Second";
+			this.labelDisplayFormat = "Display format";
+			this.displayFormatDefault = "1x10 Seconds";
+			this.displayFormatFourParts = "4x2.5 Seconds";
+			this.displayFormatFourPartsPlus = "4x2.5 Seconds with rhythm strip";
+			this.displayFormatTwoParts = "2x5 Seconds";	
+		}
 		
+		if(this.infoPanel != null) {
+			this.infoPanel.updateLanguage();
+		}
+		if(this.tools != null) {
+			this.tools.updateLanguage();
+		}
 	}
 	
 	/**
@@ -285,18 +327,19 @@ public class WaveformPlugin extends APlugin {
 			// height is divided by zoomLevel so the channels will not be too high
 			double width = 0;
 			double height = 0;
-			double rythm_with = m_content.getWidth();
+			double rythm_with = m_content.getWidth() - 4;
 
 			if( this.numberOfChannels == 12 && displayFormatChanged) {
 				if(displayFormat.equals(DEFAULTFORMAT)) {
 					displayDefault();
-					this.rythm = null;
+					this.rhythm = null;
 					displayFactorHeight = this.numberOfChannels;
 					displayFactorWidth = 1;
 				}
 				if(displayFormat.equals(FOURPARTS)) {
-					displayFourParts();
-					this.rythm = null;
+					this.channelpane = displayFourParts(this.channelpane);
+					this.scroll.setViewportView(this.channelpane); 
+					this.rhythm = null;
 					displayFactorWidth = 4;
 					displayFactorHeight = 3;
 				}
@@ -307,7 +350,7 @@ public class WaveformPlugin extends APlugin {
 				}
 				if(displayFormat.equals(TWOPARTS)) {
 					displayTwoParts(); 
-					this.rythm = null;
+					this.rhythm = null;
 					displayFactorWidth = 2;
 					displayFactorHeight = 6;
 				}
@@ -331,11 +374,11 @@ public class WaveformPlugin extends APlugin {
 				p.repaint();
 			}
 			
-			if(this.rythm != null) {
+			if(this.rhythm != null) {
 				dim = new Dimension((int) rythm_with, (int) height);
-				this.rythm.setPreferredSize(dim);
-				this.rythm.setSize(dim);
-				this.rythm.repaint();
+				this.rhythm.setPreferredSize(dim);
+				this.rhythm.setSize(dim);
+				this.rhythm.repaint();
 			}
 			
 			this.channelpane.repaint();
@@ -507,12 +550,12 @@ public class WaveformPlugin extends APlugin {
 		
 	}
 	
-	private void displayFourParts() {
-		this.channelpane = new JPanel();
-		this.channelpane.setBackground(Color.BLACK);
+	private JPanel displayFourParts(JPanel pane) {
+		pane = new JPanel();
+		pane.setBackground(Color.BLACK);
 		
 		GridLayout layout = new GridLayout(3, 4, 2, 2);
-		this.channelpane.setLayout(layout);
+		pane.setLayout(layout);
 		
 		this.pannels.removeAllElements();
 		// sort Leads
@@ -599,16 +642,38 @@ public class WaveformPlugin extends APlugin {
 			}
 			
 			DrawingPanel drawPannel = new DrawingPanel(data[i], start, channelDefinitions[i]);
-			this.channelpane.add(drawPannel);
+			pane.add(drawPannel);
 			// add panel to vector
 			this.pannels.add(drawPannel);
 		}
-		this.scroll.setViewportView(this.channelpane); 
-		
+		return pane;
 	}
 	
-	private void displayFourPartsPlus() {
-		// TODO Like fourParts but with rythm, use GridbagLayout  
+	private void displayFourPartsPlus() {		
+		JPanel pane = new JPanel();
+		
+		pane = displayFourParts(pane);
+		
+		this.channelpane = new JPanel();
+		this.channelpane.setLayout(new BoxLayout(channelpane, BoxLayout.PAGE_AXIS));
+		this.channelpane.setBackground(Color.BLACK);
+		
+		int rhythm_index = 0;
+		for (int i = 0; i < this.channelDefinitions.length; i++) {
+			if(channelDefinitions[i].getName().equalsIgnoreCase("Lead II")) {
+				rhythm_index = i;
+			}
+		}
+		
+		this.rhythm = new DrawingPanel(data[rhythm_index], 0, channelDefinitions[rhythm_index]);
+		this.rhythm.setRhythm(true);
+		
+		this.channelpane.add(pane);
+		this.channelpane.add(Box.createRigidArea(new Dimension(0,2)));
+		this.channelpane.add(this.rhythm);
+		
+		this.scroll.setViewportView(this.channelpane); 
+		
 	}
 	
 	private void getMinMax(int data[][], ChannelDefinition definitions[]) {
@@ -655,11 +720,18 @@ public class WaveformPlugin extends APlugin {
 		
 
 		private static final long serialVersionUID = -470038831713011257L;
+		// labels for the values
 		private JLabel maximum;
 		private JLabel minimum;
 		private JLabel miliVolt;
 		private JLabel seconds;
 		private JLabel lead;
+		// labels for the identification of the values
+		private JLabel maximumLabel;
+		private JLabel minimumLabel;
+		private JLabel positionLabel;
+		private JLabel secondsLabel;
+		
 		private JPanel nameMinMaxPanel;
 		private JPanel positionPanel;
 		
@@ -669,8 +741,12 @@ public class WaveformPlugin extends APlugin {
 			this.miliVolt = new JLabel();
 			this.seconds = new JLabel();
 			this.lead = new JLabel(" ");
+			this.maximumLabel = new JLabel();
+			this.minimumLabel = new JLabel();
+			this.positionLabel = new JLabel();
+			this.secondsLabel = new JLabel();
 			
-			this.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 5));
+			this.setLayout(new BoxLayout(this, BoxLayout.LINE_AXIS));
 			
 			nameMinMaxPanel = new JPanel();
 			nameMinMaxPanel.setPreferredSize(new Dimension(150, 70));
@@ -698,8 +774,8 @@ public class WaveformPlugin extends APlugin {
 			c2.ipady = 5;
 			c2.anchor = GridBagConstraints.LINE_START;
 			
-			JLabel minimum = new JLabel("Minimum:");
-			nameMinMaxPanel.add(minimum, c2);
+			this.minimumLabel = new JLabel(labelMinimum + ":");
+			nameMinMaxPanel.add(this.minimumLabel, c2);
 			
 			GridBagConstraints c3 = new GridBagConstraints();
 			c3.weightx = 0.5;
@@ -718,8 +794,8 @@ public class WaveformPlugin extends APlugin {
 			c4.ipady = 5;
 			c4.anchor = GridBagConstraints.LINE_START;
 			
-			JLabel maximum = new JLabel("Maximum:");
-			nameMinMaxPanel.add(maximum, c4);
+			this.maximumLabel = new JLabel( labelMaximum + ":");
+			nameMinMaxPanel.add(this.maximumLabel, c4);
 			
 			GridBagConstraints c5 = new GridBagConstraints();
 			c5.weightx = 0.5;
@@ -745,8 +821,8 @@ public class WaveformPlugin extends APlugin {
 			c6.ipady = 5;
 			c6.anchor = GridBagConstraints.LINE_START;
 			
-			JLabel position = new JLabel("Position");
-			positionPanel.add(position, c6);
+			this.positionLabel = new JLabel(labelPosition + "");
+			positionPanel.add(this.positionLabel, c6);
 			
 			GridBagConstraints c7 = new GridBagConstraints();
 			c7.weightx = 0.5;
@@ -774,8 +850,8 @@ public class WaveformPlugin extends APlugin {
 			c9.ipady = 5;
 			c9.anchor = GridBagConstraints.LINE_START;
 			
-			JLabel secs_pos = new JLabel("Seconds:");
-			positionPanel.add(secs_pos, c9);
+			this.secondsLabel = new JLabel(labelSecond + ":");
+			positionPanel.add(this.secondsLabel, c9);
 
 			GridBagConstraints c10 = new GridBagConstraints();
 			c10.weightx = 0.5;
@@ -787,6 +863,7 @@ public class WaveformPlugin extends APlugin {
 			positionPanel.add(this.seconds, c10);
 			
 			this.add(nameMinMaxPanel);
+			this.add(Box.createRigidArea(new Dimension(5,0)));
 			this.add(positionPanel);
 		}
 		
@@ -828,6 +905,12 @@ public class WaveformPlugin extends APlugin {
 
 		}
 		
+		public void updateLanguage() {
+			this.minimumLabel.setText(labelMinimum + ":");
+			this.maximumLabel.setText( labelMaximum + ":");
+			this.positionLabel.setText(labelPosition + "");
+			this.secondsLabel.setText(labelSecond + ":");
+		}
 		
 	}
 	
@@ -852,12 +935,11 @@ public class WaveformPlugin extends APlugin {
 		private int end;
 		private double valueScaling;
 		private double offset; 
+		private boolean isRhythm;
 		
 		public DrawingPanel(int[] values, double start, ChannelDefinition definition) {
 			super();
 			this.data = values;
-//			this.setPreferredSize(new Dimension(width, height));
-//			this.setSize(new Dimension(width, height));
 			this.definition = definition;			
 			this.mv_cell_count = mv_cells;
 			this.secs_cell_count = seconds * 10;
@@ -868,13 +950,16 @@ public class WaveformPlugin extends APlugin {
 			this.start = (int) (start * samples_per_second);
 			this.end = data.length;
 			this.offset = start;
-			
 			// calculate scaling of the sample values
 			this.valueScaling = this.definition.getSensitity() *
 								this.definition.getSensitivityCorrection();
 			
 			addListeners();
-			
+			this.isRhythm = false;
+		}
+		
+		public void setRhythm(boolean mode) {
+			this.isRhythm = mode;
 		}
 		
 		private void addListeners() {
@@ -923,15 +1008,19 @@ public class WaveformPlugin extends APlugin {
 			g2.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_NORMALIZE);
 			g2.setRenderingHint(RenderingHints.KEY_DITHERING, RenderingHints.VALUE_DITHER_ENABLE);
 			
-			if(displayFormat.equals(DEFAULTFORMAT)) {
+			if(displayFormat.equals(DEFAULTFORMAT) || isRhythm) {
 				this.secs_cell_count = seconds * 10;
 				this.end = this.start + this.data.length;
 			}
-			if(displayFormat.equals(FOURPARTS)) {
+			else if(displayFormat.equals(FOURPARTS)) {
 				this.secs_cell_count = (int) (2.5 * 10);
 				this.end = this.start + (int) (2.5 * samples_per_second);
 			}
-			if(displayFormat.equals(TWOPARTS)) {
+			else if(displayFormat.equals(FOURPARTSPLUS)) {
+				this.secs_cell_count = (int) (2.5 * 10);
+				this.end = this.start + (int) (2.5 * samples_per_second);
+			}
+			else if(displayFormat.equals(TWOPARTS)) {
 				this.secs_cell_count = 5 * 10;
 				this.end = this.start + 5 * samples_per_second;
 			}
@@ -1061,21 +1150,25 @@ public class WaveformPlugin extends APlugin {
 		private JButton zoomFit;
 		private JLabel displayLabel;
 		private JComboBox displayCombo;
-		private Vector<String> displayFormats;
+		private Vector<String> displayFormatsStrings;
 		
 		public ToolPanel() {
-			
-			this.displayFormats = new Vector<String>();
-			this.displayFormats.add(DEFAULTFORMAT);
-			this.displayFormats.add(FOURPARTS);
-			this.displayFormats.add(FOURPARTSPLUS);
-			this.displayFormats.add(TWOPARTS);
+						
+			fillVector();
 			
 			addZoomButtons();
 			if(numberOfChannels == 12)
 			{
 				addDisplayFormatComponent();
 			}
+		}
+		
+		private void fillVector() {
+			this.displayFormatsStrings = new Vector<String>();
+			this.displayFormatsStrings.add(displayFormatDefault);
+			this.displayFormatsStrings.add(displayFormatTwoParts);
+			this.displayFormatsStrings.add(displayFormatFourParts);
+			this.displayFormatsStrings.add(displayFormatFourPartsPlus);
 		}
 		
 		private void addZoomButtons() {
@@ -1124,15 +1217,27 @@ public class WaveformPlugin extends APlugin {
 		}
 		
 		private void addDisplayFormatComponent() {
-			displayLabel = new JLabel("display format: ");
+			displayLabel = new JLabel(labelDisplayFormat + ":");
 			this.add(displayLabel);
 				
-			displayCombo = new JComboBox(displayFormats);	
+			displayCombo = new JComboBox(displayFormatsStrings);	
 			displayCombo.addActionListener(new ActionListener() {
 
 				public void actionPerformed(ActionEvent e) {
 					JComboBox cb = (JComboBox) e.getSource();
-					displayFormat = (String) cb.getSelectedItem();
+					String choosen = (String) cb.getSelectedItem();
+					if(choosen.equals(displayFormatDefault)) {
+						displayFormat = DEFAULTFORMAT;
+					}
+					else if(choosen.equals(displayFormatTwoParts)) {
+						displayFormat = TWOPARTS;
+					}
+					else if(choosen.equals(displayFormatFourParts)) {
+						displayFormat = FOURPARTS;
+					}
+					else if(choosen.equals(displayFormatFourPartsPlus)) {
+						displayFormat = FOURPARTSPLUS;
+					}
 					displayFormatChanged = true;
 					repaintPanels();
 					displayFormatChanged = false;
@@ -1150,6 +1255,16 @@ public class WaveformPlugin extends APlugin {
 		    this.setMinimumSize(new Dimension(m_content.getWidth(), 35));
 			this.setMaximumSize(new Dimension(m_content.getWidth(), 35));
 
+		}
+		
+		public void updateLanguage() {
+			if(numberOfChannels == 12)
+			{
+				this.remove(this.displayLabel);
+				this.remove(this.displayCombo);
+				fillVector();
+				addDisplayFormatComponent();
+			}
 		}
 		
 	}
