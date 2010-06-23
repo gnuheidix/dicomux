@@ -1,7 +1,6 @@
 package dicomux;
 
 import java.io.File;
-import java.util.Iterator;
 import java.util.Locale;
 import java.util.Vector;
 
@@ -29,7 +28,6 @@ public class Controller implements IController {
 	 */
 	private IView m_view;
 	
-	//TODO check for crap
 	/**
 	 * default constructor<br/>
 	 * registers the view in the model and vice versa<br>

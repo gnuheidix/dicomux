@@ -604,7 +604,6 @@ public class View extends JFrame implements IView {
 			
 			JFileChooser filechooser = new JFileChooser();
 			filechooser.setDialogType(JFileChooser.OPEN_DIALOG);
-//			filechooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 			filechooser.setLocale(m_languageBundle.getLocale());		// Set the current language to the file chooser!
 			filechooser.addActionListener(new ActionListener() {
 				@Override
@@ -656,6 +655,7 @@ public class View extends JFrame implements IView {
 		private JEditorPane getHTMLPane(String propKey) {
 			JEditorPane content = new JEditorPane("text/html", getParsedHTML(m_languageBundle.getString(propKey)));
 			content.setEditable(false);
+			content.setBorder(BorderFactory.createLineBorder(Color.BLACK, 0));
 			
 			if (Desktop.isDesktopSupported()) {		// a link has to be opened in the default web browser
 				content.addHyperlinkListener(new HyperlinkListener() {
@@ -685,7 +685,7 @@ public class View extends JFrame implements IView {
 		 */
 		private String getParsedHTML(String source) {
 			final String imagePrefix = "<img src=\"";
-			final String imageSuffix = "\">";
+			final String imageSuffix = "\"";
 			String src = source;
 			String retVal = new String();
 			
@@ -809,7 +809,7 @@ public class View extends JFrame implements IView {
 	 */
 	private class TabTitle extends JPanel {
 		private static final long serialVersionUID = 682821987337403501L;
-
+		
 		public TabTitle(String name) {
 			super(new FlowLayout(FlowLayout.LEFT, 0, 0));
 			
