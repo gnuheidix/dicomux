@@ -170,55 +170,38 @@ public class Controller implements IController {
 	
 	@Override
 	public void openDicomDirectory(String path) {
-		Vector<String> directories = new Vector<String>();
-		// get a list of all files in a directory
-		File dir = new File( path );
-		String[] files = dir.list();
-		for ( String file : files ) {			// we look for the DirectoryFile! First we search for all files. 
-			File m_file = new File(file);		//If we do not find the file in this level, we look in the first levels of the directories ...
-			if(m_file.isFile() || file.equals("DICOMDIR")) {
-				try{
-					// open the dicom file
-					File fileObject = new File(dir+File.separator+file);
-					DicomInputStream din = new DicomInputStream(fileObject);
-					DicomObject dicomObject = din.readDicomObject();
-					din.close();
-					
-					// TODO: Do we have more Plugins in DirectoryMode ??
-					DirectoryPlugin chosenPlugin = new DirectoryPlugin();
-					// push the currently used language to the new plug-in
-					chosenPlugin.setLanguage(m_view.getLanguage());
-					
-					chosenPlugin.setDirFilePath(dir.toString());
-					// push the DicomObject to the plug-in
-					chosenPlugin.setData(dicomObject);
-					
-					// create a new TabObject and fill it with all we got
-					TabObject tmp = new TabObject();
-					tmp.setDicomObj(dicomObject);
-					tmp.setTabActive(true);
-					tmp.setName(fileObject.getName());
-					tmp.setTabState(TabState.PLUGIN_ACTIVE);
-					tmp.setPlugin(chosenPlugin);
-//					tmp.setSuitablePlugins();
-					
-					// push the new TabObject to our workspace
-					m_model.setWorkspace(m_view.getActiveWorkspaceId(), tmp);
-					return;
-				}
-				catch (Exception e) {
-					System.out.println(e.getMessage());
-					continue;			// if we cannot open the file we go on searching the directory file!
-				}
-			}
-			else {
-				directories.add(file);
-			}
+		try{
+			// open the dicom file
+			File fileObject = new File(path);
+			DicomInputStream din = new DicomInputStream(fileObject);
+			DicomObject dicomObject = din.readDicomObject();
+			din.close();
+			
+			// TODO: Do we have more Plugins in DirectoryMode ??
+			DirectoryPlugin chosenPlugin = new DirectoryPlugin();
+			// push the currently used language to the new plug-in
+			chosenPlugin.setLanguage(m_view.getLanguage());
+			
+			chosenPlugin.setDirFilePath(fileObject.getParent());
+			// push the DicomObject to the plug-in
+			chosenPlugin.setData(dicomObject);
+			// create a new TabObject and fill it with all we got
+			TabObject tmp = new TabObject();
+			tmp.setDicomObj(dicomObject);
+			tmp.setTabActive(true);
+			tmp.setName(fileObject.getName());
+			tmp.setTabState(TabState.PLUGIN_ACTIVE);
+			tmp.setPlugin(chosenPlugin);
+			m_model.setWorkspace(m_view.getActiveWorkspaceId(), tmp);
+			return;
 		}
-		
-		Iterator<String> itr = directories.iterator();
-		while(itr.hasNext()){
-			openDicomDirectory((String)itr.next());
+		catch (Exception e) {
+			// something didn't work - let's show an error message
+			TabObject errorTab = new TabObject(TabState.ERROR_OPEN, true);
+			errorTab.setName(e.getMessage());
+			m_model.setWorkspace(m_view.getActiveWorkspaceId(), errorTab);
+			e.printStackTrace();
+			return;
 		}
 	}
 	
