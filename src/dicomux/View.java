@@ -604,7 +604,7 @@ public class View extends JFrame implements IView {
 			
 			JFileChooser filechooser = new JFileChooser();
 			filechooser.setDialogType(JFileChooser.OPEN_DIALOG);
-			filechooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+//			filechooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 			filechooser.setLocale(m_languageBundle.getLocale());		// Set the current language to the file chooser!
 			filechooser.addActionListener(new ActionListener() {
 				@Override
