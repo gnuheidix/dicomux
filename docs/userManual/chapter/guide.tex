@@ -2,9 +2,92 @@
 % Chapter Introduction
 %
 \chapter{User Guide}
+The next sections will guide you through the funktions of Dicomux. You will find
+out the concept of dicomux and the way to use it.
 
-Blue the sky is.
+\section{Workspace}
+	The main concept od Dicomux is the workspace. Every file or directory has its
+	own workspace. When you open a dicom file or a dicom directory Dicomux opens for
+	you a new workspace. The workspace is shown as independend tab. Changes in a
+	workspace have no effect to other workspaces. The welcome workspace is the
+	default workspace. Dicomux shows at least one workspace. If no other workspace
+	is open, Dicomux shows the default workspace.
+	
+	\subsection{Views}
+	Every workspace of a file has different views. A view shows
+	different parts of a dicom file.
+	Some views supported by Dicomux are Raw Data, Encapsulated PDF, Waveform ECG,
+	etc.. For example shows the Encapsulated PDF view the encapsualted pdf file of
+	the dicom file. If the dicom file doesn` t have a encapsulated pdf, the view
+	Encapsulated PDF is not available.
 
+\section{Open dicom file}
+For opening a dicom file click Open Dicom File. You have to choose a dicom file
+and click Open. If the chosen file is a correct dicom file Dicomux loads the
+file with its views into the workspace. After that you can switch between the
+available views.
+
+	\subsection{Encapsulated PDF}
+	The Encapsulated PDF view shows the pdf of the dicom file. You have the
+	possibility to zoom inside the pdf page. Herefore click the zoom button and draw with the
+	mouse the rectangle to zoom in.\\
+	To abolish the zoom click again the zoom button. 
+	
+	\subsection{Waveform ECG}
+	The Waveform ECG view shows the ecg data of the dicom file. You can zoom in
+	with the plus button, zoom out with the minus button and fit to the page with
+	the fit to page button. When you move the mouse over the diplay you can see the
+	data of the actual mouse position on the top panel. \\
+	There are some different display format options to choose.
+		
+		\subsubsection{1x10 Seconds}
+		This display format shows 10 seconds of every lead in one row. All leads are
+		among each other.
+		
+		\subsubsection{2x5 Seconds}
+		This display format shows 5 seconds of every lead. The leads are displayed in
+		two columns. the firts 5 leads are in the first column and the second 5 leads
+		are in the second column.
+		
+		\subsubsection{4x2.5 Seconds}
+		This display format shows 2.5 seconds of every lead. The leads are displayed
+		in four columns. The firts three leads are in the first column, the second 3
+		leads are in the second column, etc..
+		
+		\subsubsection{4x2.5 Seconds with rhythm strip}
+		This display format shows 2.5 seconds of every lead. The leads are displayed
+		in four columns. The firts three leads are in the first column, the second 3
+		leads are in the second column, etc..\\
+		A rhythm strip is shown at the buttom of the display. 10 seconds of the rhythm
+		strip are displayed in one row. 
+
+	\subsection{Raw Data}
+	The Raw Data view shows all elements of the dicom file with tag address, VR,
+	tag name, length and the first couple of the Data characters.
+	If an element contains more elements the view shows a folder containing the
+	elements.\\
+	After you marked an element with data you can view the complete content
+	by clicking on the detail button at the top. If the element has no data you
+	cannot do that.\\
+		
+		\subsubsection{Detail view}
+		The detail view displays the complete content of the element. You have the
+		option to save the content by clicking on the save button. This makes it
+		possible to save also an encapsulated pdf in a separate file.
+		To return to the Raw Data view click the return button.
+		
+	\subsection{Patient Data}
+	The Patient Data view displays informations about the patient of the dicom
+	file.
+	
+\section{Open dicom directory}
+
+	\subsection{Patient}
+	\subsection{Studies}
+	\subsection{Series}
+	\subsection{Images}
+	
+\section{Language}
 
 %
 % EOF
