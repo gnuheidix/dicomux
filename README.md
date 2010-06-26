@@ -1,4 +1,6 @@
-## Dicomux is a viewer for DICOM files
+# Dicomux
+
+... is a viewer for DICOM files
 
 This software is a project of three students from Germany. Nobody is allowed to use this software for diagnostic 
 purposes. Dicomux may only be used for testing purposes. Especially ECGs and encapsulated PDFs are supported.
