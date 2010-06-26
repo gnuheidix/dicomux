@@ -2,8 +2,8 @@
 % Chapter Introduction
 %
 \chapter{Developer Manual}
-This chapter holds detailed information for software developers who want to modify or extend DICOMUX. There is no class diagramm of the application at the moment. DICOMUX is currently under heavy development and a diagram like that will be out dated after some days.\\
-Please generate a JavaDoc-Page from the source code if you want code specific information. There will be no redundancy between JavaDoc and this chapter.
+This chapter holds detailed information for software developers who want to modify or extend DICOMUX. The code is currently under heavy development and the class diagram is only valid for the date of creation.\\
+A JavaDoc page including a class diagram is available and can be downloaded from dicomux.org.
 
 \section{Terminology}
 \paragraph{Plug-in}
@@ -37,6 +37,18 @@ Each plug-in has to extend the abstract class APlugin. After implementing all ne
 User interaction has to be handled by the plug-ins themselves. They have to provide a user interface and all necessary algorithms. 
 \paragraph{KeyTag} is a class which which supports the Controller in his automatic plug-in selection procedures. Each plug-in has an attribute of the type KeyTag which holds all necessary information for this purpose.
 
+\section{Graphical User Interface}
+As described in the user guide, the user interface of DICOMUX is based on workspaces. There are no pop-up windows which confuse and disturb the user.
+
+\subsection{States}
+The user interface including its workspaces can have different states. The following state diagram visualizes this.
+
+		\begin{minipage}{\textwidth} 
+		\centering
+		\fbox{\includegraphics[width=\linewidth]{screens/stateDiagram.png}}
+		\captionof{figure}{States of the user interface}
+		\label{fig:bild}
+		\end{minipage}
 
 %
 % EOF
