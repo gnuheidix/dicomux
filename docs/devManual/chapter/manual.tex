@@ -22,7 +22,7 @@ The architecture of DICOMUX is based on the model-view-controller pattern. Furth
 This design helps to improve the modularization of the application. Each component of this pattern got its own interface. This doesn't serve a certain purpose yet.
 
 \subsubsection{Model}
-The class Model implements IModel and is designated to hold the entire state of the application. This includes all open Dicom files, all workspaces with their selected plug-ins and so on. An IView
+The class Model implements IModel and is designated to hold the entire state of the application. This includes all open Dicom files, all workspaces with their selected plug-ins and so on.
 \paragraph{TabObject} is a class which serves as data transfer object between Model and View. It represents a workspace and holds all necessary information for visualization.
 \paragraph{TabState} is an enum which is part of each TabObject. It represents the state a workspace can have.
 
