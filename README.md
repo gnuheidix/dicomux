@@ -1,3 +1,5 @@
+<img src="http://github.com/linustorvalds/dicomux/raw/master/etc/images/logo_big.png" alt="Dicomux Logo" style="float:right;" width="30%"/>
+
 # Dicomux
 
 ... is a free viewer for DICOM files
@@ -6,9 +8,12 @@ This software is a project of three students from Germany. Nobody is allowed to 
 purposes. Dicomux may only be used for testing purposes. Especially ECGs and encapsulated PDFs are supported.
 
 ### Licenses
-This software is licensed under the terms of the GNU General Public License Version 3 as published by the Free Software Foundation.
+This software is licensed under the terms of the <a href="http://www.gnu.org/licenses/gpl-3.0.html">GNU General Public License Version 3</a> as published by the <a href="http://www.fsf.org/">Free Software Foundation</a>.
 
-Thomas Heidrich created the logo of Dicomux by deriving from <a href="http://commons.wikimedia.org/wiki/File:Linia_izoelektryczna_EKG.svg">Wikimedia Commons</a>. The logo of Dicomux is licensed under the terms of CC-BY-SA 3.0.
+Thomas Heidrich created the logo of Dicomux by deriving from <a href="http://commons.wikimedia.org/wiki/File:Linia_izoelektryczna_EKG.svg">Mrug's work</a>. The logo of Dicomux is licensed under the terms of <a href="http://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA 3.0</a>.
+
+### Lauching
+Dicomux is a Java Application. You can download the latest release of Dicomux from <a href="http://github.com/downloads/linustorvalds/dicomux/dicomux_version_0.1.jar">here</a>. Please note that the usage of the latest <a href="http://java.com/de/download/installed.jsp?detect=jre&amp;try=1">Java Runtime Environment</a> is recommended.
 
 ### Used external libraries
 <table>
