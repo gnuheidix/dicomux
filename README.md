@@ -1,5 +1,5 @@
 # Dicomux
-<img src="http://github.com/linustorvalds/dicomux/raw/master/etc/images/logo_big.png" align="right" alt="Dicomux Logo" width="30%"/>
+<right><img src="http://github.com/linustorvalds/dicomux/raw/master/etc/images/logo_big.png" alt="Dicomux Logo" width="30%"/><br/></right>
 ... is a free viewer for DICOM files
 
 This software is a project of three students from Germany. Nobody is allowed to use this software for diagnostic 
