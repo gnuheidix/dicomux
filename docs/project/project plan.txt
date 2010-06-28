@@ -359,3 +359,19 @@ Schedule
 * End: June/27th
 
 Review meeting
+* user manual has been created
+* the RawPlug-in has been redesigned properly
+* the about tab has been redesigned // the welcome tab was not changed
+* waveform plugin supports all needed display formats and languages
+
+########### Holidays ###########
+
+Schedule
+* Begin: June/28th
+* End: August/1st
+
+Description
+We achived everything we wanted during the first ten sprints. Dicomux release 0.1 is the result of our hard work.
+
+Next steps
+We reserved the URL dicomux.org. We will create a homepage for our project. Github posts its events to identi.ca/dicomux
