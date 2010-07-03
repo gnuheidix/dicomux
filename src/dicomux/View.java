@@ -211,22 +211,29 @@ public class View extends JFrame implements IView {
 	
 	/**
 	 * convenience method - initializes all language settings by checking the config file
-	 * @param loc the language which should be used for initialization // if null, the file at m_pathLanguageSetting will be used
+	 * @param loc the language which should be used for setting the language directly<br/>
+	 * if loc is null, the language in the file at m_pathLanguageSetting will be used<br/>
+	 * if the file at m_pathLanguageSetting doesn't exist, get the system.user setting<br/>
+	 * if the language from the file or the system user language is not available, select english
 	 */
 	private void initializeLanguage(Locale loc) {
 		Locale locale = null;
 		
 		if(loc == null){
-			try {
+			try { // try to load the language setting from file
 				BufferedReader br = new BufferedReader(new FileReader(new File(m_pathLanguageSetting)));
 				String lang = br.readLine();
 				locale = new Locale(lang);
 				br.close();
-			} catch (IOException e) { // use the system setting if it didn't work and pray that it works
+			} catch (IOException e) { // get the language of the system
 				locale = new Locale(System.getProperty("user.language"));
 			}
+			
+			// check if the automatically selected language is available - otherwise select english
+			if (!getAvailableLanguages().contains(locale.getLanguage()))
+				locale = new Locale("en");
 		}
-		else{
+		else{ // set language directly
 			locale = loc;
 		}
 		
