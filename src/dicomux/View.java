@@ -78,7 +78,7 @@ public class View extends JFrame implements IView {
 	/**
 	 * the model which serves as data source
 	 */
-	private IModel m_model = null;
+	private IModel m_model = new ModelAdapter();
 	
 	/**
 	 * the instance of our dialogs class
@@ -88,7 +88,7 @@ public class View extends JFrame implements IView {
 	/**
 	 * the controller which does all the dirty work
 	 */
-	private IController m_controller = null;
+	private IController m_controller = new ControllerAdapter();
 	
 	/**
 	 * The global language setting for the view
@@ -145,7 +145,7 @@ public class View extends JFrame implements IView {
 	}
 	
 	/**
-	 * creates a new view
+	 * creates a new view - Don't forget to register a view and a controller!
 	 */
 	public View() {
 		initializeLanguage(getLanguage());
@@ -478,78 +478,68 @@ public class View extends JFrame implements IView {
 	}
 	
 	/**
-	 * A convenience method for checking whether a model is registered.
-	 * @return true or false
-	 */
-	private boolean isModelRegistered() {
-		return m_model != null;
-	}
-	
-	/**
 	 * A convenience method for fetching new information from the model. 
 	 * This is a really expensive action. Be aware of that!
 	 */
 	private void refreshAllTabs() {
 		synchronized (m_refreshLock) {
-			if (isModelRegistered()) {
-				// disable the ChangeListener of m_tabbedPane
-				m_refreshInProgress = true;
+			// disable the ChangeListener of m_tabbedPane
+			m_refreshInProgress = true;
+			
+			// disable the user to modify m_tabbedPane while processing
+			m_tabbedPane.setEnabled(false);
+			
+			// remove all tabs
+			m_tabbedPane.removeAll();
+			
+			// load everything from the model (really expensive)
+			for (int i = 0; i < m_model.getWorkspaceCount(); ++i) {
+				TabObject tmp = m_model.getWorkspace(i);
+				String name = "";
 				
-				// disable the user to modify m_tabbedPane while processing
-				m_tabbedPane.setEnabled(false);
-				
-				// remove all tabs
-				m_tabbedPane.removeAll();
-				
-				// load everything from the model (really expensive)
-				for (int i = 0; i < m_model.getWorkspaceCount(); ++i) {
-					TabObject tmp = m_model.getWorkspace(i);
-					String name = "";
-					
-					// create a new tab with a certain content
-					switch (tmp.getTabState()) {
-					case WELCOME:
-						m_tabbedPane.add(m_dialogs.makeWelcomeTab());
-						name = m_languageBundle.getString("key_welcome");
-						break;
-					case FILE_OPEN:
-						m_tabbedPane.add(m_dialogs.makeOpenFileTab());
-						name = m_languageBundle.getString("key_open");
-						break;
-					case DIR_OPEN:
-						m_tabbedPane.add(m_dialogs.makeOpenDirTab());
-						name = m_languageBundle.getString("key_open");
-						break;
-					case ERROR_OPEN:
-						m_tabbedPane.add(m_dialogs.makeErrorOpenTab(tmp.getName()));
-						name = m_languageBundle.getString("key_error");
-						break;
-					case ABOUT:
-						m_tabbedPane.add(m_dialogs.makeAboutTab());
-						name = m_languageBundle.getString("key_about");
-						break;
-					case PLUGIN_ACTIVE:
-						m_tabbedPane.add(tmp.getContent());
-						name = tmp.getName();
-						break;
-					}
-					
-					// add a title and a close button to the TabObject
-					m_tabbedPane.setTabComponentAt(m_tabbedPane.getTabCount() - 1, new TabTitle(name));
-					
-					// select the tab if the model wants that to happen and get all supported plug-ins from the TabObject
-					if (tmp.isTabActive()) {
-						m_tabbedPane.setSelectedIndex(i);
-						addPluginMenuEntries(tmp.getSuitablePlugins());
-					}
+				// create a new tab with a certain content
+				switch (tmp.getTabState()) {
+				case WELCOME:
+					m_tabbedPane.add(m_dialogs.makeWelcomeTab());
+					name = m_languageBundle.getString("key_welcome");
+					break;
+				case FILE_OPEN:
+					m_tabbedPane.add(m_dialogs.makeOpenFileTab());
+					name = m_languageBundle.getString("key_open");
+					break;
+				case DIR_OPEN:
+					m_tabbedPane.add(m_dialogs.makeOpenDirTab());
+					name = m_languageBundle.getString("key_open");
+					break;
+				case ERROR_OPEN:
+					m_tabbedPane.add(m_dialogs.makeErrorOpenTab(tmp.getName()));
+					name = m_languageBundle.getString("key_error");
+					break;
+				case ABOUT:
+					m_tabbedPane.add(m_dialogs.makeAboutTab());
+					name = m_languageBundle.getString("key_about");
+					break;
+				case PLUGIN_ACTIVE:
+					m_tabbedPane.add(tmp.getContent());
+					name = tmp.getName();
+					break;
 				}
 				
-				// reactivate the ChangeListener of m_tabbedPane
-				m_refreshInProgress = false;
+				// add a title and a close button to the TabObject
+				m_tabbedPane.setTabComponentAt(m_tabbedPane.getTabCount() - 1, new TabTitle(name));
 				
-				// enable the user to use m_tabbedPane
-				m_tabbedPane.setEnabled(true);
+				// select the tab if the model wants that to happen and get all supported plug-ins from the TabObject
+				if (tmp.isTabActive()) {
+					m_tabbedPane.setSelectedIndex(i);
+					addPluginMenuEntries(tmp.getSuitablePlugins());
+				}
 			}
+			
+			// reactivate the ChangeListener of m_tabbedPane
+			m_refreshInProgress = false;
+			
+			// enable the user to use m_tabbedPane
+			m_tabbedPane.setEnabled(true);
 		}
 	}
 	

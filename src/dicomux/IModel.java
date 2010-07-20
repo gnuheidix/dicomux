@@ -7,12 +7,6 @@ package dicomux;
  */
 public interface IModel {
 	/**
-	 * registers a view which performs get-calls only
-	 * @param view the view which should be registered
-	 */
-	public void registerView(IView view);
-	
-	/**
 	 *
 	 * @param n the index of the workspace
 	 * @return the workspace with a certain index

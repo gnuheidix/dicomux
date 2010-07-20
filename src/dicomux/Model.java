@@ -19,16 +19,20 @@ public class Model implements IModel {
 	private IView m_view;
 	
 	/**
-	 * default constructor
+	 * creates a model
 	 */
-	public Model() {
+	public Model(IView view) {
+		m_view = view;
 		m_tabObjects = new Vector<TabObject>(5, 5);
+		initialize();
+		m_view.registerModel(this);
 	}
 	
 	@Override
 	public void initialize() {
 		m_tabObjects.clear();
 		addWorkspace(new TabObject(TabState.WELCOME));
+		m_view.notifyView();
 	}
 	
 	@Override
@@ -37,11 +41,6 @@ public class Model implements IModel {
 		if (tab.isTabActive())
 			setActiveWorkspace(wsId);
 		m_view.notifyView();
-	}
-	
-	@Override
-	public void registerView(IView view) {
-		m_view = view;
 	}
 	
 	@Override

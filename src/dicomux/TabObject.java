@@ -49,9 +49,9 @@ public class TabObject {
 	 */
 	public TabObject() {
 		m_dicomObj = null;
-		m_activePlugin = null;
-		m_name = null;
-		m_tabState = null;
+		m_activePlugin = new PluginAdapter();
+		m_name = "";
+		m_tabState = TabState.WELCOME;
 		m_tabActive = false;
 		m_suitablePlugins = new Vector<APlugin>();
 	}
@@ -61,8 +61,8 @@ public class TabObject {
 	 */
 	public TabObject(TabState tabState) {
 		m_dicomObj = null;
-		m_activePlugin = null;
-		m_name = null;
+		m_activePlugin = new PluginAdapter();
+		m_name = "";
 		m_tabState = tabState;
 		m_tabActive = false;
 		m_suitablePlugins = new Vector<APlugin>();
@@ -74,8 +74,8 @@ public class TabObject {
 	 */
 	public TabObject(TabState tabState, boolean tabActive) {
 		m_dicomObj = null;
-		m_activePlugin = null;
-		m_name = null;
+		m_activePlugin = new PluginAdapter();
+		m_name = "";
 		m_tabState = tabState;
 		m_tabActive = tabActive;
 		m_suitablePlugins = new Vector<APlugin>();

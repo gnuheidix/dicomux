@@ -38,21 +38,20 @@ public class Controller implements IController {
 	 * @see IModel
 	 * @see IView
 	 */
-	public Controller(IModel model, IView view) throws Exception {
+	public Controller(IModel model, IView view) {
 		m_model = model;
 		m_view = view;
 		
 		m_availblePlugins = new Vector<APlugin>();
-		m_availblePlugins.add(new WaveformPlugin());
-		m_availblePlugins.add(new PDFPlugin());
-		m_availblePlugins.add(new PatientDataPlugin());
-		m_availblePlugins.add(new RawPlugin());
-		//m_availblePlugins.add(new DirectoryPlugin());
+		try {
+			m_availblePlugins.add(new WaveformPlugin());
+			m_availblePlugins.add(new PDFPlugin());
+			m_availblePlugins.add(new PatientDataPlugin());
+		} catch (Exception e) {
+			System.err.println("Failure during plug-in instatiation! Some plug-ins may be not availble.");
+		}
 		
-		m_model.registerView(m_view);
-		m_view.registerModel(m_model);
-		m_view.registerController(this);
-		m_model.initialize();
+		m_availblePlugins.add(new RawPlugin());
 	}
 	
 	@Override

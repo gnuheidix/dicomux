@@ -1,25 +1,28 @@
 package dicomux;
 
-import javax.swing.JOptionPane;
-
 /**
- * Launches Dicomux<br/>
- * We determine, which model and which view shall be used.
+ * Launches Dicomux by determining, which model, view and controller shall be used.
  * @author heidi
  *
  */
 public class Main {
-	
 	public static void main(String[] args) {
-		IModel model = new Model();
+		// create model and view
 		IView view = new View();
+		IModel model = new Model(view);
 		
+		// register the model on the view
+		view.registerModel(model);
+		
+		// create a controller and register him on the view
+		Controller ctrl;
 		try {
-			@SuppressWarnings("unused")
-			Controller ctrl = new Controller(model, view);
+			ctrl = new Controller(model, view);
+			view.registerController(ctrl);
 		} catch (Exception e) {
+			System.err.println("Controller instantiation failed!");
 			e.printStackTrace();
-			JOptionPane.showMessageDialog(null, "Internal error during launch.\nPlease check plug-ins.");
+			System.exit(1);
 		}
 	}
 }
