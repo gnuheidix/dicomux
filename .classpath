@@ -3,9 +3,15 @@
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="lib/commons-cli-1.2.jar"/>
+	<classpathentry kind="lib" path="lib/dcm4che-core-2.0.21.jar"/>
+	<classpathentry kind="lib" path="lib/log4j-1.2.13.jar"/>
+	<classpathentry kind="lib" path="lib/slf4j-api-1.5.0.jar"/>
+	<classpathentry kind="lib" path="lib/slf4j-log4j12-1.5.0.jar"/>
+	<classpathentry kind="lib" path="lib/clibwrapper_jiio.jar"/>
+	<classpathentry kind="lib" path="lib/jai_imageio.jar"/>
+	<classpathentry kind="lib" path="lib/PDFRenderer.jar"/>
 	<classpathentry kind="lib" path="lib/dcm4che-audit-2.0.21.jar"/>
 	<classpathentry kind="lib" path="lib/dcm4che-base64-2.0.21.jar"/>
-	<classpathentry kind="lib" path="lib/dcm4che-core-2.0.21.jar"/>
 	<classpathentry kind="lib" path="lib/dcm4che-filecache-2.0.21.jar"/>
 	<classpathentry kind="lib" path="lib/dcm4che-hp-2.0.21.jar"/>
 	<classpathentry kind="lib" path="lib/dcm4che-image-2.0.21.jar"/>
@@ -34,11 +40,5 @@
 	<classpathentry kind="lib" path="lib/dcm4che-tool-rgb2ybr-2.0.21.jar"/>
 	<classpathentry kind="lib" path="lib/dcm4che-tool-txt2dcmsr-2.0.21.jar"/>
 	<classpathentry kind="lib" path="lib/dcm4che-tool-xml2dcm-2.0.21.jar"/>
-	<classpathentry kind="lib" path="lib/log4j-1.2.13.jar"/>
-	<classpathentry kind="lib" path="lib/slf4j-api-1.5.0.jar"/>
-	<classpathentry kind="lib" path="lib/slf4j-log4j12-1.5.0.jar"/>
-	<classpathentry kind="lib" path="lib/clibwrapper_jiio.jar"/>
-	<classpathentry kind="lib" path="lib/jai_imageio.jar"/>
-	<classpathentry kind="lib" path="lib/PDFRenderer.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

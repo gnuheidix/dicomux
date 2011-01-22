@@ -159,7 +159,9 @@ public class WaveformPlugin extends APlugin {
 		// second dimension: samples
 		this.data = new int[numberOfChannels][numberOfSamples];
 		if(bitsAllocated.getInt(true) == 16) {
-			short[] tmp = waveformData.getShorts(true);	
+
+			short[] tmp = waveformData.getShorts(false);	
+			
 			for (int i = 0; i < tmp.length; i++ ) {
 				data[i%numberOfChannels][i/numberOfChannels] = (int) tmp[i];
 			}
