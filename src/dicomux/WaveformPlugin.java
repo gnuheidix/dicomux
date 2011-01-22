@@ -25,6 +25,8 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import java.awt.geom.Line2D;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.text.DecimalFormat;
 import java.util.Locale;
 import java.util.Vector;
@@ -157,10 +159,13 @@ public class WaveformPlugin extends APlugin {
 		// write the sample data into a 2-dimensional array
 		// first dimension: channel
 		// second dimension: samples
+		
 		this.data = new int[numberOfChannels][numberOfSamples];
 		if(bitsAllocated.getInt(true) == 16) {
-
-			short[] tmp = waveformData.getShorts(true);	
+			
+			boolean order = dcm.bigEndian();
+			byte[] tmp_bytes = waveformData.getBytes();
+			short[] tmp = toShort(tmp_bytes, order);
 			
 			for (int i = 0; i < tmp.length; i++ ) {
 				data[i%numberOfChannels][i/numberOfChannels] = (int) tmp[i];
@@ -198,11 +203,12 @@ public class WaveformPlugin extends APlugin {
 			// read ChannelSensitivityCorrectionFactor used to calculate the real sample value
 			// ChannelSensitivityCorrectionFactor is a form of calibration of the values
 			DicomElement channelSensitivityCorrection = object.get(Tag.ChannelSensitivityCorrectionFactor);
-			if(channelSensitivity == null)
+			if(channelSensitivityCorrection == null)
 				throw new Exception("Could not read ChannelSensitivityCorrectionFactor");
 			// and again we are going the long way
 			tmp_value = channelSensitivityCorrection.getValueAsString(new SpecificCharacterSet("UTF-8"), 50);
-			int sensitivityCorrection = Integer.parseInt(tmp_value);
+			double help = Double.parseDouble(tmp_value);
+			int sensitivityCorrection = (int) help;
 			
 			// read channel source sequence which contains the name of the channel (lead)
 			DicomElement tmpElement =  object.get(Tag.ChannelSourceSequence);
@@ -318,6 +324,44 @@ public class WaveformPlugin extends APlugin {
 			this.tools.updateLanguage();
 		}
 	}
+	
+	/**
+	 * Convert an byte array to a short array
+	 * 
+	 * @param data				the array to convert
+	 * @param isBigEndian		tell the convertion the byte order of the data 
+	 *                          true if the bytes are in big endian order
+	 *                          false if the bytes are in little endian order
+	 * @return
+	 */
+	private short[] toShort(byte[] data, boolean isBigEndian) {
+		
+		short[] retdata = new short[data.length / 2];
+		int pos = 0;
+		ByteBuffer bb = ByteBuffer.allocate(2);
+		if(isBigEndian)
+		{
+			bb.order(ByteOrder.BIG_ENDIAN);
+		}
+		else
+		{
+			bb.order(ByteOrder.LITTLE_ENDIAN);
+		}
+		
+		for (int i = 0; i < data.length; ++i) {
+			byte firstByte = data[i];
+			byte secondByte = data[++i];
+			
+			bb.put(firstByte);
+			bb.put(secondByte);
+			retdata[pos] = bb.getShort(0);
+			pos++;
+			bb.clear();
+		}
+		
+		return retdata;
+	}
+	
 	
 	/**
 	 * Iterate over all ChannelPanels, set their size to the given Dimension and repaints them
