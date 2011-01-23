@@ -1,0 +1,9 @@
+Dicomux can be packed to a executable jar by doing the following steps.
+
+- start eclipse and get to the package explorer
+- move all pictures from /etc/images to /src
+- move all configs from /etc to /src
+- perform a right click on dicomux an select Export - Runnable jar
+- select the launch configuration Dicomux and the library handling "Package required libraries..."
+- hit finish, dismiss the warning and revert all move operations
+- done
