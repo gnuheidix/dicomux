@@ -13,7 +13,7 @@ Thomas Heidrich created the logo of Dicomux by deriving from <a href="http://com
 Dicomux is a Java Application. You can download the latest release of Dicomux <a href="http://github.com/downloads/linustorvalds/dicomux/dicomux_version_0.1.jar">here</a>. Please note that the usage of the latest <a href="http://java.com/de/download/installed.jsp?detect=jre&amp;try=1">Java Runtime Environment</a> is recommended.
 
 ### Logo
-<img src="http://github.com/linustorvalds/dicomux/raw/master/etc/images/logo_big.png" alt="Dicomux Logo" width="30%"/>
+<img src="https://github.com/gnuheidix/dicomux/raw/master/etc/images/logo_big.png" alt="Dicomux Logo" width="30%"/>
 
 ### Used external libraries
 <table>
