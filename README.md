@@ -10,7 +10,7 @@ This software is licensed under the terms of the <a href="http://www.gnu.org/lic
 Thomas Heidrich created the logo of Dicomux by deriving from <a href="http://commons.wikimedia.org/wiki/File:Linia_izoelektryczna_EKG.svg">Mrug's work</a>. The logo of Dicomux is licensed under the terms of <a href="http://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA 3.0</a>.
 
 ### Lauching
-Dicomux is a Java Application. You can download the latest release of Dicomux <a href="http://github.com/downloads/linustorvalds/dicomux/dicomux_version_0.1.jar">here</a>. Please note that the usage of the latest <a href="http://java.com/de/download/installed.jsp?detect=jre&amp;try=1">Java Runtime Environment</a> is recommended.
+Dicomux is a Java Application. You can download the <a href="https://github.com/downloads/gnuheidix/dicomux/dicomux_weekly_build.jar">latest release</a> of Dicomux. Please note that the usage of the latest <a href="http://java.com/de/download/installed.jsp?detect=jre&amp;try=1">Java Runtime Environment</a> is recommended.
 
 ### Logo
 <img src="https://github.com/gnuheidix/dicomux/raw/master/etc/images/logo_big.png" alt="Dicomux Logo" width="30%"/>
